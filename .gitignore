@@ -4,6 +4,7 @@ backend/data/
 .gradle/
 .idea/
 local.properties
+gradle.properties
 build/
 **/build/
 

@@ -737,7 +737,17 @@ object ApiClient {
 
             client.newCall(requestBuilder.build()).execute().use { response ->
                 val responseText = response.body?.string().orEmpty()
-                val json = if (responseText.isBlank()) JSONObject() else JSONObject(responseText)
+                val json = try {
+                    if (responseText.isBlank()) JSONObject() else JSONObject(responseText)
+                } catch (e: Exception) {
+                    // Si la réponse n'est pas du JSON (ex: HTML error page)
+                    val errorMsg = if (responseText.contains("<!doctype") || responseText.contains("<html")) {
+                        "Server returned HTML (is the backend deployed correctly? URL: $BASE$path)"
+                    } else {
+                        "Invalid server response (expected JSON, got: ${responseText.take(200)})"
+                    }
+                    throw IOException("$errorMsg\nHTTP ${response.code}")
+                }
                 if (!response.isSuccessful) {
                     throw IOException(json.optString("error", "Erreur HTTP ${response.code}"))
                 }

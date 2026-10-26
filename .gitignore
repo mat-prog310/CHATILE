@@ -6,3 +6,10 @@ backend/data/
 local.properties
 build/
 **/build/
+
+# Android sensitive files
+app/release-key.jks
+app/google-services.json
+
+# Backend sensitive files
+backend/google-services.json

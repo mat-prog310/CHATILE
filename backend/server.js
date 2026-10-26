@@ -468,14 +468,10 @@ const avatarUpload = multer({
   },
 });
 
-if (admin.apps.length === 0 && (
-  process.env.FIREBASE_PROJECT_ID || process.env.FIREBASE_SERVICE_ACCOUNT || process.env.GOOGLE_APPLICATION_CREDENTIALS
-)) {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-    : null;
+if (admin.apps.length === 0 && (process.env.FIREBASE_PROJECT_ID || process.env.FIREBASE_SERVICE_ACCOUNT)) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({
-    credential: serviceAccount ? admin.credential.cert(serviceAccount) : admin.credential.applicationDefault(),
+    credential: admin.credential.cert(serviceAccount),
     ...(process.env.FIREBASE_PROJECT_ID ? { projectId: process.env.FIREBASE_PROJECT_ID } : {}),
   });
 }
@@ -1054,10 +1050,13 @@ app.post('/api/verify-purchase', async (req, res) => {
   }
 
   try {
-    if (!process.env.GOOGLE_PLAY_PACKAGE_NAME || !process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    if (!process.env.GOOGLE_PLAY_PACKAGE_NAME || !process.env.FIREBASE_SERVICE_ACCOUNT) {
       return res.status(503).json({ error: 'La vérification Google Play n’est pas configurée.' });
     }
-    const auth = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/androidpublisher'] });
+    const auth = new GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+      credentials: JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
+    });
     const androidPublisher = google.androidpublisher({ version: 'v3', auth });
     const packageName = process.env.GOOGLE_PLAY_PACKAGE_NAME;
     let expiryTime = null;

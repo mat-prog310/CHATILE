@@ -37004,7 +37004,6 @@ com.chatile.ApiClient$getUserBadge$1
 com.chatile.ApiClient$pinMessage$1
 com.chatile.ApiClient$search$1
 com.chatile.ApiClient:
-    private static final java.lang.String BASE
     private static final java.lang.String DEVICE_ID_KEY
     private static final java.lang.String PREFS
     public static final synthetic java.lang.Object access$request(com.chatile.ApiClient,java.lang.String,java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)

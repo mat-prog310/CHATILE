@@ -18,12 +18,13 @@ import org.json.JSONArray
 import org.json.JSONObject
 import com.google.firebase.auth.FirebaseAuth
 
+import com.chatile.BuildConfig
+
 object ApiClient {
-    // URL du backend pour l'émulateur Android
-    // - Sur émulateur : utiliser http://10.0.2.2:3000 (10.0.2.2 pointe vers la machine hôte)
-    // - Sur téléphone physique : utiliser http://<IP_LOCALE_PC>:3000 (ex: http://192.168.1.100:3000)
-    //   et s'assurer que le téléphone est sur le même réseau Wi-Fi que le PC
-    private const val BASE = "http://10.0.2.2:3000"
+    // URL du backend configurée via BuildConfig
+    // - Debug : http://10.0.2.2:3000 (émulateur)
+    // - Release : https://chatile.onrender.com (production)
+    private val BASE = BuildConfig.API_BASE_URL
     private const val PREFS = "pieces_ia"
     private const val DEVICE_ID_KEY = "device_id"
     private val client = OkHttpClient.Builder()

@@ -20,6 +20,7 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${providers.gradleProperty("googleWebClientId").getOrElse("")}\"",
         )
+        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000\"")
     }
 
     compileOptions {
@@ -57,6 +58,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_BASE_URL", "\"https://chatile.onrender.com\"")
         }
 
         getByName("debug") {

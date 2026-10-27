@@ -47,9 +47,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chatile.Character
 import com.chatile.ChatViewModel
+import com.chatile.R
+import androidx.compose.ui.res.painterResource
 import com.chatile.ui.theme.ErrorAccent
 import com.chatile.ui.theme.NightSurface
 import com.chatile.ui.theme.NightSurfaceRaised
@@ -84,17 +87,29 @@ fun CharacterListScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "CHATILE",
-                        color = TextPrimary,
-                        style = MaterialTheme.typography.headlineMedium,
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.logo_chatile),
+                        contentDescription = "CHATILE Logo",
+                        modifier = Modifier.size(24.dp)
                     )
-                    Text(
-                        text = if (characters.isEmpty()) "Créez votre premier compagnon" else "${characters.size} compagnons à retrouver",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    Column {
+                        Text(
+                            "CHATILE",
+                            color = TextPrimary,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = if (characters.isEmpty()) "Créez votre premier compagnon" else "${characters.size} compagnons à retrouver",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
                 Row(
                     modifier = Modifier

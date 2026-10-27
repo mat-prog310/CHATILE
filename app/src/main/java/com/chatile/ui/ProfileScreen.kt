@@ -41,6 +41,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.chatile.ChatViewModel
+import com.chatile.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import com.chatile.ui.theme.NightSurface
 import com.chatile.ui.theme.NightSurfaceRaised
 import com.chatile.ui.theme.SubtleBorder
@@ -49,7 +52,7 @@ import com.chatile.ui.theme.TextSecondary
 import com.chatile.ui.theme.VioletAccent
 
 @Composable
-fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onSignIn: () -> Unit, onWatchAd: () -> Unit = {}, onOpenAdmin: () -> Unit = {}) {
+fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Unit = {}, onOpenAdmin: () -> Unit = {}) {
     val context = LocalContext.current
     val profile by vm.profile.collectAsState()
     val pieces by vm.pieces.collectAsState()
@@ -93,7 +96,23 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onSignIn: () -> Uni
             modifier = Modifier.fillMaxHeight().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("Mon profil", color = TextPrimary, style = MaterialTheme.typography.headlineMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.logo_chatile),
+                    contentDescription = "CHATILE Logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "CHATILE",
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (profile?.avatarUrl != null) {
                     AsyncImage(profile?.avatarUrl, contentDescription = "Photo de profil", modifier = Modifier.size(76.dp).clip(CircleShape))
@@ -131,7 +150,6 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onSignIn: () -> Uni
                     Text("⚙️ Panneau d'Administration")
                 }
             }
-            OutlinedButton(onClick = onSignIn, modifier = Modifier.fillMaxWidth()) { Text("Se connecter avec Google") }
 
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurfaceRaised).padding(18.dp),

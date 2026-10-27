@@ -1,21 +1,26 @@
 package com.chatile.ui
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.TheaterComedy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,10 +29,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,93 +45,146 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.chatile.AuthManager
 import com.chatile.ChatViewModel
+import com.chatile.ui.theme.ChatileBackground
+import com.chatile.ui.theme.ChatileBorder
+import com.chatile.ui.theme.ChatileScreenBackground
 
 @Composable
-fun AppNavHost(onWatchAd: () -> Unit = {}) {
+fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
     val context = LocalContext.current
     val authManager = remember { AuthManager(context) }
-    var isLoggedIn by remember { mutableStateOf(authManager.isSignedIn()) }
+    var isCheckingAuth by remember { mutableStateOf(true) }
+    var isLoggedIn by remember { mutableStateOf(false) }
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val viewModel: ChatViewModel = viewModel()
 
-    if (!isLoggedIn) {
+    LaunchedEffect(Unit) {
+        val signedIn = authManager.isSignedIn()
+        if (signedIn) {
+            val token = authManager.getIdToken()
+            if (!token.isNullOrBlank()) {
+                com.chatile.ApiClient.setFirebaseIdToken(token)
+                viewModel.refresh()
+                isLoggedIn = true
+            } else {
+                isLoggedIn = false
+            }
+        } else {
+            isLoggedIn = false
+        }
+        kotlinx.coroutines.delay(600)
+        isCheckingAuth = false
+    }
+
+    if (isCheckingAuth) {
+        SplashScreen()
+    } else if (!isLoggedIn) {
         LoginScreen(onLoginSuccess = {
             viewModel.refresh()
             isLoggedIn = true
         })
     } else {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                if (currentRoute != "chat/{characterId}") {
-                    BottomNavigationBar(navController = navController)
+        ChatileScreenBackground {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color.Transparent,
+                bottomBar = {
+                    if (currentRoute != "chat/{characterId}") {
+                        CustomBottomNavigationBar(navController = navController)
+                    }
                 }
+            ) { paddingValues ->
+                NavGraph(
+                    navController = navController,
+                    viewModel = viewModel,
+                    onWatchAd = onWatchAd,
+                    onPurchase = onPurchase,
+                    modifier = Modifier.padding(paddingValues)
+                )
             }
-        ) { paddingValues ->
-            NavGraph(
-                navController = navController,
-                viewModel = viewModel,
-                onSignIn = { 
-                    authManager.signOut()
-                    isLoggedIn = false 
-                },
-                onWatchAd = onWatchAd,
-                modifier = Modifier.padding(paddingValues)
-            )
         }
     }
 }
 
 @Composable
-fun BottomNavigationBar(navController: androidx.navigation.NavHostController) {
+fun CustomBottomNavigationBar(navController: androidx.navigation.NavHostController) {
     val items = listOf(
         NavigationItem.Home,
         NavigationItem.Chats,
-        NavigationItem.Feed,
         NavigationItem.Characters,
         NavigationItem.Profile
     )
-    
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = MaterialTheme.colorScheme.onSurface
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .background(ChatileBackground)
+            .drawBehind {
+                drawLine(
+                    color = ChatileBorder,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = 1.dp.toPx()
+                )
+            },
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-        
         items.forEach { item ->
             val selected = currentDestination?.route == item.route
-            
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        item.icon,
-                        contentDescription = item.label,
-                        tint = if (selected) MaterialTheme.colorScheme.primary 
-                               else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                },
-                label = { Text(item.label) },
-                selected = selected,
-                onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                colors = androidx.compose.material3.NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            var tapped by remember { mutableStateOf(false) }
+            val scale by animateFloatAsState(
+                targetValue = if (tapped) 1.2f else 1f,
+                animationSpec = spring(dampingRatio = 0.4f, stiffness = 400f),
+                label = "scale"
             )
+
+            LaunchedEffect(tapped) {
+                if (tapped) {
+                    kotlinx.coroutines.delay(100)
+                    tapped = false
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clickable {
+                        tapped = true
+                        if (!selected) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = item.label,
+                    tint = if (selected) Color.White else Color(0xFF666666),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
+                )
+                Text(
+                    text = item.label,
+                    color = if (selected) Color.White else Color(0xFF666666),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 11.sp
+                )
+            }
         }
     }
 }
@@ -130,9 +193,9 @@ fun BottomNavigationBar(navController: androidx.navigation.NavHostController) {
 fun NavGraph(
     navController: androidx.navigation.NavHostController,
     viewModel: ChatViewModel,
-    onSignIn: () -> Unit = {},
+    modifier: Modifier = Modifier,
     onWatchAd: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onPurchase: (String) -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -142,14 +205,6 @@ fun NavGraph(
         // Home
         composable("home") {
             HomeScreen(
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-        
-        // Feed
-        composable("feed") {
-            FeedScreen(
                 navController = navController,
                 viewModel = viewModel
             )
@@ -197,7 +252,6 @@ fun NavGraph(
             ProfileScreen(
                 vm = viewModel,
                 onOpenShop = { navController.navigate("shop") },
-                onSignIn = onSignIn,
                 onWatchAd = onWatchAd,
                 onOpenAdmin = { navController.navigate("admin") }
             )
@@ -229,34 +283,6 @@ fun NavGraph(
             )
         }
         
-        // Post Detail
-        composable("post_detail/{postId}") { backStackEntry ->
-            val postId = backStackEntry.arguments?.getString("postId")?.toLong()
-            PostDetailScreen(
-                postId = postId,
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-        
-        // Create Post
-        composable("create_post") {
-            CreatePostScreen(
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-        
-        // User Profile
-        composable("user_profile/{userId}") { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId")?.toLong()
-            UserProfileScreen(
-                userId = userId,
-                navController = navController,
-                viewModel = viewModel
-            )
-        }
-        
         // Search
         composable("search") {
             SearchScreen(
@@ -269,7 +295,7 @@ fun NavGraph(
         composable("shop") {
             ShopScreen(
                 vm = viewModel,
-                onPurchase = { productId -> /* Handle purchase */ }
+                onPurchase = onPurchase
             )
         }
         
@@ -302,7 +328,6 @@ fun NavGraph(
 sealed class NavigationItem(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     data object Home : NavigationItem("home", "Accueil", Icons.Default.Home)
     data object Chats : NavigationItem("chats", "Chats", Icons.AutoMirrored.Filled.Chat)
-    data object Feed : NavigationItem("feed", "Feed", Icons.Default.TheaterComedy)
     data object Characters : NavigationItem("characters", "Personnages", Icons.Default.People)
     data object Profile : NavigationItem("profile", "Profil", Icons.Default.Person)
 }

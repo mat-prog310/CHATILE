@@ -57,6 +57,15 @@ class MainActivity : ComponentActivity() {
         }
         ApiClient.init(applicationContext)
         FirebaseApp.initializeApp(this)
+        
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            currentUser.getIdToken(false).addOnSuccessListener { token ->
+                ApiClient.setFirebaseIdToken(token.token)
+                vm.refresh()
+            }
+        }
+
         importSharedLink(intent)
         MobileAds.initialize(this) { loadRewardedAd(); loadInterstitialAd() }
         connectBilling()
@@ -64,7 +73,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             val theme by vm.theme.collectAsState()
             PiecesTheme(theme) {
-                AppNavHost(onWatchAd = ::showRewardedAd)
+                AppNavHost(
+                    onWatchAd = ::showRewardedAd,
+                    onPurchase = ::launchPurchase
+                )
             }
         }
     }

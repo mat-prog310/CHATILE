@@ -2,14 +2,26 @@ package com.chatile.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val NightBackground = Color(0xFF101513)
-val NightSurface = Color(0xFF19201D)
-val NightSurfaceRaised = Color(0xFF242D28)
-val VioletAccent = Color(0xFF57D6BB)
-val VioletDeep = Color(0xFF178E7A)
-val PinkAccent = Color(0xFFF0C568)
-val TextPrimary = Color(0xFFF2F6F3)
-val TextSecondary = Color(0xFFA6B6AE)
-val SubtleBorder = Color(0xFF35453D)
-val ErrorAccent = Color(0xFFFF8B7A)
-val SuccessAccent = Color(0xFF7AD5A8)
+val ChatileBackground = Color(0xFF0A0410)
+val ChatileSurface = Color(0xFF141414)
+val ChatileSurfaceVariant = Color(0xFF1A1A1A)
+val ChatileBorder = Color(0xFF262626)
+val ChatileTextPrimary = Color(0xFFFFFFFF)
+val ChatileTextSecondary = Color(0xFFA3A3A3)
+val ChatileTextTertiary = Color(0xFF666666)
+val ChatileAccent = Color(0xFFB47CFF)
+val ChatileSuccess = Color(0xFF4ADE80)
+val ChatileError = Color(0xFFEF4444)
+val ChatileWarning = Color(0xFFF59E0B)
+
+// Aliases for compatibility across screens
+val NightBackground = ChatileBackground
+val NightSurface = ChatileSurface
+val NightSurfaceRaised = ChatileSurfaceVariant
+val SubtleBorder = ChatileBorder
+val TextPrimary = ChatileTextPrimary
+val TextSecondary = ChatileTextSecondary
+val VioletAccent = ChatileAccent
+val VioletDeep = Color(0xFF1A0F2E)
+val PinkAccent = Color(0xFFF472B6)
+val ErrorAccent = ChatileError

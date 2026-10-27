@@ -1,6 +1,9 @@
 package com.chatile.ui
 
+import android.content.Context
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -23,11 +26,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding as navBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,9 +44,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,13 +59,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -65,11 +78,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import com.chatile.ApiClient
 import com.chatile.ChatViewModel
 import com.chatile.Msg
+import com.chatile.ui.theme.ChatileBackground
 import com.chatile.ui.theme.ErrorAccent
-import com.chatile.ui.theme.NightBackground
 import com.chatile.ui.theme.NightSurface
 import com.chatile.ui.theme.NightSurfaceRaised
 import com.chatile.ui.theme.PinkAccent
@@ -78,9 +92,10 @@ import com.chatile.ui.theme.TextPrimary
 import com.chatile.ui.theme.TextSecondary
 import com.chatile.ui.theme.VioletAccent
 import com.chatile.ui.theme.VioletDeep
-import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     vm: ChatViewModel,
@@ -97,17 +112,40 @@ fun ChatScreen(
     val shouldShowInterstitial by vm.showInterstitial.collectAsState()
     val error by vm.error.collectAsState()
     val motionEnabled = rememberMotionEnabled()
-    val characterName = characters.firstOrNull { it.id == activeCharacterId }?.name ?: "Assistant IA"
+    val activeCharacter = characters.firstOrNull { it.id == activeCharacterId }
+    val characterName = activeCharacter?.name ?: "Assistant IA"
+    val characterGreeting = activeCharacter?.greeting.orEmpty().ifBlank { "Salut !" }
+    val avatarUrl = activeCharacter?.avatarUrl
+
     var draft by remember { mutableStateOf("") }
     var isReplying by remember { mutableStateOf(false) }
     var previousPieces by remember { mutableIntStateOf(pieces) }
     var coinFlying by remember { mutableStateOf(false) }
     var usePremium by remember { mutableStateOf(false) }
     var showMemory by remember { mutableStateOf(false) }
+    var showEditCharacterSheet by remember { mutableStateOf(false) }
+    var showBackgroundSheet by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val prefs = remember(context, activeCharacterId) {
+        context.getSharedPreferences("chat_backgrounds", Context.MODE_PRIVATE)
+    }
+    var bgOption by remember(activeCharacterId) {
+        mutableStateOf(prefs.getString("bg_$activeCharacterId", "chatile_gradient") ?: "chatile_gradient")
+    }
+
     val coinProgress = remember { Animatable(0f) }
     val inputShake = remember { Animatable(0f) }
     val listState = rememberLazyListState()
+
+    // First message greeting if history is empty
+    val displayedMessages = remember(messages, characterGreeting) {
+        if (messages.isEmpty() && activeCharacterId != null) {
+            listOf(Msg(text = characterGreeting, isUser = false))
+        } else {
+            messages
+        }
+    }
 
     LaunchedEffect(error) {
         if (!error.isNullOrBlank()) {
@@ -139,10 +177,10 @@ fun ChatScreen(
         }
     }
 
-    LaunchedEffect(messages.size, isReplying) {
-        if (messages.lastOrNull()?.isUser == false) isReplying = false
-        val showTyping = isReplying && messages.lastOrNull()?.isUser == true
-        val lastIndex = messages.size + if (showTyping) 0 else -1
+    LaunchedEffect(displayedMessages.size, isReplying) {
+        if (displayedMessages.lastOrNull()?.isUser == false) isReplying = false
+        val showTyping = isReplying && displayedMessages.lastOrNull()?.isUser == true
+        val lastIndex = displayedMessages.size + if (showTyping) 0 else -1
         if (lastIndex >= 0) listState.animateScrollToItem(lastIndex)
     }
 
@@ -168,17 +206,48 @@ fun ChatScreen(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        NightBackdrop {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    when {
+                        bgOption == "pure_black" -> Color.Black
+                        bgOption == "deep_purple" -> Color(0xFF1A0F2E)
+                        bgOption == "chatile_gradient" -> ChatileBackground
+                        else -> Color.Transparent
+                    }
+                )
+        ) {
+            if (bgOption.startsWith("content://") || bgOption.startsWith("file://") || bgOption.startsWith("http")) {
+                AsyncImage(
+                    model = bgOption,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize().blur(16.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
+            } else if (bgOption == "chatile_gradient") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(Color(0xFF1A0F2E), ChatileBackground),
+                                radius = 1200f
+                            )
+                        )
+                )
+            }
+
             Column(modifier = Modifier.fillMaxSize()) {
                 ChatHeader(
                     name = characterName,
-                    mood = characters.firstOrNull { it.id == activeCharacterId }?.lastMood ?: "neutral",
-                    avatarUrl = characters.firstOrNull { it.id == activeCharacterId }?.avatarUrl,
+                    mood = activeCharacter?.lastMood ?: "neutral",
+                    avatarUrl = avatarUrl,
                     pieces = pieces,
-                    isPremium = subscriptionTier != "free",
                     onBack = onBack,
-                    onBuy = { onBuy("pack_500") },
-                    onWatchAd = onWatchAd,
+                    onEditCharacter = { showEditCharacterSheet = true },
+                    onBackgroundSettings = { showBackgroundSheet = true },
                     onMemory = {
                         activeCharacterId?.let { vm.loadMemory(it); showMemory = true }
                     },
@@ -210,38 +279,38 @@ fun ChatScreen(
                     contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 12.dp, bottom = 18.dp),
                     verticalArrangement = Arrangement.spacedBy(13.dp),
                 ) {
-                    itemsIndexed(messages, key = { index, message -> "$index-${message.isUser}-${message.text.hashCode()}" }) { _, message ->
+                    itemsIndexed(displayedMessages, key = { index, message -> "$index-${message.isUser}-${message.text.hashCode()}" }) { _, message ->
                         ChatMessage(message, motionEnabled)
                     }
-                    if (isReplying && messages.lastOrNull()?.isUser == true) {
+                    if (isReplying && displayedMessages.lastOrNull()?.isUser == true) {
                         item(key = "typing-indicator") { TypingIndicator(motionEnabled) }
                     }
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        if (subscriptionTier != "free") "Modèle premium (1 Pièce)" else "Modèle premium (3 Pièces)",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier.weight(1f),
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            if (subscriptionTier != "free") "Modèle premium (1 Pièce)" else "Modèle premium (3 Pièces)",
+                            color = TextSecondary,
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Switch(checked = usePremium, onCheckedChange = { usePremium = it })
+                    }
+                    ChatComposer(
+                        draft = draft,
+                        onDraftChange = { draft = it },
+                        onSend = ::sendDraft,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .imePadding()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
+                            .graphicsLayer { translationX = inputShake.value },
                     )
-                    Switch(checked = usePremium, onCheckedChange = { usePremium = it })
-                }
-                ChatComposer(
-                    draft = draft,
-                    onDraftChange = { draft = it },
-                    onSend = ::sendDraft,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navBarsPadding()
-                        .imePadding()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 12.dp)
-                        .graphicsLayer { translationX = inputShake.value },
-                )
                 }
             }
         }
@@ -263,8 +332,27 @@ fun ChatScreen(
             )
         }
     }
+
     if (showMemory && activeCharacterId != null) {
         MemorySheet(characterName, activeCharacterId!!, vm) { showMemory = false }
+    }
+
+    if (showEditCharacterSheet && activeCharacter != null) {
+        EditCharacterBottomSheet(
+            character = activeCharacter,
+            vm = vm,
+            onDismiss = { showEditCharacterSheet = false }
+        )
+    }
+
+    if (showBackgroundSheet && activeCharacterId != null) {
+        BackgroundBottomSheet(
+            onSelectBg = { option ->
+                bgOption = option
+                prefs.edit().putString("bg_$activeCharacterId", option).apply()
+            },
+            onDismiss = { showBackgroundSheet = false }
+        )
     }
 }
 
@@ -274,25 +362,32 @@ private fun ChatHeader(
     mood: String,
     avatarUrl: String?,
     pieces: Int,
-    isPremium: Boolean,
     onBack: () -> Unit,
-    onBuy: () -> Unit,
-    onWatchAd: () -> Unit,
+    onEditCharacter: () -> Unit,
+    onBackgroundSettings: () -> Unit,
     onMemory: () -> Unit,
     onShare: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(NightBackground.copy(alpha = 0.72f))
+            .background(ChatileBackground.copy(alpha = 0.85f))
             .padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconAction("‹", "Retour aux personnages", onBack)
+            IconAction("‹", "Retour", onBack)
             Spacer(Modifier.width(11.dp))
-            if (avatarUrl != null) AsyncImage(avatarUrl, "Avatar de $name", Modifier.size(42.dp).clip(CircleShape))
-            else CharacterAvatar(name = name, size = 42.dp)
+            if (!avatarUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar de $name",
+                    modifier = Modifier.size(40.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                CharacterAvatar(name = name, size = 40.dp)
+            }
             Column(
                 modifier = Modifier.weight(1f).padding(start = 10.dp, end = 8.dp),
                 verticalArrangement = Arrangement.Center,
@@ -336,25 +431,143 @@ private fun ChatHeader(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            if (!isPremium) {
-                ActionPill(
-                    label = "+500 · 2 €",
-                    onClick = onBuy,
-                    emphasized = true,
-                    leading = { CoinOrb(size = 15.dp) },
-                )
-                ActionPill(
-                    label = "Pub · +5",
-                    onClick = onWatchAd,
-                    leading = {
-                        Text("▶", color = VioletAccent, style = MaterialTheme.typography.labelLarge, modifier = Modifier.clearAndSetSemantics { })
-                    },
-                )
-            }
+            IconAction("✏️", "Modifier le personnage", onEditCharacter)
+            IconAction("🖼️", "Arrière-plan", onBackgroundSettings)
             if (name != "Assistant IA") {
-                IconAction("🧠", "Ouvrir la mémoire", onMemory)
-                IconAction("↗", "Partager le personnage", onShare)
+                IconAction("🧠", "Mémoire", onMemory)
+                IconAction("↗", "Partager", onShare)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditCharacterBottomSheet(
+    character: com.chatile.Character,
+    vm: ChatViewModel,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    var greeting by remember { mutableStateOf(character.greeting) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            character.id?.let { id ->
+                scope.launch {
+                    runCatching { ApiClient.uploadCharacterAvatar(context, id, uri) }
+                        .onSuccess { vm.refresh() }
+                }
+            }
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = NightSurface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Modifier le personnage", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+            
+            OutlinedButton(onClick = { imagePicker.launch("image/*") }) {
+                Text("Changer l'avatar")
+            }
+
+            Text("Premier message / Greeting", color = TextSecondary, style = MaterialTheme.typography.labelLarge)
+            BasicTextField(
+                value = greeting,
+                onValueChange = { greeting = it },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimary),
+                cursorBrush = SolidColor(VioletAccent),
+                minLines = 2,
+                maxLines = 4,
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(ChatileBackground)
+                            .border(1.dp, SubtleBorder, RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        innerTextField()
+                    }
+                }
+            )
+
+            Button(
+                onClick = {
+                    onDismiss()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Enregistrer")
+            }
+            Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BackgroundBottomSheet(
+    onSelectBg: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            onSelectBg(uri.toString())
+            onDismiss()
+        }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = NightSurface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Arrière-plan de la conversation", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+
+            OutlinedButton(
+                onClick = { onSelectBg("chatile_gradient"); onDismiss() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Gradient Chatile")
+            }
+            OutlinedButton(
+                onClick = { onSelectBg("pure_black"); onDismiss() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Noir pur")
+            }
+            OutlinedButton(
+                onClick = { onSelectBg("deep_purple"); onDismiss() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Violet profond")
+            }
+            OutlinedButton(
+                onClick = { imagePicker.launch("image/*") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Image personnalisée (avec flou et overlay)")
+            }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -394,7 +607,7 @@ private fun ChatMessage(message: Msg, motionEnabled: Boolean) {
                         if (message.isUser) {
                             Modifier
                                 .background(Brush.linearGradient(listOf(VioletDeep, VioletAccent)))
-                                .background(NightBackground.copy(alpha = 0.4f))
+                                .background(ChatileBackground.copy(alpha = 0.4f))
                         } else {
                             Modifier.background(NightSurfaceRaised)
                                 .border(1.dp, SubtleBorder, RoundedCornerShape(22.dp))
@@ -513,7 +726,7 @@ private fun ChatComposer(
         ) {
             Text(
                 text = "↑",
-                color = if (draft.isBlank()) TextSecondary else NightBackground,
+                color = if (draft.isBlank()) TextSecondary else ChatileBackground,
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.clearAndSetSemantics { },
             )

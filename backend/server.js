@@ -32,7 +32,7 @@ db.exec(`
     display_name TEXT NOT NULL DEFAULT '',
     bio TEXT NOT NULL DEFAULT '',
     avatar_url TEXT,
-    pieces INTEGER NOT NULL DEFAULT 1000,
+    pieces INTEGER NOT NULL DEFAULT 750,
     nsfw_enabled INTEGER NOT NULL DEFAULT 0,
     last_daily_claim TEXT,
     streak_days INTEGER NOT NULL DEFAULT 0,
@@ -359,9 +359,9 @@ for (const row of legacyMemories) {
 }
 
 db.prepare(`
-  INSERT OR IGNORE INTO users (device_id, pieces, created_at) VALUES ('demo', 1000, CURRENT_TIMESTAMP)
+  INSERT OR IGNORE INTO users (device_id, pieces, created_at) VALUES ('demo', 750, CURRENT_TIMESTAMP)
 `).run();
-db.prepare("UPDATE users SET pieces = 1000 WHERE device_id = 'demo'").run();
+db.prepare("UPDATE users SET pieces = 750 WHERE device_id = 'demo'").run();
 
 const systemCharacters = [
   ['Léa', 'Tu es Léa, une amie attentionnée et drôle. Tu réponds avec chaleur et humour. Tu te souviens des détails de la vie de l’utilisateur.', 'Coucou ! Ça fait plaisir de te voir 😊', 'Imaginer ensemble une journée mémorable.'],
@@ -485,7 +485,7 @@ function getOrCreateFirebaseUser(decoded) {
   if (!user) {
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
-       VALUES (?, ?, ?, ?, 1000, 1, ?, CURRENT_TIMESTAMP)`
+       VALUES (?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
     ).run(`firebase_${decoded.uid}`, decoded.uid, decoded.name || 'Utilisateur CHATILE', decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
@@ -1392,6 +1392,21 @@ app.post('/api/settings/nsfw', (req, res) => {
   res.json({ nsfw_enabled: req.body.enabled });
 });
 
+function formatCharacter(c) {
+  if (!c) return c;
+  const rawAvatar = c.avatar_url || c.avatarUrl;
+  const fullAvatarUrl = rawAvatar
+    ? rawAvatar.startsWith('http')
+      ? rawAvatar
+      : `${process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || 'http://10.0.2.2:3000'}${rawAvatar}`
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Character')}&background=B47CFF&color=fff&size=256`;
+  return {
+    ...c,
+    avatar_url: fullAvatarUrl,
+    avatarUrl: fullAvatarUrl,
+  };
+}
+
 app.get('/api/characters', (req, res) => {
   const characters = db.prepare(`
     SELECT c.id, c.user_id, c.name, c.system_prompt, c.greeting, c.avatar_url, c.is_nsfw, c.is_public,
@@ -1401,7 +1416,7 @@ app.get('/api/characters', (req, res) => {
     WHERE c.user_id = ? OR c.is_system = 1
     ORDER BY c.is_system DESC, c.created_at DESC, c.id DESC
   `).all(req.user.id, req.user.id);
-  res.json({ characters });
+  res.json({ characters: characters.map(formatCharacter) });
 });
 
 app.get('/api/characters/:id/avatar-status', (req, res) => {
@@ -1479,7 +1494,7 @@ app.get('/api/characters/public', (req, res) => {
     ORDER BY ${orderBy}
     LIMIT ? OFFSET ?
   `).all(req.user.id, req.user.id, ...parameters, limit, page * limit);
-  const characters = rows.map((character) => ({
+  const characters = rows.map((character) => formatCharacter({
     ...character,
     isNsfw: Boolean(character.isNsfw),
     isImported: Boolean(character.isImported),
@@ -1510,7 +1525,7 @@ app.get('/api/characters/:id/public', (req, res) => {
   `).get(req.user.id, req.user.id, characterId, Number(req.user.nsfw_enabled));
   if (!character) return res.status(404).json({ error: 'Personnage public introuvable.' });
   const { badgeType, role, subscriptionTier, ...result } = character;
-  res.json({
+  res.json(formatCharacter({
     ...result,
     creatorBadge: attributeBadge({
       id: character.creatorId,
@@ -1521,7 +1536,7 @@ app.get('/api/characters/:id/public', (req, res) => {
     isNsfw: Boolean(character.isNsfw),
     isImported: Boolean(character.isImported),
     isLikedByCurrentUser: Boolean(character.isLikedByCurrentUser),
-  });
+  }));
 });
 
 app.post('/api/characters/:id/publish', (req, res) => {
@@ -1613,9 +1628,14 @@ app.post('/api/characters/:id/import', (req, res) => {
 
 app.post('/api/characters', (req, res) => {
   const {
-    name, systemPrompt, greeting = 'Salut !', isNsfw = false,
+    name, systemPrompt, greeting = 'Salut !', avatar_url, isNsfw = false,
     scenarioGoal = '', seedMemory = [], boundaries = '', appearance = '', bannedWords = '', scenarioSteps = [],
   } = req.body ?? {};
+
+  if (!avatar_url || typeof avatar_url !== 'string' || !avatar_url.trim()) {
+    return res.status(400).json({ error: 'Avatar obligatoire.' });
+  }
+
   if (typeof name !== 'string' || !name.trim() || name.length > 80 ||
       typeof systemPrompt !== 'string' || !systemPrompt.trim() || systemPrompt.length > 6000 ||
       typeof greeting !== 'string' || greeting.length > 500 || typeof isNsfw !== 'boolean' ||
@@ -1627,16 +1647,20 @@ app.post('/api/characters', (req, res) => {
     return res.status(400).json({ error: 'Informations du personnage invalides.' });
   }
 
-  const creationCost = req.user.role === 'admin' ? 0 : 200;
-  if (req.user.pieces < creationCost) {
-    return res.status(402).json({ error: '200 Pièces sont nécessaires pour créer un personnage.', needPayment: true });
+  const existingCount = db.prepare('SELECT COUNT(*) AS count FROM characters WHERE user_id = ? AND is_system = 0')
+    .get(req.user.id).count;
+  const creationCost = req.user.role === 'admin' ? 0 : existingCount === 0 ? 0 : 100;
+
+  if (creationCost > 0 && req.user.pieces < creationCost) {
+    return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: creationCost, currentPieces: req.user.pieces });
   }
+
   const create = db.transaction(() => {
     const result = db.prepare(`
-      INSERT INTO characters (user_id, name, system_prompt, greeting, is_nsfw, scenario_goal,
+      INSERT INTO characters (user_id, name, system_prompt, greeting, avatar_url, is_nsfw, scenario_goal,
         boundaries, appearance, banned_words, scenario_steps)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.user.id, name.trim(), systemPrompt.trim(), greeting.trim() || 'Salut !', Number(isNsfw),
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(req.user.id, name.trim(), systemPrompt.trim(), greeting.trim() || 'Salut !', avatar_url.trim(), Number(isNsfw),
       scenarioGoal.trim(), boundaries.trim(), appearance.trim(), bannedWords.trim(),
       Array.isArray(scenarioSteps) ? JSON.stringify(scenarioSteps.slice(0, 20)) : scenarioSteps);
     const characterId = Number(result.lastInsertRowid);
@@ -1657,7 +1681,68 @@ app.post('/api/characters', (req, res) => {
     return characterId;
   });
   const id = create();
-  res.status(201).json({ id });
+  const createdChar = db.prepare('SELECT * FROM characters WHERE id = ?').get(id);
+  res.status(201).json(formatCharacter(createdChar));
+});
+
+app.put('/api/characters/:id', (req, res) => {
+  const characterId = Number(req.params.id);
+  if (!Number.isSafeInteger(characterId)) return res.status(400).json({ error: 'Identifiant invalide.' });
+  const character = ownedCharacter(characterId, req.user.id);
+  if (!character || character.is_system) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  const { name, greeting, avatar_url, is_nsfw, scenario_goal } = req.body ?? {};
+  const updates = [];
+  const params = [];
+  if (name !== undefined) { updates.push('name = ?'); params.push(String(name).trim()); }
+  if (greeting !== undefined) { updates.push('greeting = ?'); params.push(String(greeting).trim() || 'Salut !'); }
+  if (avatar_url !== undefined) { updates.push('avatar_url = ?'); params.push(avatar_url); }
+  if (is_nsfw !== undefined) { updates.push('is_nsfw = ?'); params.push(Number(is_nsfw)); }
+  if (scenario_goal !== undefined) { updates.push('scenario_goal = ?'); params.push(String(scenario_goal).trim()); }
+
+  if (updates.length > 0) {
+    params.push(characterId, req.user.id);
+    db.prepare(`UPDATE characters SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`).run(...params);
+  }
+  const updated = db.prepare('SELECT * FROM characters WHERE id = ?').get(characterId);
+  res.json(formatCharacter(updated));
+});
+
+app.put('/api/characters/:id/memory/seed', (req, res) => {
+  const characterId = Number(req.params.id);
+  if (!ownedCharacter(characterId, req.user.id)) return res.status(404).json({ error: 'Personnage introuvable.' });
+  const { facts } = req.body ?? {};
+  if (!Array.isArray(facts) || facts.length > 15 || facts.some(f => typeof f !== 'string' || f.trim().length > 300)) {
+    return res.status(400).json({ error: 'Faits invalides (max 15).' });
+  }
+  const updateSeed = db.transaction(() => {
+    db.prepare('DELETE FROM seed_memory WHERE character_id = ? AND user_id = ?').run(characterId, req.user.id);
+    db.prepare('DELETE FROM character_seed_memory WHERE character_id = ?').run(characterId);
+    const addFact = db.prepare('INSERT INTO seed_memory (character_id, user_id, fact) VALUES (?, ?, ?)');
+    const addSeedMemory = db.prepare('INSERT INTO character_seed_memory (character_id, fact) VALUES (?, ?)');
+    for (const fact of facts) {
+      if (fact.trim()) {
+        addFact.run(characterId, req.user.id, fact.trim());
+        addSeedMemory.run(characterId, fact.trim());
+      }
+    }
+  });
+  updateSeed();
+  res.json({ success: true, seedMemory: facts });
+});
+
+app.delete('/api/characters/:id/memory/learned/:index', (req, res) => {
+  const characterId = Number(req.params.id);
+  const index = Number(req.params.index);
+  if (!ownedCharacter(characterId, req.user.id) || !Number.isSafeInteger(index)) {
+    return res.status(404).json({ error: 'Personnage ou index introuvable.' });
+  }
+  const facts = db.prepare('SELECT id FROM learned_memory WHERE character_id = ? AND user_id = ? ORDER BY id ASC')
+    .all(characterId, req.user.id);
+  if (index >= 0 && index < facts.length) {
+    db.prepare('DELETE FROM learned_memory WHERE id = ?').run(facts[index].id);
+  }
+  res.json({ success: true });
 });
 
 app.post('/api/characters/:id/avatar', (req, res) => {
@@ -2258,7 +2343,8 @@ function getCharacterOfTheDay() {
 // ==================== SOCIAL ROUTES ====================
 
 // POSTS
-app.post('/api/posts', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.post('/api/posts', (req, res) => {
   const { postType, postSubtype, content, characterId, imageUrl, visibility } = req.body;
   if (!postType || !content || typeof content !== 'string') {
     return res.status(400).json({ error: 'postType et content requis.' });
@@ -2337,7 +2423,8 @@ app.delete('/api/posts/:id', (req, res) => {
   res.json({ success: true });
 });
 
-app.get('/api/feed', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.get('/api/feed', (req, res) => {
   const type = req.query.type || 'for_you';
   const page = parseInt(req.query.page) || 0;
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
@@ -2427,7 +2514,8 @@ app.get('/api/feed', (req, res) => {
 });
 
 // POST LIKES
-app.post('/api/posts/:id/like', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.post('/api/posts/:id/like', (req, res) => {
   const post = db.prepare('SELECT user_id FROM posts WHERE id = ?').get(req.params.id);
   if (!post) return res.status(404).json({ error: 'Post introuvable.' });
   
@@ -2455,7 +2543,8 @@ app.post('/api/posts/:id/like', (req, res) => {
 });
 
 // POST COMMENTS
-app.post('/api/posts/:id/comments', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.post('/api/posts/:id/comments', (req, res) => {
   const { content, parentCommentId } = req.body;
   if (!content || typeof content !== 'string') {
     return res.status(400).json({ error: 'content requis.' });
@@ -2566,7 +2655,8 @@ app.post('/api/comments/:id/like', (req, res) => {
 });
 
 // FOLLOWS
-app.post('/api/users/:id/follow', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.post('/api/users/:id/follow', (req, res) => {
   const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
   if (!targetUser) return res.status(404).json({ error: 'Utilisateur introuvable.' });
   if (targetUser.id === req.user.id) return res.status(400).json({ error: 'Impossible de se suivre soi-même.' });
@@ -2686,7 +2776,8 @@ app.get('/api/users/:id/posts', (req, res) => {
 });
 
 // NOTIFICATIONS
-app.get('/api/notifications', (req, res) => {
+// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
+// app.get('/api/notifications', (req, res) => {
   const page = parseInt(req.query.page) || 0;
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
   const offset = page * limit;

@@ -10,7 +10,7 @@ data class User(
     val displayName: String = "",
     val bio: String = "",
     val avatarUrl: String? = null,
-    val pieces: Int = 1000,
+    val pieces: Int = 750,
     val nsfwEnabled: Boolean = false,
     val subscriptionTier: String = "free",
     val subscriptionExpiresAt: String? = null,

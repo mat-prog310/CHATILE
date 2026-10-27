@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,6 +29,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.chatile.R
+import androidx.compose.ui.res.painterResource
 import com.chatile.ChatViewModel
 import com.chatile.ShopItem
 import com.chatile.ui.theme.NightSurface
@@ -54,7 +57,23 @@ fun ShopScreen(vm: ChatViewModel, onPurchase: (String) -> Unit) {
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text("Boutique", color = TextPrimary, style = MaterialTheme.typography.headlineMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.logo_chatile),
+                    contentDescription = "CHATILE Logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "CHATILE",
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Text("Abonnez-vous ou achetez des packs pour débloquer toutes les fonctionnalités.", color = TextSecondary, style = MaterialTheme.typography.bodyMedium)
 
             when {

@@ -36,9 +36,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import com.chatile.ui.theme.ChatileScreenBackground
+import com.chatile.R
+import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -120,37 +124,77 @@ fun PublicCharactersScreen(
             }
     }
 
-    Scaffold(
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-        ) {
-            Text(
-                text = "Personnages",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 12.dp),
-            )
-            OutlinedTextField(
-                value = searchText,
-                onValueChange = { searchText = it },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                singleLine = true,
-                label = { Text("Rechercher un personnage") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            )
-            TabRow(selectedTabIndex = sorts.indexOf(sort).coerceAtLeast(0)) {
-                tabs.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = sort == sorts[index],
-                        onClick = { viewModel.setPublicCharactersSort(sorts[index]) },
-                        text = { Text(tab) },
+    ChatileScreenBackground {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = R.drawable.logo_chatile),
+                        contentDescription = "CHATILE Logo",
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "CHATILE",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = androidx.compose.ui.graphics.Color.White
                     )
                 }
-            }
-            Box(
-                modifier = Modifier.fillMaxSize().pullRefresh(refreshState),
-            ) {
+                androidx.compose.material3.TextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    singleLine = true,
+                    placeholder = { Text("Rechercher un personnage", color = androidx.compose.ui.graphics.Color(0xFF666666)) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = androidx.compose.ui.graphics.Color(0xFF666666)) },
+                    colors = androidx.compose.material3.TextFieldDefaults.colors(
+                        focusedContainerColor = androidx.compose.ui.graphics.Color(0xFF141414),
+                        unfocusedContainerColor = androidx.compose.ui.graphics.Color(0xFF141414),
+                        focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                        focusedTextColor = androidx.compose.ui.graphics.Color.White,
+                        unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                )
+                Spacer(Modifier.height(12.dp))
+                TabRow(
+                    selectedTabIndex = sorts.indexOf(sort).coerceAtLeast(0),
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    contentColor = androidx.compose.ui.graphics.Color.White,
+                    indicator = { tabPositions ->
+                        androidx.compose.material3.TabRowDefaults.Indicator(
+                            modifier = Modifier.tabIndicatorOffset(tabPositions[sorts.indexOf(sort).coerceAtLeast(0)]),
+                            color = androidx.compose.ui.graphics.Color(0xFFB47CFF)
+                        )
+                    }
+                ) {
+                    tabs.forEachIndexed { index, tab ->
+                        Tab(
+                            selected = sort == sorts[index],
+                            onClick = { viewModel.setPublicCharactersSort(sorts[index]) },
+                            text = { 
+                                Text(
+                                    tab, 
+                                    color = if (sort == sorts[index]) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color(0xFF666666),
+                                    fontWeight = if (sort == sorts[index]) FontWeight.Bold else FontWeight.Normal
+                                ) 
+                            },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier.fillMaxSize().pullRefresh(refreshState),
+                ) {
                 when {
                     isLoading && characters.isEmpty() && baseCharacters.isEmpty() -> LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
@@ -229,6 +273,7 @@ fun PublicCharactersScreen(
             }
         }
     }
+}
 }
 
 @Composable

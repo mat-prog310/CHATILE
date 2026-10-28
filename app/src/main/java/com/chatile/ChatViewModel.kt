@@ -490,6 +490,9 @@ class ChatViewModel : ViewModel() {
         _activeCharacterId.value = id
         if (id != null) {
             viewModelScope.launch {
+                if (_characters.value.none { it.id == id }) {
+                    loadCharacters()
+                }
                 runCatching { ApiClient.getMessages(id, 0) }
                     .onSuccess { jsonArray ->
                         val list = buildList {
@@ -529,6 +532,12 @@ class ChatViewModel : ViewModel() {
     }
 
     fun loadCharacters() = refresh()
+
+    fun updateCharacterAvatarInMemory(characterId: Long, newAvatarUrl: String) {
+        _characters.value = _characters.value.map { char ->
+            if (char.id == characterId) char.copy(avatarUrl = newAvatarUrl) else char
+        }
+    }
 
     fun loadMemory(id: Long) {
         viewModelScope.launch {
@@ -1148,21 +1157,29 @@ class ChatViewModel : ViewModel() {
             runCatching {
                 ApiClient.getCharacterOfTheDay()
             }.onSuccess { response ->
-                val characterJson = response.optJSONObject("character")
-                if (characterJson != null) {
-                    val char = Character(
-                        id = characterJson.optLong("id"),
-                        name = characterJson.optString("name"),
-                        systemPrompt = characterJson.optString("system_prompt", characterJson.optString("systemPrompt")),
-                        greeting = characterJson.optString("greeting", "Salut !"),
-                        isNsfw = characterJson.optInt("is_nsfw", characterJson.optInt("isNsfw")) != 0,
-                        avatarUrl = characterJson.optString("avatar_url").ifBlank { null },
-                        relationshipLevel = characterJson.optInt("relationship_level"),
-                        lastMood = characterJson.optString("last_mood", "neutral"),
-                        isSystem = characterJson.optInt("is_system") != 0,
-                        scenarioGoal = characterJson.optString("scenario_goal"),
-                    )
-                    _characterOfTheDay.value = char
+                val characterJson = response.optJSONObject("character") ?: response
+                val id = characterJson.optLong("id")
+                if (id != 0L) {
+                    val fullChar = _characters.value.firstOrNull { it.id == id }
+                    if (fullChar != null) {
+                        _characterOfTheDay.value = fullChar
+                    } else {
+                        val name = characterJson.optString("name", "Assistant IA")
+                        val rawAvatar = characterJson.optString("avatar_url").ifBlank { characterJson.optString("avatarUrl").ifBlank { null } }
+                        val char = Character(
+                            id = id,
+                            name = name,
+                            systemPrompt = characterJson.optString("system_prompt", characterJson.optString("systemPrompt")),
+                            greeting = characterJson.optString("greeting", "Salut !"),
+                            isNsfw = characterJson.optInt("is_nsfw", characterJson.optInt("isNsfw")) != 0,
+                            avatarUrl = rawAvatar,
+                            relationshipLevel = characterJson.optInt("relationship_level"),
+                            lastMood = characterJson.optString("last_mood", "neutral"),
+                            isSystem = true,
+                            scenarioGoal = characterJson.optString("scenario_goal").ifBlank { null },
+                        )
+                        _characterOfTheDay.value = char
+                    }
                 }
             }.onFailure { _error.value = it.message ?: "Impossible de charger le personnage du jour." }
         }

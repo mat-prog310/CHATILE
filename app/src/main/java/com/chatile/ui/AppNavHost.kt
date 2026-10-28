@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -119,11 +123,10 @@ fun CustomBottomNavigationBar(navController: androidx.navigation.NavHostControll
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    Row(
+    Surface(
+        color = ChatileBackground,
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
-            .background(ChatileBackground)
             .drawBehind {
                 drawLine(
                     color = ChatileBorder,
@@ -131,10 +134,16 @@ fun CustomBottomNavigationBar(navController: androidx.navigation.NavHostControll
                     end = Offset(size.width, 0f),
                     strokeWidth = 1.dp.toPx()
                 )
-            },
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+            }
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
+                .height(64.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
         items.forEach { item ->
             val selected = currentDestination?.route == item.route
             var tapped by remember { mutableStateOf(false) }
@@ -187,6 +196,7 @@ fun CustomBottomNavigationBar(navController: androidx.navigation.NavHostControll
             }
         }
     }
+}
 }
 
 @Composable

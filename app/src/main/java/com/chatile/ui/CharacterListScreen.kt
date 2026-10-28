@@ -47,11 +47,13 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.chatile.Character
 import com.chatile.ChatViewModel
 import com.chatile.R
+import com.chatile.effectiveAvatarUrl
 import androidx.compose.ui.res.painterResource
 import com.chatile.ui.theme.ErrorAccent
 import com.chatile.ui.theme.NightSurface
@@ -280,8 +282,7 @@ private fun CharacterTile(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (character.avatarUrl != null) AsyncImage(character.avatarUrl, "Avatar de ${character.name}", Modifier.size(52.dp).clip(CircleShape))
-            else CharacterAvatar(character.name, size = 52.dp)
+            AsyncImage(character.effectiveAvatarUrl(), "Avatar de ${character.name}", Modifier.size(52.dp).clip(CircleShape), contentScale = ContentScale.Crop)
             Spacer(Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (character.isNsfw) {

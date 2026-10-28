@@ -66,6 +66,7 @@ import coil.compose.AsyncImage
 import com.chatile.ChatViewModel
 import com.chatile.Character
 import com.chatile.PublicCharacter
+import com.chatile.effectiveAvatarUrl
 import com.chatile.ui.theme.BadgeIcon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
@@ -129,10 +130,10 @@ fun PublicCharactersScreen(
             containerColor = androidx.compose.ui.graphics.Color.Transparent
         ) { paddingValues ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier.fillMaxSize().padding(paddingValues).statusBarsPadding(),
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -286,22 +287,12 @@ private fun BaseCharacterCard(character: Character, onChat: () -> Unit) {
             .clickable(onClick = onChat),
     ) {
         Column(Modifier.padding(10.dp)) {
-            if (character.avatarUrl.isNullOrBlank()) {
-                Box(
-                    Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(character.name.take(1), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                }
-            } else {
-                AsyncImage(
-                    model = character.avatarUrl,
-                    contentDescription = "Avatar de ${character.name}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)),
-                )
-            }
+            AsyncImage(
+                model = character.effectiveAvatarUrl(),
+                contentDescription = "Avatar de ${character.name}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)),
+            )
             Spacer(Modifier.height(9.dp))
             Text(character.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text("CHATILE · Officiel", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -360,22 +351,12 @@ private fun PublicCharacterCard(
             .clickable(onClick = onOpenDetails),
     ) {
         Column(Modifier.padding(10.dp)) {
-            if (character.avatarUrl.isNullOrBlank()) {
-                Box(
-                    Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(character.name.take(1).uppercase(), style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                }
-            } else {
-                AsyncImage(
-                    model = character.avatarUrl,
-                    contentDescription = "Avatar de ${character.name}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)),
-                )
-            }
+            AsyncImage(
+                model = character.effectiveAvatarUrl(),
+                contentDescription = "Avatar de ${character.name}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(20.dp)),
+            )
             Spacer(Modifier.height(9.dp))
             Text(character.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {

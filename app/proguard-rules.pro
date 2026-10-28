@@ -5,8 +5,7 @@
 # ============================================
 
 # Enable obfuscation and optimization
--dontobfuscate 
--dontoptimize
+# (removed -dontobfuscate and -dontoptimize to enable code shrinking and obfuscation)
 
 # Print usage to analyze what's being kept
 -printusage unused.txt

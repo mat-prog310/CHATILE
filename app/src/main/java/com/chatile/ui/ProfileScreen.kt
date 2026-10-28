@@ -3,6 +3,7 @@ package com.chatile.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,7 +94,7 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Un
     }
     NightBackdrop {
         Column(
-            modifier = Modifier.fillMaxHeight().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
+            modifier = Modifier.fillMaxHeight().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(
@@ -283,26 +284,6 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Un
                 Text("Ton code : $code", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
                 TextField(value = referralInput, onValueChange = { referralInput = it }, label = { Text("Code reçu") }, modifier = Modifier.fillMaxWidth(), colors = profileFieldColors(), singleLine = true)
                 OutlinedButton(onClick = { vm.applyReferral(referralInput) }, enabled = referralInput.isNotBlank()) { Text("Utiliser un code") }
-            }
-            Text("Thèmes", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
-            Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                val freeThemes = listOf("violet", "rose", "blue")
-                val premiumThemes = listOf("gold", "emerald", "amethyst")
-                val premiumPlusThemes = listOf("ruby", "obsidian", "ivory")
-
-                (freeThemes + premiumThemes + premiumPlusThemes).forEach { themeName ->
-                    val isUnlocked = when {
-                        freeThemes.contains(themeName) -> true
-                        premiumThemes.contains(themeName) -> tier == "premium" || tier == "premium_plus"
-                        else -> tier == "premium_plus"
-                    }
-                    OutlinedButton(
-                        onClick = { if (isUnlocked) vm.setTheme(themeName) else onOpenShop() },
-                        enabled = isUnlocked
-                    ) {
-                        Text(if (isUnlocked) themeName.take(3) else "${themeName.take(3)} 🔒")
-                    }
-                }
             }
             OutlinedButton(
                 onClick = { if (!showStats) vm.loadStats(); showStats = !showStats },

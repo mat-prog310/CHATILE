@@ -4,6 +4,16 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.PhotoCamera
+import androidx.compose.material.icons.outlined.Psychology
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -82,6 +92,7 @@ import coil.compose.AsyncImage
 import com.chatile.ApiClient
 import com.chatile.ChatViewModel
 import com.chatile.Msg
+import com.chatile.effectiveAvatarUrl
 import com.chatile.ui.theme.ChatileBackground
 import com.chatile.ui.theme.ErrorAccent
 import com.chatile.ui.theme.NightSurface
@@ -107,6 +118,7 @@ fun ChatScreen(
     val messages by vm.messages.collectAsState()
     val pieces by vm.pieces.collectAsState()
     val characters by vm.characters.collectAsState()
+    val user by vm.profile.collectAsState()
     val activeCharacterId by vm.activeCharacterId.collectAsState()
     val subscriptionTier by vm.subscriptionTier.collectAsState()
     val shouldShowInterstitial by vm.showInterstitial.collectAsState()
@@ -115,7 +127,7 @@ fun ChatScreen(
     val activeCharacter = characters.firstOrNull { it.id == activeCharacterId }
     val characterName = activeCharacter?.name ?: "Assistant IA"
     val characterGreeting = activeCharacter?.greeting.orEmpty().ifBlank { "Salut !" }
-    val avatarUrl = activeCharacter?.avatarUrl
+    val avatarUrl = activeCharacter?.effectiveAvatarUrl()
 
     var draft by remember { mutableStateOf("") }
     var isReplying by remember { mutableStateOf(false) }
@@ -280,7 +292,7 @@ fun ChatScreen(
                     verticalArrangement = Arrangement.spacedBy(13.dp),
                 ) {
                     itemsIndexed(displayedMessages, key = { index, message -> "$index-${message.isUser}-${message.text.hashCode()}" }) { _, message ->
-                        ChatMessage(message, motionEnabled)
+                        ChatMessage(message, motionEnabled, avatarUrl, user?.avatarUrl)
                     }
                     if (isReplying && displayedMessages.lastOrNull()?.isUser == true) {
                         item(key = "typing-indicator") { TypingIndicator(motionEnabled) }
@@ -431,11 +443,11 @@ private fun ChatHeader(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-            IconAction("✏️", "Modifier le personnage", onEditCharacter)
-            IconAction("🖼️", "Arrière-plan", onBackgroundSettings)
+            IconAction(Icons.Outlined.Edit, "Modifier le personnage", onEditCharacter)
+            IconAction(Icons.Outlined.PhotoCamera, "Arrière-plan", onBackgroundSettings)
             if (name != "Assistant IA") {
-                IconAction("🧠", "Mémoire", onMemory)
-                IconAction("↗", "Partager", onShare)
+                IconAction(Icons.Outlined.Psychology, "Mémoire", onMemory)
+                IconAction(Icons.Outlined.Share, "Partager", onShare)
             }
         }
     }
@@ -457,7 +469,14 @@ private fun EditCharacterBottomSheet(
             character.id?.let { id ->
                 scope.launch {
                     runCatching { ApiClient.uploadCharacterAvatar(context, id, uri) }
-                        .onSuccess { vm.refresh() }
+                        .onSuccess { newUrl ->
+                            vm.updateCharacterAvatarInMemory(id, newUrl)
+                            vm.refresh()
+                            android.widget.Toast.makeText(context, "Photo mise à jour !", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        .onFailure { err ->
+                            android.widget.Toast.makeText(context, err.message ?: "Erreur lors du téléversement", android.widget.Toast.LENGTH_LONG).show()
+                        }
                 }
             }
         }
@@ -572,8 +591,33 @@ private fun BackgroundBottomSheet(
     }
 }
 
+private fun parseActionText(text: String): AnnotatedString {
+    return buildAnnotatedString {
+        val regex = "\\*(.*?)\\*".toRegex()
+        var lastIndex = 0
+        regex.findAll(text).forEach { matchResult ->
+            val range = matchResult.range
+            if (range.first > lastIndex) {
+                append(text.substring(lastIndex, range.first))
+            }
+            pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
+            append(matchResult.groupValues[1])
+            pop()
+            lastIndex = range.last + 1
+        }
+        if (lastIndex < text.length) {
+            append(text.substring(lastIndex))
+        }
+    }
+}
+
 @Composable
-private fun ChatMessage(message: Msg, motionEnabled: Boolean) {
+private fun ChatMessage(
+    message: Msg,
+    motionEnabled: Boolean,
+    characterAvatarUrl: String?,
+    userAvatarUrl: String?
+) {
     AnimatedVisibility(
         visible = true,
         enter = fadeIn(tween(if (motionEnabled) 150 else 0)) + slideInVertically(
@@ -587,19 +631,31 @@ private fun ChatMessage(message: Msg, motionEnabled: Boolean) {
             verticalAlignment = Alignment.Bottom,
         ) {
             if (!message.isUser) {
-                Box(
-                    modifier = Modifier
-                        .padding(end = 8.dp, bottom = 5.dp)
-                        .size(24.dp)
-                        .background(VioletDeep.copy(alpha = 0.46f), CircleShape)
-                        .semantics { contentDescription = "Message de l’assistant" },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("✦", color = VioletAccent, style = MaterialTheme.typography.labelMedium, modifier = Modifier.clearAndSetSemantics { })
+                if (!characterAvatarUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = characterAvatarUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(end = 8.dp, bottom = 2.dp)
+                            .size(32.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 8.dp, bottom = 2.dp)
+                            .size(32.dp)
+                            .background(VioletDeep, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✦", color = VioletAccent, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
+
             Text(
-                text = message.text,
+                text = parseActionText(message.text),
                 modifier = Modifier
                     .widthIn(max = 310.dp)
                     .clip(RoundedCornerShape(22.dp))
@@ -617,6 +673,30 @@ private fun ChatMessage(message: Msg, motionEnabled: Boolean) {
                 color = TextPrimary,
                 style = MaterialTheme.typography.bodyMedium,
             )
+
+            if (message.isUser) {
+                if (!userAvatarUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = userAvatarUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 2.dp)
+                            .size(32.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp, bottom = 2.dp)
+                            .size(32.dp)
+                            .background(VioletAccent, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("M", color = TextPrimary, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
         }
     }
 }

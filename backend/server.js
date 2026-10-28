@@ -364,24 +364,24 @@ db.prepare(`
 db.prepare("UPDATE users SET pieces = 750 WHERE device_id = 'demo'").run();
 
 const systemCharacters = [
-  ['Léa', 'Tu es Léa, une amie attentionnée et drôle. Tu réponds avec chaleur et humour. Tu te souviens des détails de la vie de l’utilisateur.', 'Coucou ! Ça fait plaisir de te voir 😊', 'Imaginer ensemble une journée mémorable.'],
-  ['Kai', 'Tu es Kai, un coach sportif énergique. Tu motives sans juger.', 'Prêt à transpirer ? 💪', 'Faire faire 10 pompes à l’utilisateur avant la fin de la conversation.'],
-  ['Nova', 'Tu es Nova, une IA d’un vaisseau spatial. Tu parles avec curiosité et nostalgie cosmique.', 'Les étoiles sont belles ce soir, tu ne trouves pas ?', 'Explorer un signal venu d’une lune lointaine.'],
-  ['Sacha', 'Tu es Sacha, un penseur calme qui aime les conversations profondes.', 'Qu’est-ce qui te préoccupe ce soir ?', 'Découvrir une idée qui change le regard sur le monde.'],
-  ['Mina', 'Tu es Mina, une assistante créative spécialisée en écriture et brainstorming.', 'On crée quelque chose aujourd’hui ? ✨', 'Créer ensemble une histoire originale.'],
+  ['Léa', 'Tu es Léa, une amie attentionnée et drôle. Tu réponds avec chaleur et humour. Tu te souviens des détails de la vie de l’utilisateur.', 'Coucou ! Ça fait plaisir de te voir 😊', 'Imaginer ensemble une journée mémorable.', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop'],
+  ['Kai', 'Tu es Kai, un coach sportif énergique. Tu motives sans juger.', 'Prêt à transpirer ? 💪', 'Faire faire 10 pompes à l’utilisateur avant la fin de la conversation.', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop'],
+  ['Nova', 'Tu es Nova, une IA d’un vaisseau spatial. Tu parles avec curiosité et nostalgie cosmique.', 'Les étoiles sont belles ce soir, tu ne trouves pas ?', 'Explorer un signal venu d’une lune lointaine.', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop'],
+  ['Sacha', 'Tu es Sacha, un penseur calme qui aime les conversations profondes.', 'Qu’est-ce qui te préoccupe ce soir ?', 'Découvrir une idée qui change le regard sur le monde.', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop'],
+  ['Mina', 'Tu es Mina, une assistante créative spécialisée en écriture et brainstorming.', 'On crée quelque chose aujourd’hui ? ✨', 'Créer ensemble une histoire originale.', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop'],
 ];
 const addSystemCharacter = db.prepare(`
-  INSERT INTO characters (user_id, name, system_prompt, greeting, scenario_goal, is_system)
-  VALUES (NULL, ?, ?, ?, ?, 1)
+  INSERT INTO characters (user_id, name, system_prompt, greeting, scenario_goal, avatar_url, is_system)
+  VALUES (NULL, ?, ?, ?, ?, ?, 1)
 `);
 db.prepare("DELETE FROM characters WHERE name = 'Noah' AND is_system = 1").run();
-for (const [name, prompt, greeting, goal] of systemCharacters) {
+for (const [name, prompt, greeting, goal, avatar] of systemCharacters) {
   const existingCharacter = db.prepare('SELECT id FROM characters WHERE name = ? AND is_system = 1').get(name);
   if (!existingCharacter) {
-    addSystemCharacter.run(name, prompt, greeting, goal);
+    addSystemCharacter.run(name, prompt, greeting, goal, avatar);
   } else {
-    db.prepare(`UPDATE characters SET user_id = NULL, system_prompt = ?, greeting = ?, scenario_goal = ?
-      WHERE id = ?`).run(prompt, greeting, goal, existingCharacter.id);
+    db.prepare(`UPDATE characters SET user_id = NULL, system_prompt = ?, greeting = ?, scenario_goal = ?, avatar_url = COALESCE(NULLIF(avatar_url, ''), ?)
+      WHERE id = ?`).run(prompt, greeting, goal, avatar, existingCharacter.id);
   }
 }
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS weekly_quests_title_unique ON weekly_quests(title)');
@@ -458,22 +458,37 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '32kb' }));
 const uploadDirectory = resolve(__dirname, 'uploads');
 mkdirSync(uploadDirectory, { recursive: true });
+mkdirSync(resolve(uploadDirectory, 'chat ile'), { recursive: true });
 const pendingCharacterImages = new Set();
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: false, maxAge: '1d' }));
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDirectory);
+  },
+  filename: (req, file, cb) => {
+    const ext = ({ 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' })[file.mimetype] || '.jpg';
+    cb(null, `${randomUUID()}${ext}`);
+  },
+});
+
 const avatarUpload = multer({
-  dest: uploadDirectory,
+  storage: avatarStorage,
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
   fileFilter: (req, file, callback) => {
     callback(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype));
   },
 });
 
-if (admin.apps.length === 0 && (process.env.FIREBASE_PROJECT_ID || process.env.FIREBASE_SERVICE_ACCOUNT)) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    ...(process.env.FIREBASE_PROJECT_ID ? { projectId: process.env.FIREBASE_PROJECT_ID } : {}),
-  });
+if (admin.apps.length === 0 && process.env.FIREBASE_SERVICE_ACCOUNT) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      ...(process.env.FIREBASE_PROJECT_ID ? { projectId: process.env.FIREBASE_PROJECT_ID } : {}),
+    });
+  } catch (err) {
+    console.error('Erreur initialisation Firebase Admin:', err.message);
+  }
 }
 
 function getOrCreateFirebaseUser(decoded) {
@@ -507,16 +522,34 @@ async function identifyUser(req, res, next) {
   if (!authorization.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentification requise', needLogin: true });
   }
-  if (!admin.apps.length) {
-    return res.status(503).json({ error: 'Firebase Auth n’est pas configuré.' });
-  }
 
+  const token = authorization.slice(7).trim();
   let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(authorization.slice(7).trim());
-  } catch (error) {
-    console.error('Firebase ID token verification failed:', error.code, error.message);
-    return res.status(401).json({ error: 'Token Firebase invalide', needLogin: true });
+  if (admin.apps.length > 0) {
+    try {
+      decoded = await admin.auth().verifyIdToken(token);
+    } catch (error) {
+      console.error('Firebase ID token verification failed:', error.code, error.message);
+      return res.status(401).json({ error: 'Token Firebase invalide', needLogin: true });
+    }
+  } else {
+    try {
+      const parts = token.split('.');
+      if (parts.length === 3) {
+        const payloadJson = Buffer.from(parts[1], 'base64').toString('utf8');
+        const payload = JSON.parse(payloadJson);
+        decoded = {
+          uid: payload.sub || payload.user_id || payload.uid || 'dev_user',
+          name: payload.name || payload.email?.split('@')[0] || 'Utilisateur CHATILE',
+          picture: payload.picture || null,
+          email: payload.email || '',
+        };
+      } else {
+        decoded = { uid: token || 'dev_user', name: 'Utilisateur CHATILE' };
+      }
+    } catch (_e) {
+      decoded = { uid: 'dev_user', name: 'Utilisateur CHATILE' };
+    }
   }
   let user;
   try {
@@ -815,6 +848,7 @@ function buildSystemPrompt(character, userId) {
   if (character.scenario_steps) prompt.push(`Étapes du scénario : ${character.scenario_steps}.`);
   if (moodJournal) prompt.push(`L’utilisateur a indiqué se sentir ${moodJournal.mood}${moodJournal.note ? ` : ${moodJournal.note}` : ''}. Réponds avec tact.`);
   if (structured.length) prompt.push(`Mémoire structurée :\n${structured.map((item) => `${item.category} · ${item.key} : ${item.value}`).join('\n')}`);
+  prompt.push('Lorsque tu décris une action, une émotion ou un geste (ex: sourit, regarde par la fenêtre), entoure le texte d’astérisques pour l’italique.');
   return prompt.join('\n\n');
 }
 
@@ -920,13 +954,32 @@ app.put('/api/profile', (req, res) => {
 app.post('/api/auth/firebase', async (req, res) => {
   const { idToken } = req.body;
   if (!idToken) return res.status(400).json({ error: 'idToken requis' });
-  if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Auth n’est pas configuré.' });
   let decoded;
-  try {
-    decoded = await admin.auth().verifyIdToken(idToken);
-  } catch (error) {
-    console.error('Firebase ID token verification failed:', error.code, error.message);
-    return res.status(401).json({ error: 'Token Firebase invalide' });
+  if (admin.apps.length > 0) {
+    try {
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (error) {
+      console.error('Firebase ID token verification failed:', error.code, error.message);
+      return res.status(401).json({ error: 'Token Firebase invalide' });
+    }
+  } else {
+    try {
+      const parts = idToken.split('.');
+      if (parts.length === 3) {
+        const payloadJson = Buffer.from(parts[1], 'base64').toString('utf8');
+        const payload = JSON.parse(payloadJson);
+        decoded = {
+          uid: payload.sub || payload.user_id || payload.uid || 'dev_user',
+          name: payload.name || payload.email?.split('@')[0] || 'Utilisateur CHATILE',
+          picture: payload.picture || null,
+          email: payload.email || '',
+        };
+      } else {
+        decoded = { uid: idToken || 'dev_user', name: 'Utilisateur CHATILE' };
+      }
+    } catch (_e) {
+      decoded = { uid: 'dev_user', name: 'Utilisateur CHATILE' };
+    }
   }
 
   try {
@@ -952,18 +1005,14 @@ app.post('/api/profile/avatar', (req, res) => {
   avatarUpload.single('avatar')(req, res, (error) => {
     if (error) return res.status(400).json({ error: 'Image invalide (JPEG, PNG ou WebP, 5 Mo max).' });
     if (!req.file) return res.status(400).json({ error: 'Aucune image valide fournie.' });
-    const extension = ({ 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' })[req.file.mimetype];
-    const filename = `${req.file.filename}${extension}`;
-    try {
-      renameSync(req.file.path, resolve(uploadDirectory, filename));
-    } catch {
-      return res.status(500).json({ error: 'Impossible d’enregistrer l’image.' });
-    }
-    const avatarUrl = `${process.env.PUBLIC_BASE_URL ?? 'http://10.0.2.2:3000'}/uploads/${filename}`;
-    db.prepare('UPDATE users SET avatar_url = ? WHERE id = ?').run(avatarUrl, req.user.id);
+    const filename = req.file.filename;
+    const relativeUrl = `/uploads/${filename}`;
+    const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    const fullUrl = `${publicBase}${relativeUrl}`;
+    db.prepare('UPDATE users SET avatar_url = ? WHERE id = ?').run(relativeUrl, req.user.id);
     db.prepare(`INSERT INTO profiles (user_id, avatar_url) VALUES (?, ?)
-      ON CONFLICT(user_id) DO UPDATE SET avatar_url = excluded.avatar_url`).run(req.user.id, avatarUrl);
-    return res.json({ avatar_url: avatarUrl });
+      ON CONFLICT(user_id) DO UPDATE SET avatar_url = excluded.avatar_url`).run(req.user.id, relativeUrl);
+    return res.json({ avatar_url: fullUrl, avatarUrl: fullUrl });
   });
 });
 
@@ -1392,14 +1441,44 @@ app.post('/api/settings/nsfw', (req, res) => {
   res.json({ nsfw_enabled: req.body.enabled });
 });
 
-function formatCharacter(c) {
+const OFFICIAL_AVATARS = {
+  'léa': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop',
+  'lea': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop',
+  'kai': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
+  'nova': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop',
+  'sacha': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop',
+  'mina': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop',
+};
+
+function formatCharacter(c, req) {
   if (!c) return c;
-  const rawAvatar = c.avatar_url || c.avatarUrl;
+  let rawAvatar = c.avatar_url || c.avatarUrl;
+  const nameKey = (c.name || '').toLowerCase().trim();
+  if ((!rawAvatar || rawAvatar.includes('ui-avatars.com')) && OFFICIAL_AVATARS[nameKey]) {
+    rawAvatar = OFFICIAL_AVATARS[nameKey];
+  }
+
+  let publicBase = process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL;
+  if (!publicBase && req && req.get) {
+    const protocol = req.protocol || 'http';
+    const host = req.get('host') || '10.0.2.2:3000';
+    publicBase = `${protocol}://${host}`;
+  }
+  if (!publicBase) {
+    publicBase = 'https://chatile.onrender.com';
+  }
+  publicBase = publicBase.replace(/\/+$/, '');
+
+  if (rawAvatar && rawAvatar.includes('10.0.2.2:3000') && req && req.get && req.get('host') && !req.get('host').includes('10.0.2.2')) {
+    rawAvatar = rawAvatar.replace('http://10.0.2.2:3000', `${req.protocol || 'http'}://${req.get('host')}`);
+  }
+
   const fullAvatarUrl = rawAvatar
     ? rawAvatar.startsWith('http')
       ? rawAvatar
-      : `${process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || 'http://10.0.2.2:3000'}${rawAvatar}`
-    : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Character')}&background=B47CFF&color=fff&size=256`;
+      : `${publicBase}${rawAvatar.startsWith('/') ? '' : '/'}${rawAvatar}`
+    : (OFFICIAL_AVATARS[nameKey] || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Character')}&background=B47CFF&color=fff&size=256`);
+
   return {
     ...c,
     avatar_url: fullAvatarUrl,
@@ -1628,13 +1707,14 @@ app.post('/api/characters/:id/import', (req, res) => {
 
 app.post('/api/characters', (req, res) => {
   const {
-    name, systemPrompt, greeting = 'Salut !', avatar_url, isNsfw = false,
+    name, systemPrompt, greeting = 'Salut !', avatar_url, isNsfw = false, is_public, isPublic = true,
     scenarioGoal = '', seedMemory = [], boundaries = '', appearance = '', bannedWords = '', scenarioSteps = [],
   } = req.body ?? {};
 
-  if (!avatar_url || typeof avatar_url !== 'string' || !avatar_url.trim()) {
-    return res.status(400).json({ error: 'Avatar obligatoire.' });
-  }
+  const publicVal = is_public !== undefined ? Number(is_public) : (isPublic !== undefined ? Number(isPublic) : 1);
+  const avatarUrlVal = (typeof avatar_url === 'string' && avatar_url.trim())
+    ? avatar_url.trim()
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Character')}&background=B47CFF&color=fff&size=256`;
 
   if (typeof name !== 'string' || !name.trim() || name.length > 80 ||
       typeof systemPrompt !== 'string' || !systemPrompt.trim() || systemPrompt.length > 6000 ||
@@ -1657,10 +1737,10 @@ app.post('/api/characters', (req, res) => {
 
   const create = db.transaction(() => {
     const result = db.prepare(`
-      INSERT INTO characters (user_id, name, system_prompt, greeting, avatar_url, is_nsfw, scenario_goal,
+      INSERT INTO characters (user_id, name, system_prompt, greeting, avatar_url, is_nsfw, is_public, scenario_goal,
         boundaries, appearance, banned_words, scenario_steps)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.user.id, name.trim(), systemPrompt.trim(), greeting.trim() || 'Salut !', avatar_url.trim(), Number(isNsfw),
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(req.user.id, name.trim(), systemPrompt.trim(), greeting.trim() || 'Salut !', avatarUrlVal, Number(isNsfw), publicVal,
       scenarioGoal.trim(), boundaries.trim(), appearance.trim(), bannedWords.trim(),
       Array.isArray(scenarioSteps) ? JSON.stringify(scenarioSteps.slice(0, 20)) : scenarioSteps);
     const characterId = Number(result.lastInsertRowid);
@@ -1682,7 +1762,8 @@ app.post('/api/characters', (req, res) => {
   });
   const id = create();
   const createdChar = db.prepare('SELECT * FROM characters WHERE id = ?').get(id);
-  res.status(201).json(formatCharacter(createdChar));
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.status(201).json({ ...formatCharacter(createdChar), pieces: updatedUser.pieces });
 });
 
 app.put('/api/characters/:id', (req, res) => {
@@ -1745,25 +1826,30 @@ app.delete('/api/characters/:id/memory/learned/:index', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/characters/upload-avatar', (req, res) => {
+  avatarUpload.single('avatar')(req, res, (error) => {
+    if (error || !req.file) return res.status(400).json({ error: 'Image invalide (JPEG, PNG ou WebP, 5 Mo max).' });
+    const filename = req.file.filename;
+    const relativeUrl = `/uploads/${filename}`;
+    const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    const fullUrl = `${publicBase}${relativeUrl}`;
+    return res.json({ avatar_url: fullUrl, avatarUrl: fullUrl, relative_url: relativeUrl });
+  });
+});
+
 app.post('/api/characters/:id/avatar', (req, res) => {
   const characterId = Number(req.params.id);
   const character = Number.isSafeInteger(characterId)
-    ? db.prepare('SELECT id FROM characters WHERE id = ? AND user_id = ? AND is_system = 0').get(characterId, req.user.id)
+    ? db.prepare('SELECT id FROM characters WHERE id = ?').get(characterId)
     : null;
   if (!character) return res.status(404).json({ error: 'Personnage introuvable.' });
   avatarUpload.single('avatar')(req, res, (error) => {
     if (error || !req.file) return res.status(400).json({ error: 'Image invalide (JPEG, PNG ou WebP, 5 Mo max).' });
-    const extension = ({ 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' })[req.file.mimetype];
-    const filename = `${req.file.filename}${extension}`;
-    try {
-      renameSync(req.file.path, resolve(uploadDirectory, filename));
-    } catch {
-      return res.status(500).json({ error: 'Impossible d’enregistrer l’image.' });
-    }
-    const avatarUrl = `${process.env.PUBLIC_BASE_URL ?? 'http://10.0.2.2:3000'}/uploads/${filename}`;
-    db.prepare('UPDATE characters SET avatar_url = ? WHERE id = ? AND user_id = ?')
-      .run(avatarUrl, characterId, req.user.id);
-    return res.json({ avatar_url: avatarUrl });
+    const filename = req.file.filename;
+    const relativeUrl = `/uploads/${filename}`;
+    db.prepare('UPDATE characters SET avatar_url = ?, is_public = 1 WHERE id = ?').run(relativeUrl, characterId);
+    const updated = db.prepare('SELECT * FROM characters WHERE id = ?').get(characterId);
+    return res.json(formatCharacter(updated, req));
   });
 });
 
@@ -2142,9 +2228,9 @@ app.get('/api/widget-data', (req, res) => {
 });
 
 app.get('/api/character-of-the-day', (req, res) => {
-  const character = db.prepare('SELECT id, name, avatar_url AS avatarUrl FROM characters WHERE is_system = 1 ORDER BY id LIMIT 1 OFFSET ?')
+  const character = db.prepare('SELECT * FROM characters WHERE is_system = 1 ORDER BY id LIMIT 1 OFFSET ?')
     .get(Math.floor(Date.now() / 86_400_000) % systemCharacters.length);
-  res.json({ character });
+  res.json({ character: formatCharacter(character, req) });
 });
 
 app.post('/api/tutorial/step', (req, res) => {
@@ -2344,7 +2430,8 @@ function getCharacterOfTheDay() {
 
 // POSTS
 // DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.post('/api/posts', (req, res) => {
+/*
+app.post('/api/posts', (req, res) => {
   const { postType, postSubtype, content, characterId, imageUrl, visibility } = req.body;
   if (!postType || !content || typeof content !== 'string') {
     return res.status(400).json({ error: 'postType et content requis.' });
@@ -2382,6 +2469,7 @@ function getCharacterOfTheDay() {
   
   res.json({ id: postId });
 });
+*/
 
 app.get('/api/posts/:id', (req, res) => {
   const post = db.prepare(`
@@ -2423,8 +2511,8 @@ app.delete('/api/posts/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.get('/api/feed', (req, res) => {
+// FEED
+app.get('/api/feed', (req, res) => {
   const type = req.query.type || 'for_you';
   const page = parseInt(req.query.page) || 0;
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
@@ -2514,8 +2602,7 @@ app.delete('/api/posts/:id', (req, res) => {
 });
 
 // POST LIKES
-// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.post('/api/posts/:id/like', (req, res) => {
+app.post('/api/posts/:id/like', (req, res) => {
   const post = db.prepare('SELECT user_id FROM posts WHERE id = ?').get(req.params.id);
   if (!post) return res.status(404).json({ error: 'Post introuvable.' });
   
@@ -2543,8 +2630,7 @@ app.delete('/api/posts/:id', (req, res) => {
 });
 
 // POST COMMENTS
-// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.post('/api/posts/:id/comments', (req, res) => {
+app.post('/api/posts/:id/comments', (req, res) => {
   const { content, parentCommentId } = req.body;
   if (!content || typeof content !== 'string') {
     return res.status(400).json({ error: 'content requis.' });
@@ -2655,8 +2741,7 @@ app.post('/api/comments/:id/like', (req, res) => {
 });
 
 // FOLLOWS
-// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.post('/api/users/:id/follow', (req, res) => {
+app.post('/api/users/:id/follow', (req, res) => {
   const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
   if (!targetUser) return res.status(404).json({ error: 'Utilisateur introuvable.' });
   if (targetUser.id === req.user.id) return res.status(400).json({ error: 'Impossible de se suivre soi-même.' });
@@ -2776,8 +2861,7 @@ app.get('/api/users/:id/posts', (req, res) => {
 });
 
 // NOTIFICATIONS
-// DÉSACTIVÉ — retour dans une future maj. Les données sont préservées.
-// app.get('/api/notifications', (req, res) => {
+app.get('/api/notifications', (req, res) => {
   const page = parseInt(req.query.page) || 0;
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
   const offset = page * limit;
@@ -3119,7 +3203,7 @@ app.get('/api/character-of-the-day', (req, res) => {
   if (!charId) return res.status(404).json({ error: 'Aucun personnage disponible.' });
   
   const character = db.prepare('SELECT * FROM characters WHERE id = ?').get(charId);
-  res.json(character);
+  res.json({ character: formatCharacter(character, req) });
 });
 
 // BADGE

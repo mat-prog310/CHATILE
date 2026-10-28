@@ -338,3 +338,27 @@ data class PublicCharacter(
     val isImported: Boolean,
     val isLikedByCurrentUser: Boolean = false,
 )
+
+fun Character.effectiveAvatarUrl(): String {
+    if (!avatarUrl.isNullOrBlank()) return avatarUrl
+    return when (name.lowercase().trim()) {
+        "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
+        "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
+        "nova" -> "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop"
+        "sacha" -> "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop"
+        "mina" -> "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop"
+        else -> "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name.ifBlank { "Character" }, "UTF-8")}&background=B47CFF&color=fff&size=256"
+    }
+}
+
+fun PublicCharacter.effectiveAvatarUrl(): String {
+    if (!avatarUrl.isNullOrBlank()) return avatarUrl
+    return when (name.lowercase().trim()) {
+        "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
+        "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
+        "nova" -> "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop"
+        "sacha" -> "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop"
+        "mina" -> "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop"
+        else -> "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name.ifBlank { "Character" }, "UTF-8")}&background=B47CFF&color=fff&size=256"
+    }
+}

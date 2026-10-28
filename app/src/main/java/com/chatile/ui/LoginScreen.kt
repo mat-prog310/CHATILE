@@ -33,6 +33,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             Text("CHATILE", style = MaterialTheme.typography.headlineLarge, color = TextPrimary)
             Spacer(Modifier.height(8.dp))
             Text(
+                "750 Pièces offertes à l'inscription",
+                style = MaterialTheme.typography.titleMedium,
+                color = com.chatile.ui.theme.VioletAccent,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
                 "Connecte-toi pour accéder à tes Pièces et à tes personnages.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextSecondary,

@@ -8,6 +8,7 @@
     <application
         android:allowBackup="false"
         android:label="CHATILE"
+        android:theme="@style/Theme.Chatile"
         android:usesCleartextTraffic="true">
         <property
             android:name="android.adservices.AD_SERVICES_CONFIG"
@@ -22,6 +23,7 @@
             android:value="ca-app-pub-8964953556750058~5734226643" />
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

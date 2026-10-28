@@ -36,6 +36,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import androidx.activity.enableEdgeToEdge
 import com.chatile.ui.AppNavHost
 import com.chatile.ui.theme.PiecesTheme
 import kotlinx.coroutines.launch
@@ -48,9 +49,10 @@ class MainActivity : ComponentActivity() {
     private val products = mutableMapOf<String, ProductDetails>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        window.statusBarColor = AndroidColor.rgb(16, 21, 19)
-        window.navigationBarColor = AndroidColor.rgb(16, 21, 19)
+        window.statusBarColor = AndroidColor.rgb(10, 4, 16)
+        window.navigationBarColor = AndroidColor.rgb(10, 4, 16)
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = false
             isAppearanceLightNavigationBars = false

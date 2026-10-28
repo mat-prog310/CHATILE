@@ -146,6 +146,7 @@ object ApiClient {
         appearance: String = "",
         bannedWords: String = "",
         scenarioSteps: List<String> = emptyList(),
+        avatarUrl: String? = null,
     ): Long {
         val body = JSONObject()
             .put("name", name)
@@ -158,6 +159,8 @@ object ApiClient {
             .put("appearance", appearance)
             .put("bannedWords", bannedWords)
             .put("scenarioSteps", JSONArray(scenarioSteps))
+        val urlToUse = if (!avatarUrl.isNullOrBlank()) avatarUrl else "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name, "UTF-8")}&background=B47CFF&color=fff"
+        body.put("avatar_url", urlToUse)
         return request("POST", "/api/characters", body).getLong("id")
     }
 
@@ -736,7 +739,32 @@ object ApiClient {
             }
 
             client.newCall(requestBuilder.build()).execute().use { response ->
-                val responseText = response.body?.string().orEmpty()
+                var finalResponse = response
+                var responseText = finalResponse.body?.string().orEmpty()
+
+                if (finalResponse.code == 401) {
+                    val newToken = try {
+                        FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()?.token
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (!newToken.isNullOrBlank()) {
+                        firebaseIdToken = newToken
+                        requestBuilder.header("Authorization", "Bearer $newToken")
+                        finalResponse.close()
+                        finalResponse = client.newCall(requestBuilder.build()).execute()
+                        responseText = finalResponse.body?.string().orEmpty()
+                    }
+
+                    if (finalResponse.code == 401) {
+                        try {
+                            FirebaseAuth.getInstance().signOut()
+                        } catch (_: Exception) {}
+                        firebaseIdToken = null
+                        throw IOException("Erreur : Token invalide. Essaie de te reconnecter.")
+                    }
+                }
+
                 val json = try {
                     if (responseText.isBlank()) JSONObject() else JSONObject(responseText)
                 } catch (e: Exception) {
@@ -746,10 +774,10 @@ object ApiClient {
                     } else {
                         "Invalid server response (expected JSON, got: ${responseText.take(200)})"
                     }
-                    throw IOException("$errorMsg\nHTTP ${response.code}")
+                    throw IOException("$errorMsg\nHTTP ${finalResponse.code}")
                 }
-                if (!response.isSuccessful) {
-                    throw IOException(json.optString("error", "Erreur HTTP ${response.code}"))
+                if (!finalResponse.isSuccessful) {
+                    throw IOException(json.optString("error", "Erreur HTTP ${finalResponse.code}"))
                 }
                 json
             }
@@ -785,7 +813,7 @@ object ApiClient {
         id = getLong("id"),
         name = getString("name"),
         greeting = optString("greeting", "Salut !"),
-        avatarUrl = optString("avatarUrl").ifBlank { optString("avatar_url").ifBlank { null } },
+        avatarUrl = optString("avatar_url").ifBlank { optString("avatarUrl").ifBlank { null } },
         isNsfw = optBoolean("isNsfw", optInt("is_nsfw") != 0),
         likesCount = optInt("likesCount", optInt("likes_count")),
         creatorId = optLong("creatorId", optLong("creator_id")),

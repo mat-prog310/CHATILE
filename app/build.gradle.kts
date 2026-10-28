@@ -8,13 +8,14 @@ plugins {
 android {
     namespace = "com.chatile"
     compileSdk = 36
+    layout.buildDirectory.set(file("C:/ChatileBuild/app"))
 
     defaultConfig {
         applicationId = "com.chatile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.2"
+        versionCode = 8
+        versionName = "1.3"
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
@@ -65,6 +66,7 @@ android {
             // Keep debug info for development
             isMinifyEnabled = false
             isShrinkResources = false
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:3000\"")
         }
     }
 

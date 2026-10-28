@@ -181,6 +181,41 @@ fun IconAction(
 }
 
 @Composable
+fun IconAction(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    emphasized: Boolean = false,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier = modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(if (emphasized) MaterialTheme.colorScheme.primary else NightSurfaceRaised)
+            .border(1.dp, if (emphasized) MaterialTheme.colorScheme.primary else SubtleBorder, CircleShape)
+            .clickable(
+                enabled = enabled,
+                role = Role.Button,
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            )
+            .semantics { contentDescription = description },
+        contentAlignment = Alignment.Center,
+    ) {
+        androidx.compose.material3.Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(24.dp).clearAndSetSemantics { },
+        )
+    }
+}
+
+@Composable
 fun ActionPill(
     label: String,
     onClick: () -> Unit,

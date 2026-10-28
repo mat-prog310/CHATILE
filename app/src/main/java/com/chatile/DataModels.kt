@@ -340,7 +340,13 @@ data class PublicCharacter(
 )
 
 fun Character.effectiveAvatarUrl(): String {
-    if (!avatarUrl.isNullOrBlank()) return avatarUrl
+    val raw = avatarUrl
+    if (!raw.isNullOrBlank()) {
+        if (raw.contains("10.0.2.2")) {
+            return raw.replace("http://10.0.2.2:3000", "https://chatile.onrender.com")
+        }
+        return raw
+    }
     return when (name.lowercase().trim()) {
         "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
         "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
@@ -352,7 +358,13 @@ fun Character.effectiveAvatarUrl(): String {
 }
 
 fun PublicCharacter.effectiveAvatarUrl(): String {
-    if (!avatarUrl.isNullOrBlank()) return avatarUrl
+    val raw = avatarUrl
+    if (!raw.isNullOrBlank()) {
+        if (raw.contains("10.0.2.2")) {
+            return raw.replace("http://10.0.2.2:3000", "https://chatile.onrender.com")
+        }
+        return raw
+    }
     return when (name.lowercase().trim()) {
         "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
         "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"

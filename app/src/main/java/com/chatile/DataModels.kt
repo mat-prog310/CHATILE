@@ -64,7 +64,9 @@ data class Character(
     val expiresAt: String? = null,
     val relationshipLevel: Int = 0,
     val lastMood: String? = null,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val lastMessageAt: String? = null,
+    val messageCount: Int = 0
 )
 
 data class CharacterMemory(
@@ -348,11 +350,11 @@ fun Character.effectiveAvatarUrl(): String {
         return raw
     }
     return when (name.lowercase().trim()) {
-        "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
-        "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
-        "nova" -> "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop"
-        "sacha" -> "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop"
-        "mina" -> "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop"
+        "léa", "lea" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "kai" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Kai&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "nova" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Nova&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "sacha" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Sacha&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "mina" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Mina&backgroundColor=b6e3f4,c0aede,d1d4f9"
         else -> "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name.ifBlank { "Character" }, "UTF-8")}&background=B47CFF&color=fff&size=256"
     }
 }
@@ -366,11 +368,11 @@ fun PublicCharacter.effectiveAvatarUrl(): String {
         return raw
     }
     return when (name.lowercase().trim()) {
-        "léa", "lea" -> "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop"
-        "kai" -> "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
-        "nova" -> "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop"
-        "sacha" -> "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop"
-        "mina" -> "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop"
+        "léa", "lea" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "kai" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Kai&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "nova" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Nova&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "sacha" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Sacha&backgroundColor=b6e3f4,c0aede,d1d4f9"
+        "mina" -> "https://api.dicebear.com/7.x/avataaars/png?seed=Mina&backgroundColor=b6e3f4,c0aede,d1d4f9"
         else -> "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name.ifBlank { "Character" }, "UTF-8")}&background=B47CFF&color=fff&size=256"
     }
 }

@@ -75,8 +75,8 @@ fun CharacterListScreen(
     val pieces by vm.pieces.collectAsState()
     val characterOfTheDay by vm.characterOfTheDay.collectAsState()
     val error by vm.error.collectAsState()
-    val systemCharacters = characters.filter { it.isSystem }
-    val userCharacters = characters.filterNot { it.isSystem }
+    val recentBots = remember(characters) { characters.filter { !it.lastMessageAt.isNullOrBlank() || it.messageCount > 0 || !it.isSystem } }
+    val systemCharacters = remember(characters) { characters.filter { it.isSystem } }
     val motionEnabled = rememberMotionEnabled()
 
     LaunchedEffect(Unit) { vm.loadCharacters() }
@@ -181,14 +181,14 @@ fun CharacterListScreen(
                 )
             }
 
-            if (systemCharacters.isEmpty() && userCharacters.isEmpty()) {
+            if (recentBots.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 18.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("Une conversation à votre image", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+                    Text("Aucune conversation récente", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "Créez un personnage pour commencer une histoire qui se souvient de vous.",
+                        "Découvrez des personnages dans le catalogue ou créez le vôtre pour commencer à discuter !",
                         color = TextSecondary,
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -202,22 +202,11 @@ fun CharacterListScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                if (systemCharacters.isNotEmpty()) {
+                if (recentBots.isNotEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text("Découvrir", color = TextPrimary, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
+                        Text("Conversations récentes", color = TextPrimary, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
                     }
-                    itemsIndexed(systemCharacters, key = { _, character -> character.id ?: 0L }) { index, character ->
-                        CharacterTile(character, index, motionEnabled, {}, {
-                            vm.selectCharacter(character.id)
-                            onOpenChat(character.id ?: 0L)
-                        })
-                    }
-                }
-                if (userCharacters.isNotEmpty()) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text("Mes créations", color = TextPrimary, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp))
-                    }
-                    itemsIndexed(userCharacters, key = { _, character -> character.id ?: 0L }) { index, character ->
+                    itemsIndexed(recentBots, key = { _, character -> character.id ?: 0L }) { index, character ->
                         CharacterTile(character, index, motionEnabled, { character.id?.let { vm.deleteCharacter(it) } }, {
                             vm.selectCharacter(character.id)
                             onOpenChat(character.id ?: 0L)

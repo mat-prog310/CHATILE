@@ -1442,12 +1442,12 @@ app.post('/api/settings/nsfw', (req, res) => {
 });
 
 const OFFICIAL_AVATARS = {
-  'léa': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop',
-  'lea': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop',
-  'kai': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop',
-  'nova': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&auto=format&fit=crop',
-  'sacha': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop',
-  'mina': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop',
+  'léa': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
+  'lea': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
+  'kai': 'https://api.dicebear.com/7.x/avataaars/png?seed=Kai&backgroundColor=b6e3f4,c0aede,d1d4f9',
+  'nova': 'https://api.dicebear.com/7.x/avataaars/png?seed=Nova&backgroundColor=b6e3f4,c0aede,d1d4f9',
+  'sacha': 'https://api.dicebear.com/7.x/avataaars/png?seed=Sacha&backgroundColor=b6e3f4,c0aede,d1d4f9',
+  'mina': 'https://api.dicebear.com/7.x/avataaars/png?seed=Mina&backgroundColor=b6e3f4,c0aede,d1d4f9',
 };
 
 function formatCharacter(c, req) {
@@ -1490,12 +1490,14 @@ app.get('/api/characters', (req, res) => {
   const characters = db.prepare(`
     SELECT c.id, c.user_id, c.name, c.system_prompt, c.greeting, c.avatar_url, c.is_nsfw, c.is_public,
       COALESCE(state.relationship_level, c.relationship_level) AS relationship_level,
-      COALESCE(state.last_mood, c.last_mood, 'neutral') AS last_mood, c.is_system, c.scenario_goal
+      COALESCE(state.last_mood, c.last_mood, 'neutral') AS last_mood, c.is_system, c.scenario_goal,
+      (SELECT MAX(created_at) FROM messages m WHERE m.character_id = c.id AND m.user_id = ?) AS last_message_at,
+      (SELECT COUNT(*) FROM messages m WHERE m.character_id = c.id AND m.user_id = ?) AS message_count
     FROM characters c LEFT JOIN character_state state ON state.character_id = c.id AND state.user_id = ?
     WHERE c.user_id = ? OR c.is_system = 1
-    ORDER BY c.is_system DESC, c.created_at DESC, c.id DESC
-  `).all(req.user.id, req.user.id);
-  res.json({ characters: characters.map(formatCharacter) });
+    ORDER BY last_message_at DESC, c.is_system DESC, c.created_at DESC, c.id DESC
+  `).all(req.user.id, req.user.id, req.user.id, req.user.id);
+  res.json({ characters: characters.map((char) => formatCharacter(char, req)) });
 });
 
 app.get('/api/characters/:id/avatar-status', (req, res) => {

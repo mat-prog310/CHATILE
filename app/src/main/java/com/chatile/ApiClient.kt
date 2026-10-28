@@ -807,6 +807,8 @@ object ApiClient {
         relationshipLevel = optInt("relationship_level"),
         lastMood = optString("last_mood", "neutral"),
         createdAt = optString("created_at"),
+        lastMessageAt = optString("last_message_at").ifBlank { null },
+        messageCount = optInt("message_count", 0),
     )
 
     private fun JSONObject.toPublicCharacter() = com.chatile.PublicCharacter(

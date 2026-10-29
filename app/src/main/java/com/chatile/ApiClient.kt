@@ -372,6 +372,13 @@ object ApiClient {
     suspend fun createStoryManual(title: String, description: String, genre: String, nodes: JSONArray): JSONObject =
         request("POST", "/api/stories", JSONObject().put("title", title).put("description", description).put("genre", genre).put("nodes", nodes))
 
+    suspend fun openLootBox(): JSONObject = request("POST", "/api/loot-boxes/open")
+    suspend fun getLootPity(): JSONObject = request("GET", "/api/loot-boxes/pity")
+    suspend fun getInventory(): JSONArray = request("GET", "/api/inventory").getJSONArray("items")
+    suspend fun recycleItem(inventoryId: Long): JSONObject = request("POST", "/api/inventory/$inventoryId/recycle")
+    suspend fun equipItem(inventoryId: Long): JSONObject = request("POST", "/api/inventory/$inventoryId/equip")
+    suspend fun getPublicProfile(userId: Long): JSONObject = request("GET", "/api/users/$userId/public-profile")
+
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))
 
@@ -1011,11 +1018,16 @@ object ApiClient {
     private fun JSONObject.toUserProfile(): com.chatile.UserProfile {
         return com.chatile.UserProfile(
             id = optLong("id"),
-            userId = optLong("user_id"),
-            displayName = optString("display_name", ""),
+            userId = optLong("user_id", optLong("userId")),
+            displayName = optString("displayName", optString("display_name", "")),
             bio = optString("bio", ""),
-            avatarUrl = optString("avatar_url").ifBlank { null },
-            createdAt = optString("created_at")
+            avatarUrl = optString("avatarUrl", optString("avatar_url")).ifBlank { null },
+            badgeType = optString("badgeType", optString("badge_type")).ifBlank { null },
+            equippedTheme = optString("equippedTheme").ifBlank { null },
+            equippedTitle = optString("equippedTitle").ifBlank { null },
+            equippedFrame = optString("equippedFrame").ifBlank { null },
+            equippedEffect = optString("equippedEffect").ifBlank { null },
+            createdAt = optString("createdAt", optString("created_at"))
         )
     }
 

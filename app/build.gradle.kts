@@ -14,7 +14,7 @@ android {
         applicationId = "com.chatile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 12
+        versionCode = 13
         versionName = "1.4"
         buildConfigField(
             "String",

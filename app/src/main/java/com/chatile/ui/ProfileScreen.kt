@@ -58,12 +58,14 @@ fun ProfileScreen(
     onOpenShop: () -> Unit,
     onWatchAd: () -> Unit = {},
     onOpenAdmin: () -> Unit = {},
-    onOpenCreatorEarnings: () -> Unit = {}
+    onOpenCreatorEarnings: () -> Unit = {},
+    onOpenLootBoxes: () -> Unit = {},
+    onOpenInventory: () -> Unit = {},
+    onOpenPublicProfile: (Long) -> Unit = {}
 ) {
     val context = LocalContext.current
     val profile by vm.profile.collectAsState()
     val pieces by vm.pieces.collectAsState()
-    val characters by vm.characters.collectAsState()
     val dailyCanClaim by vm.dailyCanClaim.collectAsState()
     val todayReward by vm.todayReward.collectAsState()
     val streakDays by vm.streakDays.collectAsState()
@@ -72,17 +74,13 @@ fun ProfileScreen(
     val nsfw by vm.nsfwEnabled.collectAsState()
     val tier by vm.subscriptionTier.collectAsState()
     val expiresAt by vm.subscriptionExpiresAt.collectAsState()
-    val stats by vm.stats.collectAsState()
     val rewards by vm.rewards.collectAsState()
     val quests by vm.quests.collectAsState()
-    val piecesHistory by vm.piecesHistory.collectAsState()
     val referralCode by vm.referralCode.collectAsState()
     val creatorEarnings by vm.creatorEarnings.collectAsState()
     val error by vm.error.collectAsState()
-    var showStats by remember { mutableStateOf(false) }
     var showRewards by remember { mutableStateOf(false) }
     var showQuests by remember { mutableStateOf(false) }
-    var showHistory by remember { mutableStateOf(false) }
     var showCreatorEarnings by remember { mutableStateOf(false) }
     var referralInput by remember { mutableStateOf("") }
     var name by remember(profile) { mutableStateOf(profile?.displayName.orEmpty()) }
@@ -276,85 +274,17 @@ fun ProfileScreen(
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { showHistory = !showHistory; if (!showHistory) vm.loadPiecesHistory() }, modifier = Modifier.weight(1f)) { Text("Historique Pièces") }
-                OutlinedButton(onClick = vm::loadReferralCode, modifier = Modifier.weight(1f)) { Text("Parrainage") }
-            }
-            if (showHistory) {
-                Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    for (index in 0 until piecesHistory.length()) {
-                        val entry = piecesHistory.optJSONObject(index) ?: continue
-                        Text("${entry.optString("description")} · ${if (entry.optInt("amount") > 0) "+" else ""}${entry.optInt("amount")}", color = TextSecondary)
-                    }
-                }
-            }
+            OutlinedButton(onClick = vm::loadReferralCode, modifier = Modifier.fillMaxWidth()) { Text("Parrainage") }
             referralCode?.let { code ->
                 Text("Ton code : $code", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
                 TextField(value = referralInput, onValueChange = { referralInput = it }, label = { Text("Code reçu") }, modifier = Modifier.fillMaxWidth(), colors = profileFieldColors(), singleLine = true)
                 OutlinedButton(onClick = { vm.applyReferral(referralInput) }, enabled = referralInput.isNotBlank()) { Text("Utiliser un code") }
             }
+
             OutlinedButton(
-                onClick = { if (!showStats) vm.loadStats(); showStats = !showStats },
+                onClick = { onOpenPublicProfile(profile?.id ?: profile?.userId ?: 1L) },
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text(if (showStats) "Masquer mes stats" else "Mes stats") }
-            if (showStats) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text("${stats?.totalMessages ?: 0} messages échangés", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
-                    Text("Personnage préféré : ${stats?.preferredCharacter ?: "Pas encore déterminé"}", color = TextSecondary)
-                    stats?.messagesByCharacter?.forEach { row ->
-                        Text("${row.characterName} · ${row.messageCount} messages", color = TextSecondary)
-                    }
-                }
-            }
-            
-            var showPublicCharacters by remember { mutableStateOf(false) }
-            
-            OutlinedButton(
-                onClick = {
-                    if (!showPublicCharacters) {
-                        showPublicCharacters = true
-                        vm.loadCharacters()
-                    } else {
-                        showPublicCharacters = false
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text(if (showPublicCharacters) "Masquer mes personnages" else "Mes personnages") }
-            
-            if (showPublicCharacters) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text("Mes personnages", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
-                    val userCharacters = characters.filter { it.userId != null && !it.isSystem }
-                    if (userCharacters.isEmpty()) {
-                        Text("Aucune création pour le moment", color = TextSecondary)
-                    } else {
-                        userCharacters.forEach { character ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    "${character.name} · ${if (character.isPublic) "Public" else "Privé"}",
-                                    color = TextPrimary,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                OutlinedButton(
-                                    onClick = { 
-                                        val id = character.id ?: return@OutlinedButton
-                                        if (character.isPublic) vm.unpublishCharacter(id) else vm.publishCharacter(id)
-                                    }
-                                ) { Text(if (character.isPublic) "Dépublier" else "Publier") }
-                            }
-                        }
-                    }
-                }
-            }
+            ) { Text("Voir mon profil public") }
             OutlinedButton(
                 onClick = {
                     if (!showCreatorEarnings) {
@@ -427,6 +357,16 @@ fun ProfileScreen(
                     }
                 }
             }
+
+            OutlinedButton(
+                onClick = onOpenLootBoxes,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Coffres Mystères (300 Pièces)") }
+
+            OutlinedButton(
+                onClick = onOpenInventory,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Mon Inventaire & Équipement") }
 
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(horizontal = 16.dp, vertical = 10.dp),

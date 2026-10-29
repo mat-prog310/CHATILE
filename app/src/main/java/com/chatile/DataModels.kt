@@ -37,7 +37,11 @@ data class UserProfile(
     val role: String = "user",
     val isCurrentUser: Boolean = false,
     val isFollowing: Boolean = false,
-    val createdAt: String? = null
+    val createdAt: String? = null,
+    val equippedTheme: String? = null,
+    val equippedTitle: String? = null,
+    val equippedFrame: String? = null,
+    val equippedEffect: String? = null,
 )
 
 // Character models

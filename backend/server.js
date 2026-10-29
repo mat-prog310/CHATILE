@@ -293,6 +293,36 @@ db.exec(`
     duration_seconds INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS loot_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    type TEXT NOT NULL CHECK (type IN ('title', 'frame', 'avatar_effect', 'theme')),
+    rarity TEXT NOT NULL CHECK (rarity IN ('commun', 'rare', 'epique', 'legendaire')),
+    value_pieces INTEGER NOT NULL,
+    image_url TEXT,
+    is_tradeable INTEGER DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS user_inventory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    item_id INTEGER NOT NULL REFERENCES loot_items(id) ON DELETE CASCADE,
+    is_equipped INTEGER DEFAULT 0,
+    obtained_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, item_id)
+  );
+  CREATE TABLE IF NOT EXISTS user_pity_counter (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    boxes_opened_since_legendary INTEGER DEFAULT 0,
+    total_boxes_opened INTEGER DEFAULT 0
+  );
+  CREATE TABLE IF NOT EXISTS loot_boxes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rarity TEXT NOT NULL,
+    item_id INTEGER REFERENCES loot_items(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
   CREATE TABLE IF NOT EXISTS stories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -448,6 +478,49 @@ for (const quest of [
   ['Explorateur', 'Découvrir 5 personnages.', 5, 200, 'characters'],
   ['Collectionneur', 'Garder une série de 7 jours.', 7, 150, 'streak'],
 ]) seedQuest.run(...quest);
+
+const seedLootItems = [
+  ['Novice', 'Débute sa légende sur CHATILE', 'title', 'commun', 10],
+  ['Curieux', 'Toujours à l’affût de nouvelles histoires', 'title', 'commun', 10],
+  ['Bavard', 'Ne s’arrête jamais de discuter', 'title', 'commun', 10],
+  ['Conteur', 'Maître des mots et des récits', 'title', 'rare', 20],
+  ['Explorateur', 'A parcouru tous les univers', 'title', 'rare', 20],
+  ['Poète', 'L’art de la belle phrase', 'title', 'rare', 20],
+  ['Maître', 'Un esprit brillant et aguerri', 'title', 'epique', 35],
+  ['Oracle', 'Prévoit chaque rebondissement', 'title', 'epique', 35],
+  ['Légende', 'Son nom résonne partout', 'title', 'epique', 35],
+  ['Élu de CHATILE', 'Touché par la grâce divine', 'title', 'legendaire', 50],
+  ['Mythe Vivant', 'Au-delà de la légende', 'title', 'legendaire', 50],
+  ['Cadre de Bois', 'Bordure marron simple et robuste', 'frame', 'commun', 10],
+  ['Cadre de Fer', 'Bordure grise métallique', 'frame', 'commun', 10],
+  ['Cadre de Glace', 'Bordure bleue avec effet givré', 'frame', 'rare', 20],
+  ['Cadre de Cristal', 'Bordure blanche translucide', 'frame', 'rare', 20],
+  ['Cadre d’Ombre', 'Bordure noire avec brume violette', 'frame', 'epique', 35],
+  ['Cadre d’Éclairs', 'Bordure électrique crépitante', 'frame', 'epique', 35],
+  ['Braise Éternelle', 'Bordure rouge incandescente avec flammes animées', 'frame', 'legendaire', 50],
+  ['Aurore Éternelle', 'Bordure dorée étincelante avec rayons lumineux', 'frame', 'legendaire', 50],
+  ['Poussière d’Étoiles', 'Petites étoiles scintillantes autour de l’avatar', 'avatar_effect', 'rare', 20],
+  ['Feuilles d’Automne', 'Feuilles tourbillonnantes', 'avatar_effect', 'rare', 20],
+  ['Aura Violette', 'Halo lumineux pulsant', 'avatar_effect', 'epique', 35],
+  ['Éclats de Verre', 'Fragments cristallins en lévitation', 'avatar_effect', 'epique', 35],
+  ['Ange Déchu', 'Flammes ténébreuses et mystiques', 'avatar_effect', 'legendaire', 50],
+  ['Aurore', 'Rayons de lumière dorée divins', 'avatar_effect', 'legendaire', 50],
+  ['Noir Pur', 'Fond sombre minimaliste', 'theme', 'commun', 10],
+  ['Gris Anthracite', 'Fond gris élégant', 'theme', 'commun', 10],
+  ['Bleu Nuit', 'Teintes nocturnes apaisantes', 'theme', 'rare', 20],
+  ['Vert Forêt', 'Inspiré par la nature', 'theme', 'rare', 20],
+  ['Violet Profond', 'Le thème emblématique de CHATILE', 'theme', 'epique', 35],
+  ['Rouge Sang', 'Ambiance ténébreuse et intense', 'theme', 'epique', 35],
+  ['Aurore Éternelle', 'Dégradé doré luxueux et animé', 'theme', 'legendaire', 50],
+  ['Braise Éternelle', 'Fond rouge ardent avec braises montantes', 'theme', 'legendaire', 50],
+];
+const insertLootItem = db.prepare(`
+  INSERT OR IGNORE INTO loot_items (name, description, type, rarity, value_pieces)
+  VALUES (?, ?, ?, ?, ?)
+`);
+for (const item of seedLootItems) {
+  insertLootItem.run(...item);
+}
 
 // Create official admin account
 const adminUser = db.prepare(`
@@ -996,9 +1069,33 @@ app.get('/api/profile', (req, res) => {
   const profile = db.prepare(
     'SELECT display_name AS displayName, bio, avatar_url AS avatarUrl FROM profiles WHERE user_id = ?',
   ).get(req.user.id);
+
+  const equipped = db.prepare(`
+    SELECT li.type, li.name FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.user_id = ? AND ui.is_equipped = 1
+  `).all(req.user.id);
+
+  let equippedTheme = 'Violet Profond';
+  let equippedTitle = null;
+  let equippedFrame = null;
+  let equippedEffect = null;
+  for (const item of equipped) {
+    if (item.type === 'theme') equippedTheme = item.name;
+    if (item.type === 'title') equippedTitle = item.name;
+    if (item.type === 'frame') equippedFrame = item.name;
+    if (item.type === 'avatar_effect') equippedEffect = item.name;
+  }
+
   res.json({
+    id: req.user.id,
+    userId: req.user.id,
     ...(profile || {}),
     role: req.user.role,
+    equippedTheme,
+    equippedTitle,
+    equippedFrame,
+    equippedEffect,
   });
 });
 
@@ -4006,6 +4103,212 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     premiumUsers,
     dailyActive,
     piecesDistributed
+  });
+});
+
+// ==================== LOOT BOXES & INVENTORY ROUTES ====================
+
+// Get Pity Counter
+app.get('/api/loot-boxes/pity', (req, res) => {
+  db.prepare('INSERT OR IGNORE INTO user_pity_counter (user_id, boxes_opened_since_legendary, total_boxes_opened) VALUES (?, 0, 0)').run(req.user.id);
+  const pity = db.prepare('SELECT boxes_opened_since_legendary, total_boxes_opened FROM user_pity_counter WHERE user_id = ?').get(req.user.id);
+  res.json({
+    boxesOpenedSinceLegendary: pity.boxes_opened_since_legendary,
+    totalBoxesOpened: pity.total_boxes_opened,
+    pityBoxesLeft: Math.max(0, 500 - pity.boxes_opened_since_legendary),
+  });
+});
+
+// Open Loot Box (300 Pièces)
+app.post('/api/loot-boxes/open', (req, res) => {
+  const cost = 300;
+  const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  if (!user || user.pieces < cost) {
+    return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: cost, currentPieces: user?.pieces || 0 });
+  }
+
+  db.prepare('INSERT OR IGNORE INTO user_pity_counter (user_id, boxes_opened_since_legendary, total_boxes_opened) VALUES (?, 0, 0)').run(req.user.id);
+  let pity = db.prepare('SELECT * FROM user_pity_counter WHERE user_id = ?').get(req.user.id);
+
+  let rarity = 'commun';
+  const rand = Math.random() * 100;
+  if (pity.boxes_opened_since_legendary >= 500 || rand <= 0.1) {
+    rarity = 'legendaire';
+  } else if (rand <= 10.0) {
+    rarity = 'epique';
+  } else if (rand <= 40.0) {
+    rarity = 'rare';
+  } else {
+    rarity = 'commun';
+  }
+
+  const itemsOfRarity = db.prepare('SELECT * FROM loot_items WHERE rarity = ?').all(rarity);
+  if (itemsOfRarity.length === 0) return res.status(500).json({ error: 'Catalogue d’items vide.' });
+  const selectedItem = itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
+
+  const openTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
+    recordPieceTransaction(req.user.id, -cost, 'loot_box', 'Ouverture de Coffre Mystère');
+
+    if (rarity === 'legendaire') {
+      db.prepare('UPDATE user_pity_counter SET boxes_opened_since_legendary = 0, total_boxes_opened = total_boxes_opened + 1 WHERE user_id = ?').run(req.user.id);
+    } else {
+      db.prepare('UPDATE user_pity_counter SET boxes_opened_since_legendary = boxes_opened_since_legendary + 1, total_boxes_opened = total_boxes_opened + 1 WHERE user_id = ?').run(req.user.id);
+    }
+
+    const existing = db.prepare('SELECT id FROM user_inventory WHERE user_id = ? AND item_id = ?').get(req.user.id, selectedItem.id);
+    let isNew = false;
+    let compensation = 0;
+
+    if (existing) {
+      isNew = false;
+      compensation = selectedItem.value_pieces;
+      db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(compensation, req.user.id);
+      recordPieceTransaction(req.user.id, compensation, 'loot_box_duplicate', `Compensation doublon : ${selectedItem.name}`);
+    } else {
+      isNew = true;
+      db.prepare('INSERT INTO user_inventory (user_id, item_id) VALUES (?, ?)').run(req.user.id, selectedItem.id);
+    }
+
+    db.prepare('INSERT INTO loot_boxes (user_id, rarity, item_id) VALUES (?, ?, ?)').run(req.user.id, rarity, selectedItem.id);
+
+    return { isNew, compensation, item: selectedItem };
+  });
+
+  const result = openTrans();
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+
+  res.json({
+    ...result,
+    pieces: updatedUser.pieces,
+    pityBoxesLeft: Math.max(0, 500 - (db.prepare('SELECT boxes_opened_since_legendary FROM user_pity_counter WHERE user_id = ?').get(req.user.id).boxes_opened_since_legendary)),
+  });
+});
+
+// Get user inventory
+app.get('/api/inventory', (req, res) => {
+  const items = db.prepare(`
+    SELECT ui.id as inventoryId, ui.is_equipped as isEquipped, ui.obtained_at as obtainedAt,
+           li.id as itemId, li.name, li.description, li.type, li.rarity, li.value_pieces as valuePieces, li.image_url as imageUrl
+    FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.user_id = ?
+    ORDER BY li.type, li.rarity DESC
+  `).all(req.user.id);
+
+  res.json({ items });
+});
+
+// Recycle item
+app.post('/api/inventory/:inventoryId/recycle', (req, res) => {
+  const invId = Number(req.params.inventoryId);
+  const invItem = db.prepare(`
+    SELECT ui.*, li.value_pieces, li.name FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.id = ? AND ui.user_id = ?
+  `).get(invId, req.user.id);
+
+  if (!invItem) return res.status(404).json({ error: 'Item introuvable dans votre inventaire.' });
+  if (invItem.is_equipped === 1) return res.status(400).json({ error: 'Impossible de recycler un item actuellement équipé.' });
+
+  const recycleTrans = db.transaction(() => {
+    db.prepare('DELETE FROM user_inventory WHERE id = ?').run(invId);
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(invItem.value_pieces, req.user.id);
+    recordPieceTransaction(req.user.id, invItem.value_pieces, 'recycle', `Recyclage de l'item ${invItem.name}`);
+  });
+
+  recycleTrans();
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+
+  res.json({ success: true, piecesEarned: invItem.value_pieces, newBalance: updatedUser.pieces });
+});
+
+// Equip / Unequip item
+app.post('/api/inventory/:inventoryId/equip', (req, res) => {
+  const invId = Number(req.params.inventoryId);
+  const invItem = db.prepare(`
+    SELECT ui.*, li.type, li.name FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.id = ? AND ui.user_id = ?
+  `).get(invId, req.user.id);
+
+  if (!invItem) return res.status(404).json({ error: 'Item introuvable.' });
+
+  const equipTrans = db.transaction(() => {
+    if (invItem.is_equipped === 1) {
+      db.prepare('UPDATE user_inventory SET is_equipped = 0 WHERE id = ?').run(invId);
+      if (invItem.type === 'theme') {
+        db.prepare("UPDATE users SET theme = 'violet' WHERE id = ?").run(req.user.id);
+      }
+    } else {
+      db.prepare(`
+        UPDATE user_inventory SET is_equipped = 0
+        WHERE user_id = ? AND item_id IN (SELECT id FROM loot_items WHERE type = ?)
+      `).run(req.user.id, invItem.type);
+      db.prepare('UPDATE user_inventory SET is_equipped = 1 WHERE id = ?').run(invId);
+      if (invItem.type === 'theme') {
+        const nameLower = invItem.name.toLowerCase();
+        const themeCode = nameLower.includes('noir') ? 'dark' :
+                          nameLower.includes('bleu') ? 'midnight' :
+                          nameLower.includes('rouge') ? 'blood' :
+                          nameLower.includes('vert') ? 'forest' : 'violet';
+        db.prepare('UPDATE users SET theme = ? WHERE id = ?').run(themeCode, req.user.id);
+      }
+    }
+  });
+
+  equipTrans();
+  const updatedUser = db.prepare('SELECT theme FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, isEquipped: invItem.is_equipped === 0, theme: updatedUser.theme });
+});
+
+// Public user profile with equipped cosmetics
+function formatUser(u, req) {
+  if (!u) return null;
+  const profile = db.prepare('SELECT display_name, bio, avatar_url FROM profiles WHERE user_id = ?').get(u.id);
+  const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  let avatar = profile?.avatar_url || u.avatar_url;
+  if (avatar && !avatar.startsWith('http')) {
+    avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+  }
+  return {
+    id: u.id,
+    displayName: profile?.display_name || u.display_name || u.username || 'Utilisateur',
+    username: u.username,
+    bio: profile?.bio || u.bio || '',
+    avatarUrl: avatar,
+    badgeType: u.badge_type,
+    role: u.role,
+    createdAt: u.created_at,
+  };
+}
+
+app.get('/api/users/:id/public-profile', (req, res) => {
+  const userId = Number(req.params.id);
+  const user = db.prepare(`
+    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at
+    FROM users u WHERE u.id = ?
+  `).get(userId);
+
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+
+  const equippedItems = db.prepare(`
+    SELECT li.type, li.name, li.description, li.rarity, li.image_url
+    FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.user_id = ? AND ui.is_equipped = 1
+  `).all(userId);
+
+  const characters = db.prepare('SELECT * FROM characters WHERE user_id = ? AND is_public = 1 AND is_system = 0').all(userId);
+  const stories = db.prepare('SELECT * FROM stories WHERE user_id = ? AND is_public = 1 AND status = \'published\'').all(userId);
+  const totalEarnings = db.prepare('SELECT COALESCE(SUM(amount), 0) AS sum FROM creator_transactions WHERE creator_id = ?').get(userId).sum;
+
+  res.json({
+    user: formatUser(user, req),
+    equippedItems,
+    characters: characters.map((c) => formatCharacter(c, req)),
+    stories: stories.map((s) => formatStory(s, req)),
+    totalEarnings,
   });
 });
 

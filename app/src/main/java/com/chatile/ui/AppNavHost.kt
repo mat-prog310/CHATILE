@@ -30,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,23 +92,26 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
             isLoggedIn = true
         })
     } else {
-        ChatileScreenBackground {
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                containerColor = Color.Transparent,
-                bottomBar = {
-                    if (currentRoute != "chat/{characterId}") {
-                        CustomBottomNavigationBar(navController = navController)
+        val profile by viewModel.profile.collectAsState()
+        androidx.compose.runtime.CompositionLocalProvider(com.chatile.ui.theme.LocalEquippedTheme provides profile?.equippedTheme) {
+            ChatileScreenBackground {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Transparent,
+                    bottomBar = {
+                        if (currentRoute != "chat/{characterId}") {
+                            CustomBottomNavigationBar(navController = navController)
+                        }
                     }
+                ) { paddingValues ->
+                    NavGraph(
+                        navController = navController,
+                        viewModel = viewModel,
+                        onWatchAd = onWatchAd,
+                        onPurchase = onPurchase,
+                        modifier = Modifier.padding(paddingValues)
+                    )
                 }
-            ) { paddingValues ->
-                NavGraph(
-                    navController = navController,
-                    viewModel = viewModel,
-                    onWatchAd = onWatchAd,
-                    onPurchase = onPurchase,
-                    modifier = Modifier.padding(paddingValues)
-                )
             }
         }
     }
@@ -266,8 +270,47 @@ fun NavGraph(
                 onOpenShop = { navController.navigate("shop") },
                 onWatchAd = onWatchAd,
                 onOpenAdmin = { navController.navigate("admin") },
-                onOpenCreatorEarnings = { navController.navigate("creator_earnings") }
+                onOpenCreatorEarnings = { navController.navigate("creator_earnings") },
+                onOpenLootBoxes = { navController.navigate("loot_boxes") },
+                onOpenInventory = { navController.navigate("inventory") },
+                onOpenPublicProfile = { userId -> navController.navigate("public_profile/$userId") }
             )
+        }
+
+        // Loot Boxes
+        composable("loot_boxes") {
+            LootBoxScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onOpenOpening = { navController.navigate("loot_opening") }
+            )
+        }
+
+        composable("loot_opening") {
+            LootBoxOpeningScreen(
+                vm = viewModel,
+                onDone = { navController.popBackStack() }
+            )
+        }
+
+        // Inventory
+        composable("inventory") {
+            InventoryScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Public Profile
+        composable("public_profile/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")?.toLongOrNull()
+            if (userId != null) {
+                PublicProfileScreen(
+                    userId = userId,
+                    vm = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // Creator Earnings

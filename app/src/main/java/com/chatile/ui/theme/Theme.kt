@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,14 +53,30 @@ fun PiecesTheme(theme: String = "noir_pur", content: @Composable () -> Unit) {
     )
 }
 
+val LocalEquippedTheme = compositionLocalOf<String?> { null }
+
 @Composable
 fun ChatileScreenBackground(content: @Composable () -> Unit) {
+    val equippedTheme = LocalEquippedTheme.current
+    val nameLower = equippedTheme?.lowercase() ?: ""
+    val colors = when {
+        nameLower.contains("noir") -> listOf(Color(0xFF0A0A0A), Color(0xFF000000))
+        nameLower.contains("gris") || nameLower.contains("anthracite") -> listOf(Color(0xFF2C2C2C), Color(0xFF161616))
+        nameLower.contains("bleu") || nameLower.contains("nuit") -> listOf(Color(0xFF0A1128), Color(0xFF030712))
+        nameLower.contains("vert") || nameLower.contains("forêt") -> listOf(Color(0xFF0B2215), Color(0xFF040C07))
+        nameLower.contains("rouge") || nameLower.contains("sang") -> listOf(Color(0xFF330A0A), Color(0xFF120303))
+        nameLower.contains("aurore") -> listOf(Color(0xFF33270A), Color(0xFF120E03))
+        nameLower.contains("braise") -> listOf(Color(0xFF33140A), Color(0xFF120503))
+        nameLower.contains("violet") || nameLower.contains("profond") -> listOf(Color(0xFF24143D), Color(0xFF0E071A))
+        else -> listOf(Color(0xFF1A0F2E), ChatileBackground)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.radialGradient(
-                    colors = listOf(Color(0xFF1A0F2E), ChatileBackground),
+                    colors = colors,
                     radius = 1200f
                 )
             )

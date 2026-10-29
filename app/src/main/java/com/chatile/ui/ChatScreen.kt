@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Call
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Psychology
@@ -114,6 +115,7 @@ fun ChatScreen(
     onBuy: (String) -> Unit,
     onWatchAd: () -> Unit,
     onShowInterstitial: () -> Unit,
+    onStartVoiceCall: (Long) -> Unit = {},
 ) {
     val messages by vm.messages.collectAsState()
     val pieces by vm.pieces.collectAsState()
@@ -137,6 +139,7 @@ fun ChatScreen(
     var showMemory by remember { mutableStateOf(false) }
     var showEditCharacterSheet by remember { mutableStateOf(false) }
     var showBackgroundSheet by remember { mutableStateOf(false) }
+    var showPremiumVoiceModal by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val prefs = remember(context, activeCharacterId) {
@@ -258,6 +261,13 @@ fun ChatScreen(
                     avatarUrl = avatarUrl,
                     pieces = pieces,
                     onBack = onBack,
+                    onVoiceCall = {
+                        if (subscriptionTier != "free") {
+                            activeCharacterId?.let { onStartVoiceCall(it) }
+                        } else {
+                            showPremiumVoiceModal = true
+                        }
+                    },
                     onEditCharacter = { showEditCharacterSheet = true },
                     onBackgroundSettings = { showBackgroundSheet = true },
                     onMemory = {
@@ -366,6 +376,13 @@ fun ChatScreen(
             onDismiss = { showBackgroundSheet = false }
         )
     }
+
+    if (showPremiumVoiceModal) {
+        VoiceCallPremiumBottomSheet(
+            onOpenShop = { showPremiumVoiceModal = false; onBuy("sub_premium_monthly") },
+            onDismiss = { showPremiumVoiceModal = false }
+        )
+    }
 }
 
 @Composable
@@ -375,6 +392,7 @@ private fun ChatHeader(
     avatarUrl: String?,
     pieces: Int,
     onBack: () -> Unit,
+    onVoiceCall: () -> Unit,
     onEditCharacter: () -> Unit,
     onBackgroundSettings: () -> Unit,
     onMemory: () -> Unit,
@@ -443,6 +461,7 @@ private fun ChatHeader(
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+            IconAction(Icons.Outlined.Call, "Appel vocal", onVoiceCall)
             IconAction(Icons.Outlined.Edit, "Modifier le personnage", onEditCharacter)
             IconAction(Icons.Outlined.PhotoCamera, "Arrière-plan", onBackgroundSettings)
             if (name != "Assistant IA") {
@@ -587,6 +606,48 @@ private fun BackgroundBottomSheet(
                 Text("Image personnalisée (avec flou et overlay)")
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VoiceCallPremiumBottomSheet(
+    onOpenShop: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = NightSurface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Appels Vocaux Premium",
+                color = TextPrimary,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Les appels vocaux en direct sont réservés aux abonnés Premium. Profite de 30 à 60 minutes de conversation vocale quotidienne avec tes personnages préférés.",
+                color = TextSecondary,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Button(
+                onClick = onOpenShop,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Découvrir les offres Premium")
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

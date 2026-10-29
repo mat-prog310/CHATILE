@@ -376,3 +376,34 @@ fun PublicCharacter.effectiveAvatarUrl(): String {
         else -> "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name.ifBlank { "Character" }, "UTF-8")}&background=B47CFF&color=fff&size=256"
     }
 }
+
+// Story Models
+data class Story(
+    val id: Long,
+    val userId: Long,
+    val characterId: Long? = null,
+    val title: String,
+    val description: String = "",
+    val genre: String = "Aventure",
+    val coverImage: String? = null,
+    val isPublic: Boolean = true,
+    val status: String = "published",
+    val playsCount: Int = 0,
+    val creatorEarnings: Int = 0,
+    val createdAt: String? = null
+)
+
+data class StoryNodeChoice(
+    val id: Long,
+    val text: String,
+    val targetNodeId: Long?
+)
+
+data class StoryNode(
+    val id: Long,
+    val storyId: Long,
+    val content: String,
+    val nodeType: String,
+    val isEnding: Boolean,
+    val choices: List<StoryNodeChoice> = emptyList()
+)

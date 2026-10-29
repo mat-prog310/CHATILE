@@ -53,7 +53,13 @@ import com.chatile.ui.theme.TextSecondary
 import com.chatile.ui.theme.VioletAccent
 
 @Composable
-fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Unit = {}, onOpenAdmin: () -> Unit = {}) {
+fun ProfileScreen(
+    vm: ChatViewModel,
+    onOpenShop: () -> Unit,
+    onWatchAd: () -> Unit = {},
+    onOpenAdmin: () -> Unit = {},
+    onOpenCreatorEarnings: () -> Unit = {}
+) {
     val context = LocalContext.current
     val profile by vm.profile.collectAsState()
     val pieces by vm.pieces.collectAsState()
@@ -71,11 +77,13 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Un
     val quests by vm.quests.collectAsState()
     val piecesHistory by vm.piecesHistory.collectAsState()
     val referralCode by vm.referralCode.collectAsState()
+    val creatorEarnings by vm.creatorEarnings.collectAsState()
     val error by vm.error.collectAsState()
     var showStats by remember { mutableStateOf(false) }
     var showRewards by remember { mutableStateOf(false) }
     var showQuests by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
+    var showCreatorEarnings by remember { mutableStateOf(false) }
     var referralInput by remember { mutableStateOf("") }
     var name by remember(profile) { mutableStateOf(profile?.displayName.orEmpty()) }
     var bio by remember(profile) { mutableStateOf(profile?.bio.orEmpty()) }
@@ -347,6 +355,79 @@ fun ProfileScreen(vm: ChatViewModel, onOpenShop: () -> Unit, onWatchAd: () -> Un
                     }
                 }
             }
+            OutlinedButton(
+                onClick = {
+                    if (!showCreatorEarnings) {
+                        showCreatorEarnings = true
+                        vm.loadCreatorEarnings()
+                    } else {
+                        showCreatorEarnings = false
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text(if (showCreatorEarnings) "Masquer mes revenus créateur" else "Mes revenus créateur") }
+
+            if (showCreatorEarnings) {
+                val totalEarnings = creatorEarnings?.optInt("totalEarnings", 0) ?: 0
+                val characterEarnings = creatorEarnings?.optInt("characterEarnings", 0) ?: 0
+                val storyEarnings = creatorEarnings?.optInt("storyEarnings", 0) ?: 0
+                val transactions = creatorEarnings?.optJSONArray("recentTransactions") ?: org.json.JSONArray()
+
+                Column(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text("Mes Revenus Créateur", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Total gagné", color = TextSecondary)
+                        Text("$totalEarnings Pièces", color = VioletAccent, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Personnages", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        Text("+$characterEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Histoires", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        Text("+$storyEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    OutlinedButton(
+                        onClick = onOpenCreatorEarnings,
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                    ) {
+                        Text("Classement & Détails complets")
+                    }
+
+                    if (transactions.length() > 0) {
+                        Text("Dernières ventes", color = TextPrimary, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
+                        for (i in 0 until minOf(transactions.length(), 5)) {
+                            val item = transactions.optJSONObject(i) ?: continue
+                            val description = item.optString("description", "")
+                            val amount = item.optInt("amount", 0)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(description, color = TextSecondary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                                Text("+$amount", color = VioletAccent, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,

@@ -147,7 +147,7 @@ object ApiClient {
         bannedWords: String = "",
         scenarioSteps: List<String> = emptyList(),
         avatarUrl: String? = null,
-    ): Long {
+    ): JSONObject {
         val body = JSONObject()
             .put("name", name)
             .put("systemPrompt", prompt)
@@ -161,7 +161,7 @@ object ApiClient {
             .put("scenarioSteps", JSONArray(scenarioSteps))
         val urlToUse = if (!avatarUrl.isNullOrBlank()) avatarUrl else "https://ui-avatars.com/api/?name=${java.net.URLEncoder.encode(name, "UTF-8")}&background=B47CFF&color=fff"
         body.put("avatar_url", urlToUse)
-        return request("POST", "/api/characters", body).getLong("id")
+        return request("POST", "/api/characters", body)
     }
 
     suspend fun listCharacters(): List<Character> {
@@ -289,6 +289,88 @@ object ApiClient {
     suspend fun getWidgetData(): JSONObject = request("GET", "/api/widget-data")
 
     suspend fun getCharacterOfTheDay(): JSONObject = request("GET", "/api/character-of-the-day")
+
+    suspend fun getCreatorEarnings(): JSONObject = request("GET", "/api/creator/earnings")
+
+    suspend fun getCreatorLeaderboard(): JSONObject = request("GET", "/api/creator/leaderboard")
+
+    suspend fun startVoiceCall(characterId: Long): JSONObject =
+        request("POST", "/api/voice-call/start", JSONObject().put("characterId", characterId))
+
+    suspend fun endVoiceCall(callId: Long, durationSeconds: Int): JSONObject =
+        request("POST", "/api/voice-call/end", JSONObject().put("callId", callId).put("durationSeconds", durationSeconds))
+
+    suspend fun transcribeVoice(text: String): JSONObject =
+        request("POST", "/api/voice-call/transcribe", JSONObject().put("text", text))
+
+    suspend fun speakVoice(text: String, characterId: Long): JSONObject =
+        request("POST", "/api/voice-call/speak", JSONObject().put("text", text).put("characterId", characterId))
+
+    // ========== Stories Features ==========
+
+    private fun JSONObject.toStory(): Story = Story(
+        id = getLong("id"),
+        userId = optLong("userId", optLong("user_id")),
+        characterId = optLong("characterId").takeIf { it != 0L },
+        title = getString("title"),
+        description = optString("description", ""),
+        genre = optString("genre", "Aventure"),
+        coverImage = optString("coverImage").ifBlank { optString("cover_image").ifBlank { null } },
+        isPublic = optBoolean("isPublic", optInt("is_public") != 0),
+        status = optString("status", "published"),
+        playsCount = optInt("playsCount", optInt("plays_count")),
+        creatorEarnings = optInt("creatorEarnings", optInt("creator_earnings")),
+        createdAt = optString("createdAt", optString("created_at")),
+    )
+
+    fun JSONObject.toStoryNode(): StoryNode {
+        val choicesJson = optJSONArray("choices") ?: JSONArray()
+        val choicesList = buildList {
+            for (i in 0 until choicesJson.length()) {
+                val c = choicesJson.getJSONObject(i)
+                add(StoryNodeChoice(
+                    id = c.getLong("id"),
+                    text = c.getString("text"),
+                    targetNodeId = c.optLong("targetNodeId").takeIf { it != 0L }
+                ))
+            }
+        }
+        return StoryNode(
+            id = getLong("id"),
+            storyId = optLong("storyId"),
+            content = getString("content"),
+            nodeType = optString("nodeType", "scene"),
+            isEnding = optBoolean("isEnding", false),
+            choices = choicesList
+        )
+    }
+
+    suspend fun getPublicStories(): List<Story> {
+        val json = request("GET", "/api/stories/public")
+        val array = json.getJSONArray("stories")
+        return buildList { for (i in 0 until array.length()) add(array.getJSONObject(i).toStory()) }
+    }
+
+    suspend fun getMyStories(): List<Story> {
+        val json = request("GET", "/api/stories/my")
+        val array = json.getJSONArray("stories")
+        return buildList { for (i in 0 until array.length()) add(array.getJSONObject(i).toStory()) }
+    }
+
+    suspend fun playStory(storyId: Long): JSONObject =
+        request("POST", "/api/stories/$storyId/play")
+
+    suspend fun replayStory(storyId: Long, method: String): JSONObject =
+        request("POST", "/api/stories/$storyId/replay", JSONObject().put("method", method))
+
+    suspend fun makeStoryChoice(sessionId: Long, choiceId: Long): JSONObject =
+        request("POST", "/api/stories/session/$sessionId/choice", JSONObject().put("choiceId", choiceId))
+
+    suspend fun generateStory(prompt: String, genre: String): JSONObject =
+        request("POST", "/api/stories/generate", JSONObject().put("prompt", prompt).put("genre", genre))
+
+    suspend fun createStoryManual(title: String, description: String, genre: String, nodes: JSONArray): JSONObject =
+        request("POST", "/api/stories", JSONObject().put("title", title).put("description", description).put("genre", genre).put("nodes", nodes))
 
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))
@@ -675,13 +757,31 @@ object ApiClient {
             .addFormDataPart("avatar", "avatar", bytes.toRequestBody(mimeType.toMediaType()))
             .build()
         val id = checkNotNull(deviceId) { "ApiClient.init(context) must be called first." }
-        val builder = Request.Builder().url("$BASE$path").header("x-device-id", id).post(body)
-        firebaseIdToken?.let { builder.header("Authorization", "Bearer $it") }
-        val request = builder.build()
-        client.newCall(request).execute().use { response ->
-            val json = JSONObject(response.body?.string().orEmpty())
-            if (!response.isSuccessful) throw IOException(json.optString("error", "Erreur HTTP ${response.code}"))
-            json.getString("avatar_url")
+        val freshToken = try {
+            FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+        } catch (_: Exception) {
+            null
+        } ?: firebaseIdToken
+        val requestBuilder = Request.Builder().url("$BASE$path").header("x-device-id", id).post(body)
+        if (!freshToken.isNullOrBlank()) {
+            requestBuilder.header("Authorization", "Bearer $freshToken")
+        }
+        client.newCall(requestBuilder.build()).execute().use { response ->
+            var finalResponse = response
+            if (finalResponse.code == 401) {
+                val newToken = try {
+                    FirebaseAuth.getInstance().currentUser?.getIdToken(true)?.await()?.token
+                } catch (_: Exception) { null }
+                if (!newToken.isNullOrBlank()) {
+                    firebaseIdToken = newToken
+                    requestBuilder.header("Authorization", "Bearer $newToken")
+                    finalResponse.close()
+                    finalResponse = client.newCall(requestBuilder.build()).execute()
+                }
+            }
+            val json = JSONObject(finalResponse.body?.string().orEmpty())
+            if (!finalResponse.isSuccessful) throw IOException(json.optString("error", "Erreur HTTP ${finalResponse.code}"))
+            json.optString("avatar_url").ifBlank { json.optString("avatarUrl") }
         }
     }
 

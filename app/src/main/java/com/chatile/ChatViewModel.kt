@@ -172,6 +172,31 @@ class ChatViewModel : ViewModel() {
     private val _moodToday = MutableStateFlow<JSONObject?>(null)
     val moodToday: StateFlow<JSONObject?> = _moodToday.asStateFlow()
 
+    private val _creatorEarnings = MutableStateFlow<JSONObject?>(null)
+    val creatorEarnings: StateFlow<JSONObject?> = _creatorEarnings.asStateFlow()
+
+    private val _creatorLeaderboard = MutableStateFlow<JSONArray>(JSONArray())
+    val creatorLeaderboard: StateFlow<JSONArray> = _creatorLeaderboard.asStateFlow()
+
+    // Stories states
+    private val _publicStories = MutableStateFlow<List<Story>>(emptyList())
+    val publicStories: StateFlow<List<Story>> = _publicStories.asStateFlow()
+
+    private val _myStories = MutableStateFlow<List<Story>>(emptyList())
+    val myStories: StateFlow<List<Story>> = _myStories.asStateFlow()
+
+    private val _activeStorySessionId = MutableStateFlow<Long?>(null)
+    val activeStorySessionId: StateFlow<Long?> = _activeStorySessionId.asStateFlow()
+
+    private val _activeStoryNode = MutableStateFlow<StoryNode?>(null)
+    val activeStoryNode: StateFlow<StoryNode?> = _activeStoryNode.asStateFlow()
+
+    private val _discoveredEndings = MutableStateFlow(0)
+    val discoveredEndings: StateFlow<Int> = _discoveredEndings.asStateFlow()
+
+    private val _totalEndings = MutableStateFlow(0)
+    val totalEndings: StateFlow<Int> = _totalEndings.asStateFlow()
+
     // Admin states
     private val _adminPosts = MutableStateFlow<List<Post>>(emptyList())
     val adminPosts: StateFlow<List<Post>> = _adminPosts.asStateFlow()
@@ -417,6 +442,106 @@ class ChatViewModel : ViewModel() {
                 .onFailure { _error.value = it.message }
         }
     }
+    fun loadCreatorEarnings() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getCreatorEarnings() }
+                .onSuccess { _creatorEarnings.value = it }
+                .onFailure { _error.value = it.message ?: "Impossible de charger les revenus créateur." }
+        }
+    }
+
+    fun loadCreatorLeaderboard() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getCreatorLeaderboard() }
+                .onSuccess { _creatorLeaderboard.value = it.optJSONArray("leaderboard") ?: JSONArray() }
+                .onFailure { _error.value = it.message ?: "Impossible de charger le classement." }
+        }
+    }
+
+    fun loadStories() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getPublicStories() }
+                .onSuccess { _publicStories.value = it }
+            runCatching { ApiClient.getMyStories() }
+                .onSuccess { _myStories.value = it }
+        }
+    }
+
+    fun playStory(storyId: Long, onReplayRequired: () -> Unit = {}, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            runCatching { ApiClient.playStory(storyId) }
+                .onSuccess { res ->
+                    _activeStorySessionId.value = res.optLong("sessionId")
+                    _totalEndings.value = res.optInt("totalEndings", 0)
+                    _discoveredEndings.value = res.optInt("discoveredEndings", 0)
+                    val nodeJson = res.optJSONObject("currentNode")
+                    if (nodeJson != null) {
+                        _activeStoryNode.value = ApiClient.run { nodeJson.toStoryNode() }
+                    }
+                    onSuccess()
+                }
+                .onFailure { err ->
+                    if (err.message?.contains("replay_required") == true || err.message?.contains("terminé") == true) {
+                        onReplayRequired()
+                    } else {
+                        _error.value = err.message
+                    }
+                }
+        }
+    }
+
+    fun replayStory(storyId: Long, method: String, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            runCatching { ApiClient.replayStory(storyId, method) }
+                .onSuccess { res ->
+                    _activeStorySessionId.value = res.optLong("sessionId")
+                    _totalEndings.value = res.optInt("totalEndings", 0)
+                    _discoveredEndings.value = res.optInt("discoveredEndings", 0)
+                    val updatedPieces = res.optInt("pieces", -1)
+                    if (updatedPieces >= 0) _pieces.value = updatedPieces
+                    val nodeJson = res.optJSONObject("currentNode")
+                    if (nodeJson != null) {
+                        _activeStoryNode.value = ApiClient.run { nodeJson.toStoryNode() }
+                    }
+                    onSuccess()
+                }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun makeStoryChoice(choiceId: Long) {
+        val sessionId = _activeStorySessionId.value ?: return
+        viewModelScope.launch {
+            runCatching { ApiClient.makeStoryChoice(sessionId, choiceId) }
+                .onSuccess { res ->
+                    _totalEndings.value = res.optInt("totalEndings", _totalEndings.value)
+                    _discoveredEndings.value = res.optInt("discoveredEndings", _discoveredEndings.value)
+                    val nodeJson = res.optJSONObject("currentNode")
+                    if (nodeJson != null) {
+                        _activeStoryNode.value = ApiClient.run { nodeJson.toStoryNode() }
+                    }
+                }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun generateStory(prompt: String, genre: String, onSuccess: (Long) -> Unit = {}) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            runCatching { ApiClient.generateStory(prompt, genre) }
+                .onSuccess { res ->
+                    _isLoading.value = false
+                    val storyId = res.optLong("id")
+                    loadStories()
+                    onSuccess(storyId)
+                }
+                .onFailure { err ->
+                    _isLoading.value = false
+                    _error.value = err.message ?: "Impossible de générer l'histoire."
+                }
+        }
+    }
+
     fun appendSystemMessage(text: String) { _messages.value = _messages.value + Msg(text, isUser = false) }
     fun loadMessages(id: Long, page: Int = 0) { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.getMessages(id, page) }.onFailure { _error.value = it.message }; _isLoading.value = false } }
     fun editMessage(id: Long, content: String) { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.updateMessage(id, content) }.onFailure { _error.value = it.message }; _isLoading.value = false } }
@@ -459,28 +584,26 @@ class ChatViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             runCatching {
-                val id = ApiClient.createCharacter(
+                val res = ApiClient.createCharacter(
                     name, prompt, greeting, isNsfw, scenarioGoal, seedMemory,
                     boundaries, appearance, bannedWords, scenarioSteps,
                 )
-                if (avatarUri != null && context != null) ApiClient.uploadCharacterAvatar(context, id, avatarUri)
+                val id = res.getLong("id")
+                val updatedPieces = res.optInt("pieces", -1)
+                if (updatedPieces >= 0) {
+                    _pieces.value = updatedPieces
+                }
+                if (avatarUri != null && context != null) {
+                    runCatching { ApiClient.uploadCharacterAvatar(context, id, avatarUri) }
+                        .onSuccess { newUrl ->
+                            updateCharacterAvatarInMemory(id, newUrl)
+                        }
+                }
                 id
             }
                 .onSuccess { id ->
                     refresh()
                     onCreated(id)
-                    viewModelScope.launch {
-                        repeat(20) {
-                            delay(1500)
-                            val status = runCatching { ApiClient.getCharacterAvatarStatus(id) }.getOrNull()
-                                ?: return@launch
-                            if (status.optString("avatarUrl").isNotBlank()) {
-                                refresh()
-                                return@launch
-                            }
-                            if (!status.optBoolean("generating")) return@launch
-                        }
-                    }
                 }
                 .onFailure { _error.value = it.message ?: "Création du personnage impossible." }
         }

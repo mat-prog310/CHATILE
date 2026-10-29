@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
@@ -118,6 +119,7 @@ fun CustomBottomNavigationBar(navController: androidx.navigation.NavHostControll
         NavigationItem.Home,
         NavigationItem.Chats,
         NavigationItem.Characters,
+        NavigationItem.Stories,
         NavigationItem.Profile
     )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -263,7 +265,25 @@ fun NavGraph(
                 vm = viewModel,
                 onOpenShop = { navController.navigate("shop") },
                 onWatchAd = onWatchAd,
-                onOpenAdmin = { navController.navigate("admin") }
+                onOpenAdmin = { navController.navigate("admin") },
+                onOpenCreatorEarnings = { navController.navigate("creator_earnings") }
+            )
+        }
+
+        // Creator Earnings
+        composable("creator_earnings") {
+            CreatorEarningsScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onOpenLeaderboard = { navController.navigate("creator_leaderboard") }
+            )
+        }
+
+        // Creator Leaderboard
+        composable("creator_leaderboard") {
+            CreatorLeaderboardScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         
@@ -278,8 +298,21 @@ fun NavGraph(
                 onBack = { navController.popBackStack() },
                 onBuy = { productId -> navController.navigate("shop") },
                 onWatchAd = { /* Handle ad watch */ },
-                onShowInterstitial = { /* Handle interstitial */ }
+                onShowInterstitial = { /* Handle interstitial */ },
+                onStartVoiceCall = { id -> navController.navigate("voice_call/$id") }
             )
+        }
+
+        // Voice Call
+        composable("voice_call/{characterId}") { backStackEntry ->
+            val characterId = backStackEntry.arguments?.getString("characterId")?.toLongOrNull()
+            if (characterId != null) {
+                VoiceCallScreen(
+                    characterId = characterId,
+                    vm = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
         
         // Create Character
@@ -325,6 +358,41 @@ fun NavGraph(
             )
         }
         
+        // Stories
+        composable("stories") {
+            StoriesScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onPlayStory = { storyId -> navController.navigate("play_story/$storyId") },
+                onCreateStory = { navController.navigate("create_story") }
+            )
+        }
+
+        composable("play_story/{storyId}") { backStackEntry ->
+            val storyId = backStackEntry.arguments?.getString("storyId")?.toLongOrNull()
+            if (storyId != null) {
+                PlayStoryScreen(
+                    storyId = storyId,
+                    vm = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onShowRewardedAd = { onRewarded ->
+                        // Show Rewarded Ad
+                        onRewarded()
+                    }
+                )
+            }
+        }
+
+        composable("create_story") {
+            CreateGeneratedStoryScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onStoryGenerated = { storyId ->
+                    navController.navigate("play_story/$storyId")
+                }
+            )
+        }
+
         // Onboarding
         composable("onboarding") {
             OnboardingScreen(
@@ -339,5 +407,6 @@ sealed class NavigationItem(val route: String, val label: String, val icon: andr
     data object Home : NavigationItem("home", "Accueil", Icons.Default.Home)
     data object Chats : NavigationItem("chats", "Chats", Icons.AutoMirrored.Filled.Chat)
     data object Characters : NavigationItem("characters", "Personnages", Icons.Default.People)
+    data object Stories : NavigationItem("stories", "Histoires", Icons.Outlined.Book)
     data object Profile : NavigationItem("profile", "Profil", Icons.Default.Person)
 }

@@ -276,6 +276,61 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(character_id, user_id)
   );
+  CREATE TABLE IF NOT EXISTS creator_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    creator_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content_type TEXT NOT NULL CHECK (content_type IN ('character', 'story')),
+    content_id INTEGER NOT NULL,
+    buyer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS voice_calls (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS stories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER REFERENCES characters(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    genre TEXT NOT NULL DEFAULT 'Aventure',
+    cover_image TEXT,
+    is_public INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('draft', 'published')),
+    plays_count INTEGER NOT NULL DEFAULT 0,
+    creator_earnings INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS story_nodes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    story_id INTEGER NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    node_type TEXT NOT NULL DEFAULT 'scene' CHECK (node_type IN ('start', 'scene', 'ending')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS story_choices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    node_id INTEGER NOT NULL REFERENCES story_nodes(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    target_node_id INTEGER REFERENCES story_nodes(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS story_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    story_id INTEGER NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    current_node_id INTEGER REFERENCES story_nodes(id) ON DELETE SET NULL,
+    visited_nodes TEXT NOT NULL DEFAULT '[]',
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    ending_reached_id INTEGER REFERENCES story_nodes(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 function ensureColumn(table, column, declaration) {
@@ -321,6 +376,7 @@ for (const [column, declaration] of [
   ['imported_from', 'INTEGER'],
   ['banned_words', 'TEXT'], ['proactive_enabled', 'INTEGER NOT NULL DEFAULT 1'],
   ['last_proactive_message', 'TEXT'], ['silent_mode_enabled', 'INTEGER NOT NULL DEFAULT 0'], ['expires_at', 'TEXT'],
+  ['creator_earnings', 'INTEGER NOT NULL DEFAULT 0'],
 ]) ensureColumn('characters', column, declaration);
 for (const [column, declaration] of [
   ['product_id', "TEXT NOT NULL DEFAULT ''"], ['purchase_type', "TEXT NOT NULL DEFAULT 'product'"],
@@ -380,7 +436,7 @@ for (const [name, prompt, greeting, goal, avatar] of systemCharacters) {
   if (!existingCharacter) {
     addSystemCharacter.run(name, prompt, greeting, goal, avatar);
   } else {
-    db.prepare(`UPDATE characters SET user_id = NULL, system_prompt = ?, greeting = ?, scenario_goal = ?, avatar_url = COALESCE(NULLIF(avatar_url, ''), ?)
+    db.prepare(`UPDATE characters SET user_id = NULL, system_prompt = ?, greeting = ?, scenario_goal = ?, avatar_url = ?
       WHERE id = ?`).run(prompt, greeting, goal, avatar, existingCharacter.id);
   }
 }
@@ -586,7 +642,7 @@ function getFallbackReply(character, message) {
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
-async function callMistral(messages, nsfwEnabled, model = 'mistral-small-2603') {
+async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
   if (!process.env.MISTRAL_API_KEY) throw new Error('MISTRAL_API_KEY_NOT_CONFIGURED');
 
   const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -596,9 +652,11 @@ async function callMistral(messages, nsfwEnabled, model = 'mistral-small-2603') 
       'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`
     },
     body: JSON.stringify({
-      model,
+      model: model || 'mistral-small-latest',
       messages,
       max_tokens: 500,
+      temperature: 0.6,
+      top_p: 0.9,
     }),
     signal: AbortSignal.timeout(45_000),
   });
@@ -848,7 +906,15 @@ function buildSystemPrompt(character, userId) {
   if (character.scenario_steps) prompt.push(`Étapes du scénario : ${character.scenario_steps}.`);
   if (moodJournal) prompt.push(`L’utilisateur a indiqué se sentir ${moodJournal.mood}${moodJournal.note ? ` : ${moodJournal.note}` : ''}. Réponds avec tact.`);
   if (structured.length) prompt.push(`Mémoire structurée :\n${structured.map((item) => `${item.category} · ${item.key} : ${item.value}`).join('\n')}`);
-  prompt.push('Lorsque tu décris une action, une émotion ou un geste (ex: sourit, regarde par la fenêtre), entoure le texte d’astérisques pour l’italique.');
+  prompt.push('DIRECTIVE ABSOLUE : Tu dois TOUJOURS incarner ton personnage à 100%. Ne sors JAMAIS de ton rôle. Ne dis JAMAIS que tu es un modèle d’IA, une IA ou un programme. Réponds toujours de manière naturelle avec tes émotions, ton ton et ta personnalité.');
+  prompt.push('RÈGLES DE COHÉRENCE & CONVERSATION :');
+  prompt.push('- Réponds TOUJOURS de façon claire, logique et directe au dernier message de l’utilisateur. Ne saute pas sur un sujet au hasard sans rapport.');
+  prompt.push('- Garde des répliques naturelles, humaines, concises et vivantes (1 à 3 paragraphes maximum).');
+  prompt.push('- N’invente JAMAIS d’éléments bizarres ou d’histoires incompréhensibles. Reste 100% fidèle au rôle-play et au contexte de la discussion.');
+  prompt.push('DIRECTIVE SUR L’ITALIQUE & LES ACTIONS :');
+  prompt.push('- Tout texte entre astérisques *...* (ex: *sourit*, *s’assoit*, *regarde par la fenêtre*) représente une action, un geste, une expression physique ou un élément de contexte. Ce ne sont PAS des paroles dites à voix haute.');
+  prompt.push('- Si l’utilisateur écrit entre astérisques *...*, réagis à son geste ou comportement de façon fluide dans le rôle-play au lieu de traiter le texte comme des paroles prononcées.');
+  prompt.push('- Lorsque toi tu décris tes propres gestes, actions ou émotions, entoure-les également d’astérisques *...* pour l’italique.');
   return prompt.join('\n\n');
 }
 
@@ -1250,6 +1316,519 @@ app.get('/api/pieces/history', (req, res) => {
   const transactions = db.prepare(`SELECT amount, type, description, created_at AS createdAt
     FROM piece_transactions WHERE user_id = ? ORDER BY id DESC LIMIT 100`).all(req.user.id);
   res.json({ transactions });
+});
+
+app.get('/api/creator/earnings', (req, res) => {
+  const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+
+  const charSum = db.prepare(`
+    SELECT COALESCE(SUM(amount), 0) AS sum FROM creator_transactions
+    WHERE creator_id = ? AND content_type = 'character'
+  `).get(req.user.id).sum;
+
+  const storySum = db.prepare(`
+    SELECT COALESCE(SUM(amount), 0) AS sum FROM creator_transactions
+    WHERE creator_id = ? AND content_type = 'story'
+  `).get(req.user.id).sum;
+
+  const totalSum = charSum + storySum;
+
+  const recent = db.prepare(`
+    SELECT ct.id, ct.content_type, ct.content_id, ct.buyer_id, ct.amount, ct.description, ct.created_at,
+           u.display_name AS buyer_name, u.avatar_url AS buyer_avatar_url
+    FROM creator_transactions ct
+    LEFT JOIN users u ON ct.buyer_id = u.id
+    WHERE ct.creator_id = ?
+    ORDER BY ct.id DESC LIMIT 50
+  `).all(req.user.id).map((t) => {
+    let buyerAvatar = t.buyer_avatar_url;
+    if (buyerAvatar && !buyerAvatar.startsWith('http')) {
+      buyerAvatar = `${publicBase}${buyerAvatar.startsWith('/') ? '' : '/'}${buyerAvatar}`;
+    }
+    return {
+      id: t.id,
+      contentType: t.content_type,
+      contentId: t.content_id,
+      buyerId: t.buyer_id,
+      buyerName: t.buyer_name || 'Utilisateur',
+      buyerAvatarUrl: buyerAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.buyer_name || 'Buyer')}&background=B47CFF&color=fff`,
+      amount: t.amount,
+      description: t.description,
+      createdAt: t.created_at,
+    };
+  });
+
+  res.json({
+    totalEarnings: totalSum,
+    characterEarnings: charSum,
+    storyEarnings: storySum,
+    recentTransactions: recent,
+  });
+});
+
+app.get('/api/creator/leaderboard', (req, res) => {
+  const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+
+  const leaderboard = db.prepare(`
+    SELECT u.id, u.display_name AS displayName, u.avatar_url AS avatarUrl, u.badge_type AS badgeType,
+           COALESCE(SUM(ct.amount), 0) AS totalEarnings
+    FROM users u
+    JOIN creator_transactions ct ON ct.creator_id = u.id
+    GROUP BY u.id
+    ORDER BY totalEarnings DESC
+    LIMIT 10
+  `).all().map((c) => {
+    let avatar = c.avatarUrl;
+    if (avatar && !avatar.startsWith('http')) {
+      avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+    }
+    return {
+      id: c.id,
+      displayName: c.displayName || 'Créateur',
+      avatarUrl: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.displayName || 'Creator')}&background=B47CFF&color=fff`,
+      badgeType: c.badgeType,
+      totalEarnings: c.totalEarnings,
+    };
+  });
+
+  res.json({ leaderboard });
+});
+
+// ==================== VOICE CALL ROUTES (PREMIUM) ====================
+
+app.post('/api/voice-call/start', (req, res) => {
+  const { characterId } = req.body ?? {};
+  const charId = Number(characterId);
+  if (!Number.isSafeInteger(charId)) return res.status(400).json({ error: 'characterId invalide.' });
+
+  const isPremium = req.user.subscription_tier === 'premium' || req.user.subscription_tier === 'premium_plus';
+  if (!isPremium && req.user.role !== 'admin') {
+    return res.status(403).json({
+      error: 'premium_required',
+      message: 'Les appels vocaux sont réservés aux abonnés Premium. Découvre les avantages.',
+    });
+  }
+
+  const quotaMinutes = req.user.subscription_tier === 'premium_plus' ? 60 : 30;
+  const quotaSeconds = quotaMinutes * 60;
+
+  const usedSeconds = db.prepare(`
+    SELECT COALESCE(SUM(duration_seconds), 0) AS total
+    FROM voice_calls
+    WHERE user_id = ? AND created_at >= date('now')
+  `).get(req.user.id).total;
+
+  if (usedSeconds >= quotaSeconds && req.user.role !== 'admin') {
+    return res.status(429).json({
+      error: 'quota_exceeded',
+      message: `Quota quotidien d'appel vocal atteint (${quotaMinutes} min/jour). Reviens demain !`,
+    });
+  }
+
+  const result = db.prepare(`
+    INSERT INTO voice_calls (user_id, character_id, duration_seconds)
+    VALUES (?, ?, 0)
+  `).run(req.user.id, charId);
+
+  const callId = result.lastInsertRowid;
+  const remainingSeconds = Math.max(0, quotaSeconds - usedSeconds);
+
+  res.json({
+    callId,
+    quotaMinutes,
+    remainingSeconds,
+  });
+});
+
+app.post('/api/voice-call/end', (req, res) => {
+  const { callId, durationSeconds } = req.body ?? {};
+  const id = Number(callId);
+  const seconds = Math.max(0, Number(durationSeconds) || 0);
+
+  if (!Number.isSafeInteger(id)) return res.status(400).json({ error: 'callId invalide.' });
+
+  db.prepare('UPDATE voice_calls SET duration_seconds = ? WHERE id = ? AND user_id = ?')
+    .run(seconds, id, req.user.id);
+
+  res.json({ success: true, callId: id, durationSeconds: seconds });
+});
+
+app.post('/api/voice-call/transcribe', (req, res) => {
+  avatarUpload.single('audio')(req, res, (error) => {
+    const text = req.body?.text || 'Bonjour, ravi de te parler !';
+    res.json({ text });
+  });
+});
+
+app.post('/api/voice-call/speak', (req, res) => {
+  const { text, characterId } = req.body ?? {};
+  const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  res.json({
+    text: text || 'Bonjour !',
+    audioUrl: `${publicBase}/uploads/sample_voice.mp3`,
+  });
+});
+
+// ==================== STORIES ROUTES ====================
+
+function formatStory(s, req) {
+  if (!s) return s;
+  const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  let cover = s.cover_image || s.coverImage;
+  if (cover && !cover.startsWith('http')) {
+    cover = `${publicBase}${cover.startsWith('/') ? '' : '/'}${cover}`;
+  }
+  return {
+    id: s.id,
+    userId: s.user_id,
+    characterId: s.character_id,
+    title: s.title,
+    description: s.description || '',
+    genre: s.genre || 'Aventure',
+    coverImage: cover || `https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&auto=format&fit=crop`,
+    isPublic: Boolean(s.is_public),
+    status: s.status || 'published',
+    playsCount: s.plays_count || 0,
+    creatorEarnings: s.creator_earnings || 0,
+    createdAt: s.created_at,
+  };
+}
+
+// Get public stories
+app.get('/api/stories/public', (req, res) => {
+  const stories = db.prepare(`
+    SELECT s.*, u.display_name AS creatorName, u.avatar_url AS creatorAvatarUrl
+    FROM stories s
+    LEFT JOIN users u ON s.user_id = u.id
+    WHERE s.is_public = 1 AND s.status = 'published'
+    ORDER BY s.plays_count DESC, s.created_at DESC
+    LIMIT 50
+  `).all();
+  res.json({ stories: stories.map((s) => formatStory(s, req)) });
+});
+
+// Get user's own stories
+app.get('/api/stories/my', (req, res) => {
+  const stories = db.prepare(`
+    SELECT * FROM stories WHERE user_id = ? ORDER BY created_at DESC
+  `).all(req.user.id);
+  res.json({ stories: stories.map((s) => formatStory(s, req)) });
+});
+
+// Manual Story Creation
+app.post('/api/stories', (req, res) => {
+  const { title, description = '', genre = 'Aventure', characterId = null, coverImage = null, nodes = [] } = req.body ?? {};
+
+  if (!title || typeof title !== 'string' || title.trim().length > 100) {
+    return res.status(400).json({ error: 'Titre invalide.' });
+  }
+
+  if (!Array.isArray(nodes) || nodes.length < 3) {
+    return res.status(400).json({ error: 'Une histoire doit contenir au moins 3 scènes.' });
+  }
+
+  const startNodes = nodes.filter((n) => n.nodeType === 'start');
+  const endingNodes = nodes.filter((n) => n.nodeType === 'ending');
+
+  if (startNodes.length !== 1 || endingNodes.length < 2) {
+    return res.status(400).json({ error: 'Une histoire valide doit avoir exactement 1 départ et au moins 2 fins.' });
+  }
+
+  const create = db.transaction(() => {
+    const result = db.prepare(`
+      INSERT INTO stories (user_id, character_id, title, description, genre, cover_image, is_public, status)
+      VALUES (?, ?, ?, ?, ?, ?, 1, 'published')
+    `).run(req.user.id, characterId, title.trim(), description.trim(), genre, coverImage);
+
+    const storyId = Number(result.lastInsertRowid);
+    const tempIdToRealId = new Map();
+
+    for (const node of nodes) {
+      const nodeRes = db.prepare(`
+        INSERT INTO story_nodes (story_id, content, node_type)
+        VALUES (?, ?, ?)
+      `).run(storyId, node.content || '...', node.nodeType || 'scene');
+      tempIdToRealId.set(node.tempId ?? node.id, Number(nodeRes.lastInsertRowid));
+    }
+
+    for (const node of nodes) {
+      const realNodeId = tempIdToRealId.get(node.tempId ?? node.id);
+      if (realNodeId && Array.isArray(node.choices)) {
+        for (const choice of node.choices) {
+          const realTargetId = tempIdToRealId.get(choice.targetTempId ?? choice.targetNodeId);
+          db.prepare(`
+            INSERT INTO story_choices (node_id, text, target_node_id)
+            VALUES (?, ?, ?)
+          `).run(realNodeId, choice.text || 'Continuer', realTargetId || null);
+        }
+      }
+    }
+
+    return storyId;
+  });
+
+  const storyId = create();
+  const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(storyId);
+  res.status(201).json(formatStory(story, req));
+});
+
+// AI Generated Story Creation
+app.post('/api/stories/generate', async (req, res) => {
+  const { prompt, genre = 'Aventure', characterId = null } = req.body ?? {};
+
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length > 500) {
+    return res.status(400).json({ error: 'Prompt invalide pour la génération d’histoire.' });
+  }
+
+  const aiSystemPrompt = `
+Tu es un auteur expert en histoires à choix multiples interactives.
+Génère un arbre d'histoire complet au format JSON pur.
+L'histoire doit contenir :
+- "title": un titre captivant (string)
+- "description": un résumé (string)
+- "nodes": un tableau d'objets scène :
+  - "tempId": id temporaire (1, 2, 3...)
+  - "content": le texte immersif de la scène (2-4 phrases)
+  - "nodeType": "start" (1 seul), "scene", ou "ending" (au moins 4 fins différentes : 2 bonnes fins, 2 mauvaises fins)
+  - "choices": pour les nœuds "start" et "scene", un tableau de choix :
+    - "text": texte du choix (ex. "Ouvrir la porte en bois")
+    - "targetTempId": l'id temporaire du nœud de destination
+Renvoie UNIQUEMENT le JSON valide sans texte additionnel.
+`;
+
+  try {
+    const rawAiResponse = await callMistral([
+      { role: 'system', content: aiSystemPrompt },
+      { role: 'user', content: `Crée une histoire interactive sur le thème : ${prompt.trim()} (Genre : ${genre})` }
+    ], Boolean(req.user.nsfw_enabled), 'mistral-small-latest');
+
+    let jsonClean = rawAiResponse.trim();
+    if (jsonClean.startsWith('```')) {
+      jsonClean = jsonClean.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+    }
+
+    const generated = JSON.parse(jsonClean);
+    const { title, description = '', nodes = [] } = generated;
+
+    if (!title || !Array.isArray(nodes) || nodes.length < 5) {
+      return res.status(422).json({ error: 'Structure JSON générée invalide.' });
+    }
+
+    const startNodes = nodes.filter((n) => n.nodeType === 'start');
+    const endingNodes = nodes.filter((n) => n.nodeType === 'ending');
+
+    if (startNodes.length < 1 || endingNodes.length < 2) {
+      return res.status(422).json({ error: 'Arbre généré incomplet. Veuillez réespérer.' });
+    }
+
+    const create = db.transaction(() => {
+      const result = db.prepare(`
+        INSERT INTO stories (user_id, character_id, title, description, genre, cover_image, is_public, status)
+        VALUES (?, ?, ?, ?, ?, ?, 1, 'published')
+      `).run(req.user.id, characterId, title.trim(), description.trim(), genre, null);
+
+      const storyId = Number(result.lastInsertRowid);
+      const tempIdToRealId = new Map();
+
+      for (const node of nodes) {
+        const nodeRes = db.prepare(`
+          INSERT INTO story_nodes (story_id, content, node_type)
+          VALUES (?, ?, ?)
+        `).run(storyId, node.content || '...', node.nodeType || 'scene');
+        tempIdToRealId.set(node.tempId ?? node.id, Number(nodeRes.lastInsertRowid));
+      }
+
+      for (const node of nodes) {
+        const realNodeId = tempIdToRealId.get(node.tempId ?? node.id);
+        if (realNodeId && Array.isArray(node.choices)) {
+          for (const choice of node.choices) {
+            const realTargetId = tempIdToRealId.get(choice.targetTempId ?? choice.targetNodeId);
+            db.prepare(`
+              INSERT INTO story_choices (node_id, text, target_node_id)
+              VALUES (?, ?, ?)
+            `).run(realNodeId, choice.text || 'Continuer', realTargetId || null);
+          }
+        }
+      }
+
+      return storyId;
+    });
+
+    const storyId = create();
+    const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(storyId);
+    res.status(201).json(formatStory(story, req));
+  } catch (err) {
+    console.error('Erreur génération histoire IA:', err);
+    res.status(500).json({ error: 'Impossible de générer l’histoire avec l’IA.' });
+  }
+});
+
+app.post('/api/stories/:id/publish', (req, res) => {
+  const storyId = Number(req.params.id);
+  const story = db.prepare('SELECT * FROM stories WHERE id = ? AND user_id = ?').get(storyId, req.user.id);
+  if (!story) return res.status(404).json({ error: 'Histoire introuvable.' });
+
+  db.prepare("UPDATE stories SET status = 'published', is_public = 1 WHERE id = ?").run(storyId);
+  const updated = db.prepare('SELECT * FROM stories WHERE id = ?').get(storyId);
+  res.json(formatStory(updated, req));
+});
+
+// Helper to get node with choices
+function getNodeWithChoices(nodeId) {
+  const node = db.prepare('SELECT * FROM story_nodes WHERE id = ?').get(nodeId);
+  if (!node) return null;
+  const choices = db.prepare('SELECT id, text, target_node_id AS targetNodeId FROM story_choices WHERE node_id = ?').all(nodeId);
+  return {
+    id: node.id,
+    storyId: node.story_id,
+    content: node.content,
+    nodeType: node.node_type,
+    isEnding: node.node_type === 'ending',
+    choices,
+  };
+}
+
+// Start/Play a story
+app.post('/api/stories/:id/play', (req, res) => {
+  const storyId = Number(req.params.id);
+  const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(storyId);
+  if (!story) return res.status(404).json({ error: 'Histoire introuvable.' });
+
+  const completedSession = db.prepare(`
+    SELECT * FROM story_sessions WHERE story_id = ? AND user_id = ? AND is_completed = 1 ORDER BY id DESC LIMIT 1
+  `).get(storyId, req.user.id);
+
+  const isPremium = req.user.subscription_tier === 'premium' || req.user.subscription_tier === 'premium_plus' || req.user.role === 'admin';
+
+  if (completedSession && !isPremium) {
+    return res.status(402).json({
+      error: 'replay_required',
+      needReplay: true,
+      message: 'Tu as déjà terminé cette histoire. Regarde une pub ou utilise 100 Pièces pour rejouer !',
+    });
+  }
+
+  const startNode = db.prepare("SELECT * FROM story_nodes WHERE story_id = ? AND node_type = 'start' LIMIT 1").get(storyId);
+  if (!startNode) return res.status(500).json({ error: 'Histoire sans scène de départ.' });
+
+  const result = db.prepare(`
+    INSERT INTO story_sessions (story_id, user_id, current_node_id, visited_nodes)
+    VALUES (?, ?, ?, ?)
+  `).run(storyId, req.user.id, startNode.id, JSON.stringify([startNode.id]));
+
+  db.prepare('UPDATE stories SET plays_count = plays_count + 1 WHERE id = ?').run(storyId);
+
+  const totalEndings = db.prepare("SELECT COUNT(*) AS count FROM story_nodes WHERE story_id = ? AND node_type = 'ending'").get(storyId).count;
+  const discoveredEndings = db.prepare(`
+    SELECT COUNT(DISTINCT ending_reached_id) AS count FROM story_sessions
+    WHERE story_id = ? AND user_id = ? AND is_completed = 1 AND ending_reached_id IS NOT NULL
+  `).get(storyId, req.user.id).count;
+
+  res.json({
+    sessionId: result.lastInsertRowid,
+    currentNode: getNodeWithChoices(startNode.id),
+    totalEndings,
+    discoveredEndings,
+  });
+});
+
+// Replay a story (ad or pieces)
+app.post('/api/stories/:id/replay', (req, res) => {
+  const storyId = Number(req.params.id);
+  const { method = 'ad' } = req.body ?? {};
+  const story = db.prepare('SELECT * FROM stories WHERE id = ?').get(storyId);
+  if (!story) return res.status(404).json({ error: 'Histoire introuvable.' });
+
+  const isPremium = req.user.subscription_tier === 'premium' || req.user.subscription_tier === 'premium_plus' || req.user.role === 'admin';
+
+  if (!isPremium && method === 'pieces') {
+    const cost = 100;
+    if (req.user.pieces < cost) {
+      return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: cost, currentPieces: req.user.pieces });
+    }
+
+    const replayTrans = db.transaction(() => {
+      db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
+      recordPieceTransaction(req.user.id, -cost, 'story_replay', `Rejeu de l'histoire ${story.title}`);
+
+      if (story.user_id && story.user_id !== req.user.id) {
+        const reward = 30; // 30% commission
+        db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(reward, story.user_id);
+        db.prepare('UPDATE stories SET creator_earnings = creator_earnings + ? WHERE id = ?').run(reward, storyId);
+        db.prepare(`
+          INSERT INTO creator_transactions (creator_id, content_type, content_id, buyer_id, amount, description)
+          VALUES (?, 'story', ?, ?, ?, ?)
+        `).run(story.user_id, storyId, req.user.id, reward, `Rejeu payant de l'histoire ${story.title}`);
+        recordPieceTransaction(story.user_id, reward, 'creator_earnings', `Rejeu de l'histoire ${story.title}`);
+      }
+    });
+    replayTrans();
+  }
+
+  const startNode = db.prepare("SELECT * FROM story_nodes WHERE story_id = ? AND node_type = 'start' LIMIT 1").get(storyId);
+  if (!startNode) return res.status(500).json({ error: 'Histoire sans scène de départ.' });
+
+  const result = db.prepare(`
+    INSERT INTO story_sessions (story_id, user_id, current_node_id, visited_nodes)
+    VALUES (?, ?, ?, ?)
+  `).run(storyId, req.user.id, startNode.id, JSON.stringify([startNode.id]));
+
+  db.prepare('UPDATE stories SET plays_count = plays_count + 1 WHERE id = ?').run(storyId);
+
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  const totalEndings = db.prepare("SELECT COUNT(*) AS count FROM story_nodes WHERE story_id = ? AND node_type = 'ending'").get(storyId).count;
+  const discoveredEndings = db.prepare(`
+    SELECT COUNT(DISTINCT ending_reached_id) AS count FROM story_sessions
+    WHERE story_id = ? AND user_id = ? AND is_completed = 1 AND ending_reached_id IS NOT NULL
+  `).get(storyId, req.user.id).count;
+
+  res.json({
+    sessionId: result.lastInsertRowid,
+    currentNode: getNodeWithChoices(startNode.id),
+    totalEndings,
+    discoveredEndings,
+    pieces: updatedUser.pieces,
+  });
+});
+
+// Progress choices in a story session
+app.post('/api/stories/session/:sessionId/choice', (req, res) => {
+  const sessionId = Number(req.params.sessionId);
+  const { choiceId } = req.body ?? {};
+
+  const session = db.prepare('SELECT * FROM story_sessions WHERE id = ? AND user_id = ?').get(sessionId, req.user.id);
+  if (!session) return res.status(404).json({ error: 'Session introuvable.' });
+
+  const choice = db.prepare('SELECT * FROM story_choices WHERE id = ? AND node_id = ?').get(choiceId, session.current_node_id);
+  if (!choice || !choice.target_node_id) return res.status(400).json({ error: 'Choix invalide.' });
+
+  const targetNode = db.prepare('SELECT * FROM story_nodes WHERE id = ?').get(choice.target_node_id);
+  if (!targetNode) return res.status(404).json({ error: 'Scène de destination introuvable.' });
+
+  let visited = [];
+  try { visited = JSON.parse(session.visited_nodes || '[]'); } catch (_e) { visited = []; }
+  if (!visited.includes(targetNode.id)) visited.push(targetNode.id);
+
+  const isEnding = targetNode.node_type === 'ending';
+
+  db.prepare(`
+    UPDATE story_sessions
+    SET current_node_id = ?, visited_nodes = ?, is_completed = ?, ending_reached_id = CASE WHEN ? = 1 THEN ? ELSE ending_reached_id END
+    WHERE id = ?
+  `).run(targetNode.id, JSON.stringify(visited), Number(isEnding), Number(isEnding), targetNode.id, sessionId);
+
+  const totalEndings = db.prepare("SELECT COUNT(*) AS count FROM story_nodes WHERE story_id = ? AND node_type = 'ending'").get(session.story_id).count;
+  const discoveredEndings = db.prepare(`
+    SELECT COUNT(DISTINCT ending_reached_id) AS count FROM story_sessions
+    WHERE story_id = ? AND user_id = ? AND is_completed = 1 AND ending_reached_id IS NOT NULL
+  `).get(session.story_id, req.user.id).count;
+
+  res.json({
+    currentNode: getNodeWithChoices(targetNode.id),
+    isEnding,
+    totalEndings,
+    discoveredEndings,
+  });
 });
 
 const rewardAmounts = {
@@ -1700,6 +2279,19 @@ app.post('/api/characters/:id/import', (req, res) => {
       original.boundaries,
       original.appearance,
     );
+
+    // Credit creator 10 Pièces if not self-import
+    if (original.user_id && original.user_id !== req.user.id) {
+      const reward = 10;
+      db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(reward, original.user_id);
+      db.prepare('UPDATE characters SET creator_earnings = creator_earnings + ? WHERE id = ?').run(reward, characterId);
+      db.prepare(`
+        INSERT INTO creator_transactions (creator_id, content_type, content_id, buyer_id, amount, description)
+        VALUES (?, 'character', ?, ?, ?, ?)
+      `).run(original.user_id, characterId, req.user.id, reward, `Import du personnage ${original.name}`);
+      recordPieceTransaction(original.user_id, reward, 'creator_earnings', `Import du personnage ${original.name}`);
+    }
+
     return { status: 201, id: Number(inserted.lastInsertRowid) };
   })();
 
@@ -2302,7 +2894,7 @@ app.post('/api/chat', async (req, res) => {
     const reply = await callMistral(
       mistralMessages,
       Boolean(req.user.nsfw_enabled),
-      usePremiumModel ? 'mistral-large-2603' : 'mistral-small-2603',
+      usePremiumModel ? 'mistral-large-latest' : 'mistral-small-latest',
     );
     const saveAndCharge = db.transaction(() => {
       const debit = db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?')

@@ -195,6 +195,77 @@ fun PublicProfileScreen(
                     }
                 }
             }
+
+            // Public Characters
+            val charactersArray = profileData?.optJSONArray("characters")
+            if (charactersArray != null && charactersArray.length() > 0) {
+                Text(
+                    text = "Personnages Créés",
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                for (i in 0 until charactersArray.length()) {
+                    val charObj = charactersArray.optJSONObject(i) ?: continue
+                    val charName = charObj.optString("name", "Inconnu")
+                    val charAvatar = charObj.optString("avatar_url").takeIf { it.isNotBlank() } ?: "https://api.dicebear.com/7.x/bottts/png?seed=${charObj.optInt("id")}"
+                    val greeting = charObj.optString("greeting")
+                    
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = NightSurfaceRaised),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AsyncImage(
+                                model = charAvatar,
+                                contentDescription = charName,
+                                modifier = Modifier.size(50.dp).clip(CircleShape).background(NightSurface),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(charName, color = TextPrimary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                                Text(greeting, color = TextSecondary, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Public Stories
+            val storiesArray = profileData?.optJSONArray("stories")
+            if (storiesArray != null && storiesArray.length() > 0) {
+                Text(
+                    text = "Histoires Créées",
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+                for (i in 0 until storiesArray.length()) {
+                    val storyObj = storiesArray.optJSONObject(i) ?: continue
+                    val title = storyObj.optString("title", "Inconnu")
+                    val genre = storyObj.optString("genre", "Aventure")
+                    
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = NightSurfaceRaised),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(title, color = TextPrimary, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                            Text(genre, color = VioletAccent, style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(30.dp))
         }
     }
 }

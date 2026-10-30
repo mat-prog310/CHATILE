@@ -9794,7 +9794,6 @@ androidx.compose.material.icons.outlined.CandlestickChartKt
 androidx.compose.material.icons.outlined.CarCrashKt
 androidx.compose.material.icons.outlined.CarRentalKt
 androidx.compose.material.icons.outlined.CarRepairKt
-androidx.compose.material.icons.outlined.CardGiftcardKt
 androidx.compose.material.icons.outlined.CardMembershipKt
 androidx.compose.material.icons.outlined.CardTravelKt
 androidx.compose.material.icons.outlined.CarpenterKt
@@ -9824,7 +9823,6 @@ androidx.compose.material.icons.outlined.CheckBoxKt
 androidx.compose.material.icons.outlined.CheckBoxOutlineBlankKt
 androidx.compose.material.icons.outlined.CheckCircleKt
 androidx.compose.material.icons.outlined.CheckCircleOutlineKt
-androidx.compose.material.icons.outlined.CheckKt
 androidx.compose.material.icons.outlined.ChecklistKt
 androidx.compose.material.icons.outlined.ChecklistRtlKt
 androidx.compose.material.icons.outlined.CheckroomKt
@@ -9955,7 +9953,6 @@ androidx.compose.material.icons.outlined.DeblurKt
 androidx.compose.material.icons.outlined.DeckKt
 androidx.compose.material.icons.outlined.DehazeKt
 androidx.compose.material.icons.outlined.DeleteForeverKt
-androidx.compose.material.icons.outlined.DeleteKt
 androidx.compose.material.icons.outlined.DeleteOutlineKt
 androidx.compose.material.icons.outlined.DeleteSweepKt
 androidx.compose.material.icons.outlined.DeliveryDiningKt
@@ -10412,7 +10409,6 @@ androidx.compose.material.icons.outlined.ImportantDevicesKt
 androidx.compose.material.icons.outlined.InboxKt
 androidx.compose.material.icons.outlined.IncompleteCircleKt
 androidx.compose.material.icons.outlined.IndeterminateCheckBoxKt
-androidx.compose.material.icons.outlined.InfoKt
 androidx.compose.material.icons.outlined.InputKt
 androidx.compose.material.icons.outlined.InsertChartKt
 androidx.compose.material.icons.outlined.InsertChartOutlinedKt
@@ -10429,7 +10425,6 @@ androidx.compose.material.icons.outlined.InstallMobileKt
 androidx.compose.material.icons.outlined.IntegrationInstructionsKt
 androidx.compose.material.icons.outlined.InterestsKt
 androidx.compose.material.icons.outlined.InterpreterModeKt
-androidx.compose.material.icons.outlined.Inventory2Kt
 androidx.compose.material.icons.outlined.InventoryKt
 androidx.compose.material.icons.outlined.InvertColorsKt
 androidx.compose.material.icons.outlined.InvertColorsOffKt
@@ -11225,7 +11220,6 @@ androidx.compose.material.icons.outlined.StairsKt
 androidx.compose.material.icons.outlined.StarBorderKt
 androidx.compose.material.icons.outlined.StarBorderPurple500Kt
 androidx.compose.material.icons.outlined.StarHalfKt
-androidx.compose.material.icons.outlined.StarKt
 androidx.compose.material.icons.outlined.StarOutlineKt
 androidx.compose.material.icons.outlined.StarPurple500Kt
 androidx.compose.material.icons.outlined.StarRateKt
@@ -36999,7 +36993,9 @@ com.chatile.ApiClient$getGallery$1
 com.chatile.ApiClient$getJournal$1
 com.chatile.ApiClient$getNotes$1
 com.chatile.ApiClient$getNotifications$1
+com.chatile.ApiClient$getPiecesHistory$1
 com.chatile.ApiClient$getPost$1
+com.chatile.ApiClient$getStats$1
 com.chatile.ApiClient$getThought$1
 com.chatile.ApiClient$getTrendingCharacters$1
 com.chatile.ApiClient$getUnreadCount$1
@@ -37051,10 +37047,12 @@ com.chatile.ApiClient:
     public final java.lang.Object getNotes(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getNotifications(int,int,kotlin.coroutines.Continuation)
     public static synthetic java.lang.Object getNotifications$default(com.chatile.ApiClient,int,int,kotlin.coroutines.Continuation,int,java.lang.Object)
+    public final java.lang.Object getPiecesHistory(kotlin.coroutines.Continuation)
     public final java.lang.Object getPollResults(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getPost(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getReferralStats(kotlin.coroutines.Continuation)
     public final java.lang.Object getRetrospective(kotlin.coroutines.Continuation)
+    public final java.lang.Object getStats(kotlin.coroutines.Continuation)
     public final java.lang.Object getThought(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getTrendingCharacters(kotlin.coroutines.Continuation)
     public final java.lang.Object getUnreadCount(kotlin.coroutines.Continuation)
@@ -37084,6 +37082,7 @@ com.chatile.ApiClient:
     public final java.lang.Object toggleFollow(long,kotlin.coroutines.Continuation)
     public final java.lang.Object togglePostLike(long,kotlin.coroutines.Continuation)
     public final java.lang.Object unbanUser(long,kotlin.coroutines.Continuation)
+    public final java.lang.Object unpublishCharacter(long,kotlin.coroutines.Continuation)
     public final java.lang.Object updateMessage(long,java.lang.String,kotlin.coroutines.Continuation)
     public final java.lang.Object votePoll(long,int,kotlin.coroutines.Continuation)
     public final java.lang.Object warnUser(long,java.lang.String,kotlin.coroutines.Continuation)
@@ -37131,18 +37130,10 @@ com.chatile.Character:
     public final boolean getSilentModeEnabled()
     public final java.lang.String getSystemPrompt()
     public final java.lang.String getTtsVoice()
+    public final java.lang.Long getUserId()
+    public final boolean isPublic()
 com.chatile.CharacterMemory
-com.chatile.CharacterStats:
-    public static final int $stable
-    public void <init>()
-    public final java.lang.Long component1()
-    public final java.lang.String component2()
-    public final int component3()
-    public final java.lang.String component4()
-    public final com.chatile.CharacterStats copy(java.lang.Long,java.lang.String,int,java.lang.String)
-    public static synthetic com.chatile.CharacterStats copy$default(com.chatile.CharacterStats,java.lang.Long,java.lang.String,int,java.lang.String,int,java.lang.Object)
-    public final java.lang.Long getCharacterId()
-    public final java.lang.String getLastInteraction()
+com.chatile.CharacterStats
 com.chatile.ChatResult:
     public void <init>()
     public synthetic void <init>(java.lang.String,int,int,java.lang.String,java.lang.Long,java.lang.Long,java.util.List,boolean,int,kotlin.jvm.internal.DefaultConstructorMarker)
@@ -37177,8 +37168,10 @@ com.chatile.ChatViewModel$loadJournal$1
 com.chatile.ChatViewModel$loadMessages$1
 com.chatile.ChatViewModel$loadNotes$1
 com.chatile.ChatViewModel$loadNotifications$1
+com.chatile.ChatViewModel$loadPiecesHistory$1
 com.chatile.ChatViewModel$loadPost$1
 com.chatile.ChatViewModel$loadRetrospective$1
+com.chatile.ChatViewModel$loadStats$1
 com.chatile.ChatViewModel$loadThought$1
 com.chatile.ChatViewModel$loadTrendingCharacters$1
 com.chatile.ChatViewModel$loadUnreadCount$1
@@ -37198,11 +37191,14 @@ com.chatile.ChatViewModel$sharePost$2
 com.chatile.ChatViewModel$toggleCommentLike$2
 com.chatile.ChatViewModel$toggleFollow$2
 com.chatile.ChatViewModel$togglePostLike$2
+com.chatile.ChatViewModel$unpublishCharacter$2
 com.chatile.ChatViewModel:
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_comments$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_notifications$p(com.chatile.ChatViewModel)
+    public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_piecesHistory$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_post$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_retrospective$p(com.chatile.ChatViewModel)
+    public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_stats$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_trendingCharacters$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_unreadCount$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_userPosts$p(com.chatile.ChatViewModel)
@@ -37241,9 +37237,11 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlow getNextMysteryBoxAt()
     public final kotlinx.coroutines.flow.StateFlow getNextWatchAdAt()
     public final kotlinx.coroutines.flow.StateFlow getNotifications()
+    public final kotlinx.coroutines.flow.StateFlow getPiecesHistory()
     public final kotlinx.coroutines.flow.StateFlow getPost()
     public final kotlinx.coroutines.flow.StateFlow getPublicCharactersPage()
     public final kotlinx.coroutines.flow.StateFlow getRetrospective()
+    public final kotlinx.coroutines.flow.StateFlow getStats()
     public final kotlinx.coroutines.flow.StateFlow getTrendingCharacters()
     public final kotlinx.coroutines.flow.StateFlow getTutorialCompleted()
     public final kotlinx.coroutines.flow.StateFlow getUnreadCount()
@@ -37264,10 +37262,12 @@ com.chatile.ChatViewModel:
     public final void loadNotes(long)
     public final void loadNotifications(int,int)
     public static synthetic void loadNotifications$default(com.chatile.ChatViewModel,int,int,int,java.lang.Object)
+    public final void loadPiecesHistory()
     public final void loadPost(long)
     public final void loadPublicCharacters(java.lang.String,int)
     public static synthetic void loadReports$default(com.chatile.ChatViewModel,java.lang.String,int,java.lang.Object)
     public final void loadRetrospective()
+    public final void loadStats()
     public final void loadThought(long,kotlin.jvm.functions.Function1)
     public final void loadTrendingCharacters()
     public final void loadUnreadCount()
@@ -37281,6 +37281,8 @@ com.chatile.ChatViewModel:
     public final void postComment(long,java.lang.String,kotlin.jvm.functions.Function0)
     public static synthetic void postComment$default(com.chatile.ChatViewModel,long,java.lang.String,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit postComment$lambda$8()
+    public static synthetic void publishCharacter$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
+    private static final kotlin.Unit publishCharacter$lambda$13()
     public final void removeMessage(long)
     public static synthetic void reportContent$default(com.chatile.ChatViewModel,java.lang.String,long,java.lang.String,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit reportContent$lambda$24()
@@ -37305,6 +37307,9 @@ com.chatile.ChatViewModel:
     public final void togglePostLike(long,kotlin.jvm.functions.Function0)
     public static synthetic void togglePostLike$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit togglePostLike$lambda$7()
+    public final void unpublishCharacter(long,kotlin.jvm.functions.Function0)
+    public static synthetic void unpublishCharacter$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
+    private static final kotlin.Unit unpublishCharacter$lambda$14()
 com.chatile.Comment
 com.chatile.DailyClaimResult:
     public static final int $stable
@@ -37596,6 +37601,10 @@ com.chatile.UserProfile:
     public final java.lang.Long component1()
     public final boolean component10()
     public final java.lang.String component11()
+    public final java.lang.String component12()
+    public final java.lang.String component13()
+    public final java.lang.String component14()
+    public final java.lang.String component15()
     public final java.lang.Long component2()
     public final java.lang.String component3()
     public final java.lang.String component4()
@@ -37606,25 +37615,13 @@ com.chatile.UserProfile:
     public final boolean component9()
     public final java.lang.String getBadgeType()
     public final java.lang.String getCreatedAt()
-    public final java.lang.Long getId()
-    public final java.lang.Long getUserId()
+    public final java.lang.String getEquippedEffect()
+    public final java.lang.String getEquippedFrame()
+    public final java.lang.String getEquippedTitle()
     public final java.lang.String getUsername()
     public final boolean isCurrentUser()
     public final boolean isFollowing()
-com.chatile.UserStats:
-    public void <init>()
-    public synthetic void <init>(int,java.util.List,java.lang.String,int,int,int,int,kotlin.jvm.internal.DefaultConstructorMarker)
-    public final int component1()
-    public final java.util.List component2()
-    public final java.lang.String component3()
-    public final int component4()
-    public final int component5()
-    public final int component6()
-    public final com.chatile.UserStats copy(int,java.util.List,java.lang.String,int,int,int)
-    public static synthetic com.chatile.UserStats copy$default(com.chatile.UserStats,int,java.util.List,java.lang.String,int,int,int,int,java.lang.Object)
-    public final int getStreakDays()
-    public final int getTotalPiecesEarned()
-    public final int getTotalPiecesSpent()
+com.chatile.UserStats
 com.chatile.WeeklyRetrospective
 com.chatile.WidgetData
 com.chatile.ui.AdminScreenKt$AdminFeedbackSection$lambda$35$lambda$34$$inlined$items$default$2
@@ -57882,7 +57879,7 @@ androidx.compose.foundation.lazy.LazyListPrefetchStrategy
 androidx.compose.foundation.lazy.LazyListPrefetchStrategyKt
 androidx.compose.foundation.lazy.LazyListScope:
     public abstract void item()
-    public abstract void items(int,com.chatile.ui.ChatScreenKt$ChatScreen$6$invoke$lambda$30$lambda$29$lambda$19$lambda$18$$inlined$itemsIndexed$default$1,kotlin.jvm.functions.Function1,androidx.compose.runtime.internal.ComposableLambdaImpl)
+    public abstract void items(int,kotlin.jvm.functions.Function1,kotlin.jvm.functions.Function1,androidx.compose.runtime.internal.ComposableLambdaImpl)
 androidx.compose.foundation.lazy.LazyListScrollPosition:
     public static final int $stable
     static void <clinit>()
@@ -59961,9 +59958,19 @@ androidx.compose.material.icons.outlined.CallEndKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.CallKt:
     static void <clinit>()
+androidx.compose.material.icons.outlined.CardGiftcardKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.CheckKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.DeleteKt:
+    static void <clinit>()
 androidx.compose.material.icons.outlined.EditKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.EmojiEventsKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.InfoKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.Inventory2Kt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.MicKt:
     static void <clinit>()
@@ -59982,6 +59989,8 @@ androidx.compose.material.icons.outlined.PsychologyKt:
 androidx.compose.material.icons.outlined.ReplayKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.ShareKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.StarKt:
     static void <clinit>()
 androidx.compose.material.pullrefresh.ArrowValues:
     public final float rotation
@@ -60785,7 +60794,6 @@ androidx.compose.material3.ProgressIndicatorKt$LinearProgressIndicator$3$1:
 androidx.compose.material3.ProgressIndicatorKt$LinearProgressIndicator$4$1:
     public final void invoke$30()
 androidx.compose.material3.ProgressIndicatorKt$LinearProgressIndicator$5:
-    public final synthetic int $$default
     public final void invoke(androidx.compose.runtime.Composer,int)
 androidx.compose.material3.ProgressIndicatorKt$LinearProgressIndicator$coercedProgress$1$1:
     public final java.lang.Float invoke$1()
@@ -60960,7 +60968,6 @@ androidx.compose.material3.TabRowDefaults:
     public static final float ScrollableTabRowEdgeStartPadding
     public static long getPrimaryContainerColor()
     public static long getPrimaryContentColor()
-    public static androidx.compose.ui.Modifier tabIndicatorOffset(androidx.compose.material3.TabPosition)
 androidx.compose.material3.TabRowKt$TabRow$1:
     public final void invoke$46()
 androidx.compose.material3.TabRowKt$TabRow$2:
@@ -62876,6 +62883,7 @@ androidx.compose.runtime.SnapshotMutableStateImpl:
 androidx.compose.runtime.SnapshotMutationPolicy:
     public abstract java.lang.Object merge()
 androidx.compose.runtime.SnapshotStateKt:
+    public static synthetic androidx.compose.runtime.ParcelableSnapshotMutableState mutableStateOf$default(java.lang.Object)
     public static final androidx.compose.runtime.SnapshotMutationPolicy neverEqualPolicy()
     public static final androidx.compose.runtime.SnapshotMutationPolicy referentialEqualityPolicy()
     public static final androidx.compose.runtime.SnapshotMutationPolicy structuralEqualityPolicy()
@@ -64637,7 +64645,6 @@ androidx.compose.ui.graphics.ReusableGraphicsLayerScope:
     public static void setLayoutDirection$ui_release()
     public final void setRotationX(float)
     public final void setRotationY(float)
-    public final void setRotationZ(float)
     public static void setSize-uvyYCjk()
     public static void updateOutline$ui_release()
 androidx.compose.ui.graphics.ShaderKt
@@ -73999,17 +74006,22 @@ com.chatile.ApiClient:
     public static java.lang.Object createCharacter()
     public static java.lang.Object deleteCharacter()
     public static java.lang.Object endVoiceCall(long,int,kotlin.coroutines.jvm.internal.SuspendLambda)
+    public static java.lang.Object equipItem()
     public static java.lang.Object generateStory()
     public final java.lang.Object getCharacterOfTheDay(kotlin.coroutines.jvm.internal.SuspendLambda)
     public static java.lang.Object getCreatorEarnings()
     public static java.lang.Object getCreatorLeaderboard()
+    public static java.lang.Object getLootPity()
+    public static java.lang.Object getPublicProfile()
     public static java.lang.Object getWidgetData()
     public static java.lang.Object loginWithFirebase()
     public static java.lang.Object makeStoryChoice()
     public static java.lang.Object mysteryBox()
+    public static java.lang.Object openLootBox()
     public static java.lang.Object pinPostGlobal()
     public static java.lang.Object playStory()
     public static java.lang.Object publishCharacter()
+    public static java.lang.Object recycleItem()
     public static java.lang.Object replayStory()
     public static java.lang.Object reportContent()
     public static synthetic java.lang.Object request$default(com.chatile.ApiClient,java.lang.String,java.lang.String,kotlin.coroutines.Continuation)
@@ -74028,7 +74040,6 @@ com.chatile.ApiClient:
     public static java.lang.Object tutorialSkip()
     public static java.lang.Object tutorialStep()
     public static java.lang.Object unpinPostGlobal()
-    public static java.lang.Object unpublishCharacter()
     public static java.lang.Object uploadAvatar()
     public final java.lang.Object uploadCharacterAvatar(android.content.Context,long,android.net.Uri,kotlin.coroutines.jvm.internal.SuspendLambda)
 com.chatile.AuthManager:
@@ -74047,8 +74058,7 @@ com.chatile.Character:
     public final java.lang.String getName()
     public static int getRelationshipLevel()
     public static boolean isNsfw()
-com.chatile.CharacterStats:
-    static void <clinit>()
+    public static boolean isSystem()
 com.chatile.ChatResult:
     public static final int $stable
     public final java.lang.Long assistantMessageId
@@ -74105,8 +74115,6 @@ com.chatile.ChatViewModel$loadFeedback$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadMemory$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ChatViewModel$loadPiecesHistory$1:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadProfile$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadPublicCharacters$1:
@@ -74121,8 +74129,6 @@ com.chatile.ChatViewModel$loadReports$1:
 com.chatile.ChatViewModel$loadRewards$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadShop$1:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ChatViewModel$loadStats$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadStories$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -74163,8 +74169,6 @@ com.chatile.ChatViewModel$skipTutorial$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$unpinPostGlobal$2:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ChatViewModel$unpublishCharacter$2:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$updateProfile$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$uploadProfileAvatar$1:
@@ -74175,8 +74179,10 @@ com.chatile.ChatViewModel:
     public static final int $stable
     public final kotlinx.coroutines.flow.StateFlowImpl _comments
     public final kotlinx.coroutines.flow.StateFlowImpl _notifications
+    public final kotlinx.coroutines.flow.StateFlowImpl _piecesHistory
     public final kotlinx.coroutines.flow.StateFlowImpl _post
     public final kotlinx.coroutines.flow.StateFlowImpl _retrospective
+    public final kotlinx.coroutines.flow.StateFlowImpl _stats
     public final kotlinx.coroutines.flow.StateFlowImpl _trendingCharacters
     public final kotlinx.coroutines.flow.StateFlowImpl _unreadCount
     public final kotlinx.coroutines.flow.StateFlowImpl _userPosts
@@ -74193,9 +74199,11 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlow nextMysteryBoxAt
     public final kotlinx.coroutines.flow.StateFlow nextWatchAdAt
     public final kotlinx.coroutines.flow.StateFlow notifications
+    public final kotlinx.coroutines.flow.StateFlow piecesHistory
     public final kotlinx.coroutines.flow.StateFlow post
     public final kotlinx.coroutines.flow.StateFlow publicCharactersPage
     public final kotlinx.coroutines.flow.StateFlow retrospective
+    public final kotlinx.coroutines.flow.StateFlow stats
     public final kotlinx.coroutines.flow.StateFlow trendingCharacters
     public final kotlinx.coroutines.flow.StateFlow tutorialCompleted
     public final kotlinx.coroutines.flow.StateFlow unreadCount
@@ -74203,11 +74211,9 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlow userProfile
     public static synthetic kotlin.Unit $r8$lambda$-HGoWc7lOFUjDqVg67tZ_5LWTXw()
     public static synthetic kotlin.Unit $r8$lambda$C-fzVn6AxDPc3c2JxFD2TgDd9nM()
-    public static synthetic kotlin.Unit $r8$lambda$HR4RCO0ltqqADl-OJDapOAsiq_c()
     public static synthetic kotlin.Unit $r8$lambda$Hg-S1TzE7j0iOwPj8PHPu-tBSAc()
     public static synthetic kotlin.Unit $r8$lambda$K_sh1soM8idYZpfv9NX7Gl_TLgQ()
     public static synthetic kotlin.Unit $r8$lambda$MKo5qdyqDFygzbZpw6WS3ivTYEM()
-    public static synthetic kotlin.Unit $r8$lambda$QrFE0M6YDSHuIIaqwACDG3EFHso()
     public static synthetic kotlin.Unit $r8$lambda$Up1d-M6lz5uZPDx1P59iWJcgBlc()
     public static synthetic kotlin.Unit $r8$lambda$ZIyVEOhs84zsPth4OrSYHmaA62w()
     public static synthetic kotlin.Unit $r8$lambda$iJwIMNdXBnbItJXfEDQXX5f2VxU()
@@ -74250,7 +74256,6 @@ com.chatile.ChatViewModel:
     public static kotlinx.coroutines.flow.StateFlow getMysteryBox()
     public static kotlinx.coroutines.flow.StateFlow getNsfwEnabled()
     public static kotlinx.coroutines.flow.StateFlow getPieces()
-    public static kotlinx.coroutines.flow.StateFlow getPiecesHistory()
     public static kotlinx.coroutines.flow.StateFlow getProfile()
     public static kotlinx.coroutines.flow.StateFlow getPublicCharacterDetail()
     public static kotlinx.coroutines.flow.StateFlow getPublicCharacters()
@@ -74266,7 +74271,6 @@ com.chatile.ChatViewModel:
     public static kotlinx.coroutines.flow.StateFlow getShopItems()
     public static kotlinx.coroutines.flow.StateFlow getShopLoading()
     public static kotlinx.coroutines.flow.StateFlow getShowInterstitial()
-    public static kotlinx.coroutines.flow.StateFlow getStats()
     public static kotlinx.coroutines.flow.StateFlow getStreakDays()
     public static kotlinx.coroutines.flow.StateFlow getSubscriptionExpiresAt()
     public static kotlinx.coroutines.flow.StateFlow getSubscriptionTier()
@@ -74287,14 +74291,11 @@ com.chatile.ChatViewModel:
     public final void loadDailyStatus()
     public static void loadFeedback()
     public final void loadMemory(long)
-    public static void loadPiecesHistory()
-    public final void loadProfile()
     public final void loadQuests()
     public static void loadReferralCode()
     public static void loadReports()
     public final void loadRewards()
     public final void loadShop()
-    public static void loadStats()
     public final void loadStories()
     public static java.lang.Object loadUser()
     public static void makeStoryChoice()
@@ -74303,8 +74304,7 @@ com.chatile.ChatViewModel:
     public static void playStory()
     public static final kotlin.Unit playStory$lambda$0()
     public static final kotlin.Unit playStory$lambda$1()
-    public final void publishCharacter(long,kotlin.jvm.functions.Function0)
-    public static final kotlin.Unit publishCharacter$lambda$13()
+    public static void publishCharacter()
     public static void replayStory()
     public static final kotlin.Unit replayStory$lambda$2()
     public static void reportContent()
@@ -74322,8 +74322,6 @@ com.chatile.ChatViewModel:
     public static void skipTutorial()
     public static void unpinPostGlobal()
     public static final kotlin.Unit unpinPostGlobal$lambda$19()
-    public static void unpublishCharacter()
-    public static final kotlin.Unit unpublishCharacter$lambda$14()
     public static void updateProfile()
     public static void uploadProfileAvatar()
     public static void watchAd()
@@ -74481,9 +74479,9 @@ com.chatile.UserProfile:
     public final java.lang.String getAvatarUrl()
     public static java.lang.String getBio()
     public static java.lang.String getDisplayName()
-com.chatile.UserStats:
-    public static final int $stable
-    static void <clinit>()
+    public static java.lang.String getEquippedTheme()
+    public static java.lang.Long getId()
+    public static java.lang.Long getUserId()
 com.chatile.ui.AdminScreenKt$$InternalSyntheticLambda$4$28c0661ad36d90958f6d0d30e35d01900d80d48fdb43c1260dc4b33fc1a72f04$0:
     public final synthetic int f$3
 com.chatile.ui.AdminScreenKt$AdminFeedbackSection$5$1$1$1$1$2$1$1:
@@ -74547,10 +74545,12 @@ com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$3$e15c5a1d537508e72fc7f03cf
     public final synthetic int f$6
 com.chatile.ui.AppNavHostKt$AppNavHost$3$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.AppNavHostKt$AppNavHost$5$1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$AppNavHost$5$1$2:
+    public final void invoke$86()
 com.chatile.ui.AppNavHostKt$AppNavHost$5$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$AppNavHost$5$2:
-    public final void invoke$86()
 com.chatile.ui.AppNavHostKt$AppNavHost$5:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$CustomBottomNavigationBar$2$1$1$1$1:
@@ -74563,8 +74563,15 @@ com.chatile.ui.AppNavHostKt$NavGraph$3$1$10:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$11:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$3$1$12$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$12:
+    public static synthetic kotlin.Unit $r8$lambda$NjRkLPCykCW1FYAzx9M0Nb4S6xI()
+    public static synthetic kotlin.Unit $r8$lambda$NyBYuq6crRtoJWkBPizA4JFpogg()
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+    public static final kotlin.Unit invoke$lambda$6$lambda$5()
+    public static final kotlin.Unit invoke$lambda$8$lambda$7()
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$13:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$14:
@@ -74577,7 +74584,15 @@ com.chatile.ui.AppNavHostKt$NavGraph$3$1$17:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$18:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$3$1$19:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$1:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$3$1$20:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$3$1$21:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$3$1$22:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$2:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
@@ -74591,23 +74606,16 @@ com.chatile.ui.AppNavHostKt$NavGraph$3$1$6:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$7:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$3$1$8$1$1:
-    public int label
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$8:
-    public static synthetic kotlin.Unit $r8$lambda$8wa9hQzENB3iaLr2u0V0hiT79xo()
-    public static synthetic kotlin.Unit $r8$lambda$FjFucDj92yUGPDEu4nuPvgVFk_Y()
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-    public static final kotlin.Unit invoke$lambda$6$lambda$5()
-    public static final kotlin.Unit invoke$lambda$8$lambda$7()
 com.chatile.ui.AppNavHostKt$NavGraph$3$1$9:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt:
-    public static synthetic kotlin.Unit $r8$lambda$3AEahluiTSMq9rbN2x47m283KYw()
+    public static synthetic kotlin.Unit $r8$lambda$mnRqLm9CHSmmhqpwiSPx4OWN_4s()
     public static synthetic kotlin.Unit $r8$lambda$n1PNk8h_HpJwKubNf7vgn-vXwO8()
     public static final kotlin.Unit AppNavHost$lambda$1$lambda$0()
     public static final void AppNavHost$lambda$10(androidx.compose.runtime.MutableState,boolean)
-    public static final kotlin.Unit NavGraph$lambda$21$lambda$20()
+    public static final kotlin.Unit NavGraph$lambda$22$lambda$21()
 com.chatile.ui.CharacterDetailScreenKt$$InternalSyntheticLambda$5$68035c77e6e1600f74b762f397051804a57fe0738225309062ce9abfdf6e7444$1:
     public final synthetic int f$5
 com.chatile.ui.CharacterDetailScreenKt$$InternalSyntheticLambda$6$7c8bca7ad879ba82e492df838b6cb808486b9a5552443705a230190c33d99501$0:
@@ -74829,11 +74837,47 @@ com.chatile.ui.ComposableSingletons$HomeScreenKt$lambda-1$1:
 com.chatile.ui.ComposableSingletons$HomeScreenKt:
     public static final com.chatile.ui.ComposableSingletons$HomeScreenKt INSTANCE
     public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+com.chatile.ui.ComposableSingletons$InventoryScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$InventoryScreenKt$lambda-2$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$InventoryScreenKt$lambda-3$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$InventoryScreenKt$lambda-4$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$InventoryScreenKt$lambda-5$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$InventoryScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$InventoryScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-5$app_release()
 com.chatile.ui.ComposableSingletons$LoginScreenKt$lambda-1$1:
     public final void invoke$87()
 com.chatile.ui.ComposableSingletons$LoginScreenKt:
     public static final com.chatile.ui.ComposableSingletons$LoginScreenKt INSTANCE
     public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+com.chatile.ui.ComposableSingletons$LootBoxOpeningScreenKt$lambda-1$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$LootBoxOpeningScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$LootBoxOpeningScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+com.chatile.ui.ComposableSingletons$LootBoxScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$LootBoxScreenKt$lambda-2$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$LootBoxScreenKt$lambda-3$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$LootBoxScreenKt$lambda-4$1:
+    public final void invoke$14()
+com.chatile.ui.ComposableSingletons$LootBoxScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$LootBoxScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
 com.chatile.ui.ComposableSingletons$MemorySheetKt$lambda-1$1:
     public final void invoke$88()
 com.chatile.ui.ComposableSingletons$MemorySheetKt$lambda-2$1:
@@ -74874,14 +74918,18 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-10$1:
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-11$1:
     public final void invoke$87()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-12$1:
-    public final void invoke$87()
-com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-13$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-13$1:
+    public final void invoke$87()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-14$1:
     public final void invoke$87()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-15$1:
     public final void invoke$87()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-16$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-17$1:
+    public final void invoke$87()
+com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-18$1:
     public final void invoke$87()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-2$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
@@ -74904,11 +74952,13 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt:
     public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-10$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-11$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-12$app_release()
-    public static kotlin.jvm.functions.Function2 getLambda-13$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-12$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-13$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-14$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-15$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-16$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-17$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-18$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
@@ -74943,6 +74993,11 @@ com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt:
     public static kotlin.jvm.functions.Function4 getLambda-6$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-7$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
+com.chatile.ui.ComposableSingletons$PublicProfileScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$PublicProfileScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$PublicProfileScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
 com.chatile.ui.ComposableSingletons$SearchScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$SearchScreenKt$lambda-2$1:
@@ -75071,12 +75126,70 @@ com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$la
     public final void invoke$19()
 com.chatile.ui.HomeScreenKt$HomeScreen$4:
     public final void invoke$86()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$2:
+    public final void invoke$46()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$3$1$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$3:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$5$1$2$1$1$2$1$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$5$1$2$1$1$2$1$1:
+    public final void invoke()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$5$1$2$1$1$2$2:
+    public final void invoke$87()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$5$1$2$1$1$2$3$1:
+    public final void invoke()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$1$5$1$2$1:
+    public final void invoke$14()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$2:
+    public final java.lang.Object invoke$12()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.InventoryScreenKt$InventoryScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1 $contentType
+    public final java.lang.Object invoke$12()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$4:
+    public final void invoke$19()
+com.chatile.ui.InventoryScreenKt$InventoryScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$4$1$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$4:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$5:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$6:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.InventoryScreenKt$InventoryScreen$loadInventory$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.InventoryScreenKt:
+    public static final void access$InventoryScreen$loadInventory(kotlinx.coroutines.internal.ContextScope,androidx.compose.runtime.MutableState)
 com.chatile.ui.LoginScreenKt$LoginScreen$1$1$1$1$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.LoginScreenKt$LoginScreen$1:
     public final void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int)
 com.chatile.ui.LoginScreenKt:
     public static final void access$LoginScreen$lambda$3(androidx.compose.runtime.MutableState,boolean)
+com.chatile.ui.LootBoxOpeningScreenKt$LootBoxOpeningScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.LootBoxOpeningScreenKt$LootBoxOpeningScreen$2$1$1$3:
+    public final void invoke$14()
+com.chatile.ui.LootBoxOpeningScreenKt$LootBoxOpeningScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2$1$2:
+    public final void invoke$14()
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2$1$3:
+    public final void invoke$14()
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.LootBoxScreenKt:
+    public static final void LootBoxScreen$lambda$3(androidx.compose.runtime.MutableState,boolean)
+    public static final int access$LootBoxScreen$lambda$0(androidx.compose.runtime.MutableState)
 com.chatile.ui.MemorySheetKt$MemorySheet$1$1$1$1:
     public final void invoke$88()
 com.chatile.ui.MemorySheetKt$MemorySheet$1$1$1$2$1$1:
@@ -75117,65 +75230,62 @@ com.chatile.ui.PlayStoryScreenKt$PlayStoryScreen$4:
     public final void invoke$14()
 com.chatile.ui.PlayStoryScreenKt:
     public static final int access$PlayStoryScreen$lambda$4(androidx.compose.runtime.MutableState)
-com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$bb5db24b1d3890ba1b5c567566e3b867dac36ede824a329464deb696bf021379$0
-com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$bb5db24b1d3890ba1b5c567566e3b867dac36ede824a329464deb696bf021379$1
-com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$bb5db24b1d3890ba1b5c567566e3b867dac36ede824a329464deb696bf021379$2
-com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$bb5db24b1d3890ba1b5c567566e3b867dac36ede824a329464deb696bf021379$4:
-    public final synthetic int f$6
-com.chatile.ui.ProfileScreenKt$ProfileScreen$4$1:
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$0
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$1
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$2
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$3
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$4
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$5
+com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$5$f302194bc8fe6d1d9ef92fbb1e1b6af0fd8271c1faa1d52ac52b56afddfed86f$7:
+    public final synthetic int f$9
+com.chatile.ui.ProfileScreenKt$ProfileScreen$7$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.ProfileScreenKt$ProfileScreen$5$1:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$8$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$12$1$2:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$12$1$2:
     public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$13$2$1:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$13$1:
     public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$17:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$17:
     public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$20:
-    public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$21$1$1$2:
-    public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$23:
-    public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$25$2$1:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$19$2$1:
     public final void invoke$32()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$7$2$1:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$7$2$1:
     public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$7$3:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$7$3:
     public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$8$2$1:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$8$2$1:
     public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6$1$8$3:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$8$3:
     public final void invoke$87()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$6:
-    public static final boolean invoke$lambda$73$lambda$53(androidx.compose.runtime.MutableState)
 com.chatile.ui.ProfileScreenKt:
+    public static synthetic kotlin.Unit $r8$lambda$5NzTo-jjdwlheXd8qSwLBU1_Omc()
     public static synthetic kotlin.Unit $r8$lambda$6NuEtrIhvLszQ4XpKCJ2coVzZz0()
+    public static synthetic kotlin.Unit $r8$lambda$Cw1KdjwlvEJkeP6yXBTpKq7E1eQ()
     public static synthetic kotlin.Unit $r8$lambda$JoWxMm6WGYH7_Zh7ZJhoj81ToOA()
     public static synthetic kotlin.Unit $r8$lambda$NRDFyzm_lo5NJoJ4wE9sE7hDXl4()
+    public static synthetic kotlin.Unit $r8$lambda$NnEeQ6zUAaV-qgEnJU24VxUqr5s()
     public static final kotlin.Unit ProfileScreen$lambda$1$lambda$0()
+    public static final kotlin.Unit ProfileScreen$lambda$11$lambda$10()
     public static final kotlin.Unit ProfileScreen$lambda$3$lambda$2()
     public static final kotlin.Unit ProfileScreen$lambda$5$lambda$4()
-    public static final boolean access$ProfileScreen$lambda$12(androidx.compose.runtime.MutableState)
-    public static final java.lang.String access$ProfileScreen$lambda$15(androidx.compose.runtime.MutableState)
-    public static final com.chatile.UserStats access$ProfileScreen$lambda$17(androidx.compose.runtime.MutableState)
-    public static final org.json.JSONArray access$ProfileScreen$lambda$18(androidx.compose.runtime.MutableState)
-    public static final org.json.JSONArray access$ProfileScreen$lambda$19(androidx.compose.runtime.MutableState)
-    public static final org.json.JSONArray access$ProfileScreen$lambda$20(androidx.compose.runtime.MutableState)
-    public static final org.json.JSONObject access$ProfileScreen$lambda$22(androidx.compose.runtime.MutableState)
-    public static final java.lang.String access$ProfileScreen$lambda$23(androidx.compose.runtime.MutableState)
-    public static final boolean access$ProfileScreen$lambda$25(androidx.compose.runtime.MutableState)
+    public static final kotlin.Unit ProfileScreen$lambda$7$lambda$6()
+    public static final kotlin.Unit ProfileScreen$lambda$9$lambda$8()
+    public static final com.chatile.UserProfile access$ProfileScreen$lambda$12(androidx.compose.runtime.MutableState)
+    public static final boolean access$ProfileScreen$lambda$14(androidx.compose.runtime.MutableState)
+    public static final boolean access$ProfileScreen$lambda$17(androidx.compose.runtime.MutableState)
+    public static final java.lang.String access$ProfileScreen$lambda$20(androidx.compose.runtime.MutableState)
+    public static final org.json.JSONArray access$ProfileScreen$lambda$22(androidx.compose.runtime.MutableState)
+    public static final org.json.JSONArray access$ProfileScreen$lambda$23(androidx.compose.runtime.MutableState)
+    public static final org.json.JSONObject access$ProfileScreen$lambda$25(androidx.compose.runtime.MutableState)
+    public static final java.lang.String access$ProfileScreen$lambda$26(androidx.compose.runtime.MutableState)
     public static final boolean access$ProfileScreen$lambda$28(androidx.compose.runtime.MutableState)
     public static final boolean access$ProfileScreen$lambda$31(androidx.compose.runtime.MutableState)
     public static final boolean access$ProfileScreen$lambda$34(androidx.compose.runtime.MutableState)
-    public static final boolean access$ProfileScreen$lambda$37(androidx.compose.runtime.MutableState)
+    public static final java.lang.String access$ProfileScreen$lambda$37(androidx.compose.runtime.MutableState)
     public static final java.lang.String access$ProfileScreen$lambda$40(androidx.compose.runtime.MutableState)
-    public static final java.lang.String access$ProfileScreen$lambda$43(androidx.compose.runtime.MutableState)
-    public static final com.chatile.UserProfile access$ProfileScreen$lambda$6(androidx.compose.runtime.MutableState)
-    public static final boolean access$ProfileScreen$lambda$9(androidx.compose.runtime.MutableState)
 com.chatile.ui.PublicCharactersScreenKt$$InternalSyntheticLambda$4$8b0aeb3e4e2a425d189c366276c1a3c3239f373356d34aff3d5a7718f6138303$3:
     public final synthetic int f$3
 com.chatile.ui.PublicCharactersScreenKt$BaseCharacterCard$1:
@@ -75241,6 +75351,14 @@ com.chatile.ui.PublicCharactersScreenKt$SkeletonCharacterCard$1:
 com.chatile.ui.PublicCharactersScreenKt:
     public static final boolean PublicCharactersScreen$lambda$4(androidx.compose.runtime.MutableState)
     public static final boolean PublicCharactersScreen$lambda$5(androidx.compose.runtime.MutableState)
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$4:
+    public final void invoke$14()
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$5:
+    public final void invoke$14()
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.SearchScreenKt$$InternalSyntheticLambda$4$931ba3a06fbe693298f060c6b86de5eb9924931c8a282e6ff13c5ab78bea938d$0:
     public final synthetic int f$3
 com.chatile.ui.SearchScreenKt$SearchScreen$1$1:
@@ -75345,6 +75463,9 @@ com.chatile.ui.theme.ThemeKt$$InternalSyntheticLambda$2$f33f06c81ef4189bf45f05eb
     public final synthetic int f$3
 com.chatile.ui.theme.ThemeKt$$InternalSyntheticLambda$7$fb498f6b93443e505df38a2453c6d789617b2b386ecb94b48a38a7230eb0308b$0:
     public final synthetic int f$3
+com.chatile.ui.theme.ThemeKt:
+    public static synthetic java.lang.String $r8$lambda$5PPalb0bjE2hdWHCPmobm2Wj380()
+    public static final java.lang.String LocalEquippedTheme$lambda$1()
 com.chatile.ui.theme.TypeKt:
     public static final androidx.compose.ui.text.font.FontFamily Inter
 com.chatile.widget.ChatileWidget$provideGlance$2$1:

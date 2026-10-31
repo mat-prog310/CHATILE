@@ -716,13 +716,14 @@ function getFallbackReply(character, message) {
 }
 
 async function callOpenAI(messages, model = 'gpt-4o-mini') {
-  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY_NOT_CONFIGURED');
+  const apiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (!apiKey) throw new Error('OPENAI_API_KEY_NOT_CONFIGURED');
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
       model: model || 'gpt-4o-mini',
@@ -748,17 +749,23 @@ async function callOpenAI(messages, model = 'gpt-4o-mini') {
 }
 
 async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
+  // Si OpenAI est configuré, on l'utilise directement pour des réponses rapides et garanties
+  const openAIKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (openAIKey) {
+    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+    return await callOpenAI(messages, openaiModel);
+  }
+
   try {
     if (!process.env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY.startsWith('dev_key') || process.env.MISTRAL_API_KEY.trim() === '') {
-      const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
-      return await callOpenAI(messages, openaiModel);
+      throw new Error('MISTRAL_API_KEY_NOT_CONFIGURED');
     }
 
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY.trim().replace(/^["']|["']$/g, '')}`
       },
       body: JSON.stringify({
         model: model || 'mistral-small-latest',
@@ -767,7 +774,7 @@ async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest'
         temperature: 0.6,
         top_p: 0.9,
       }),
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(15_000),
     });
 
     if (!response.ok) {
@@ -778,7 +785,8 @@ async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest'
     const text = data.choices?.[0]?.message?.content;
     if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_MISTRAL_RESPONSE');
     return text.trim();
-  } catch (_error) {
+  } catch (error) {
+    console.warn('Mistral indisponible, tentative OpenAI en secours...');
     const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
     return await callOpenAI(messages, openaiModel);
   }

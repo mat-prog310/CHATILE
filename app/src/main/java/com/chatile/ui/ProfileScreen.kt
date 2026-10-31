@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -59,11 +61,11 @@ fun ProfileScreen(
     vm: ChatViewModel,
     onOpenShop: () -> Unit,
     onWatchAd: () -> Unit = {},
-    onOpenAdmin: () -> Unit = {},
     onOpenCreatorEarnings: () -> Unit = {},
     onOpenLootBoxes: () -> Unit = {},
     onOpenInventory: () -> Unit = {},
-    onOpenPublicProfile: (Long) -> Unit = {}
+    onOpenPublicProfile: (Long) -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val profile by vm.profile.collectAsState()
@@ -73,6 +75,10 @@ fun ProfileScreen(
     val streakDays by vm.streakDays.collectAsState()
     val canOpenMysteryBox by vm.canOpenMysteryBox.collectAsState()
     val mysteryBox by vm.mysteryBox.collectAsState()
+    var showSettings by remember { mutableStateOf(false) }
+    var showLegalDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deleteConfirmText by remember { mutableStateOf("") }
     val nsfw by vm.nsfwEnabled.collectAsState()
     val tier by vm.subscriptionTier.collectAsState()
     val expiresAt by vm.subscriptionExpiresAt.collectAsState()
@@ -156,15 +162,6 @@ fun ProfileScreen(
                 minLines = 3,
             )
             Button(onClick = { vm.updateProfile(name, bio) }, modifier = Modifier.fillMaxWidth()) { Text("Enregistrer le profil") }
-            if (profile?.role == "admin") {
-                Button(
-                    onClick = onOpenAdmin,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DA1F2))
-                ) {
-                    Text("⚙️ Panneau d'Administration")
-                }
-            }
 
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurfaceRaised).padding(18.dp),
@@ -282,89 +279,10 @@ fun ProfileScreen(
                     }
                 }
             }
-            OutlinedButton(onClick = vm::loadReferralCode, modifier = Modifier.fillMaxWidth()) { Text("Parrainage") }
-            referralCode?.let { code ->
-                Text("Ton code : $code", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
-                TextField(value = referralInput, onValueChange = { referralInput = it }, label = { Text("Code reçu") }, modifier = Modifier.fillMaxWidth(), colors = profileFieldColors(), singleLine = true)
-                OutlinedButton(onClick = { vm.applyReferral(referralInput) }, enabled = referralInput.isNotBlank()) { Text("Utiliser un code") }
-            }
-
             OutlinedButton(
                 onClick = { onOpenPublicProfile(profile?.id ?: profile?.userId ?: 1L) },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Voir mon profil public") }
-            OutlinedButton(
-                onClick = {
-                    if (!showCreatorEarnings) {
-                        showCreatorEarnings = true
-                        vm.loadCreatorEarnings()
-                    } else {
-                        showCreatorEarnings = false
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text(if (showCreatorEarnings) "Masquer mes revenus créateur" else "Mes revenus créateur") }
-
-            if (showCreatorEarnings) {
-                val totalEarnings = creatorEarnings?.optInt("totalEarnings", 0) ?: 0
-                val characterEarnings = creatorEarnings?.optInt("characterEarnings", 0) ?: 0
-                val storyEarnings = creatorEarnings?.optInt("storyEarnings", 0) ?: 0
-                val transactions = creatorEarnings?.optJSONArray("recentTransactions") ?: org.json.JSONArray()
-
-                Column(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Text("Mes Revenus Créateur", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Total gagné", color = TextSecondary)
-                        Text("$totalEarnings Pièces", color = VioletAccent, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Personnages", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-                        Text("+$characterEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Histoires", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-                        Text("+$storyEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
-                    }
-
-                    OutlinedButton(
-                        onClick = onOpenCreatorEarnings,
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                    ) {
-                        Text("Classement & Détails complets")
-                    }
-
-                    if (transactions.length() > 0) {
-                        Text("Dernières ventes", color = TextPrimary, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
-                        for (i in 0 until minOf(transactions.length(), 5)) {
-                            val item = transactions.optJSONObject(i) ?: continue
-                            val description = item.optString("description", "")
-                            val amount = item.optInt("amount", 0)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(description, color = TextSecondary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                                Text("+$amount", color = VioletAccent, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-            }
 
             OutlinedButton(
                 onClick = onOpenLootBoxes,
@@ -376,24 +294,179 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Mon Inventaire & Équipement") }
 
-            Row(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Paramètres NSFW", color = TextPrimary)
-                    Text("Enregistré sur votre compte", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-                }
-                Switch(checked = nsfw, onCheckedChange = vm::setNsfw)
-            }
             if (tier != "free") {
                 Text("${if (tier == "premium_plus") "Premium+" else "Premium"} · expire le ${expiresAt ?: "date inconnue"}", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
             } else {
                 OutlinedButton(onClick = onOpenShop, modifier = Modifier.fillMaxWidth()) { Text("Passer Premium") }
             }
+
+            // Bouton Paramètres
+            OutlinedButton(
+                onClick = { showSettings = !showSettings },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (showSettings) "Masquer les Paramètres" else "⚙️ Paramètres")
+            }
+
+            if (showSettings) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurface).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("Paramètres", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                    // Switch NSFW
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Activer NSFW", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
+                            Text("Contenu mature", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Switch(checked = nsfw, onCheckedChange = vm::setNsfw)
+                    }
+
+                    // Parrainage
+                    OutlinedButton(onClick = vm::loadReferralCode, modifier = Modifier.fillMaxWidth()) { Text("Parrainage") }
+                    referralCode?.let { code ->
+                        Text("Ton code : $code", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
+                        TextField(value = referralInput, onValueChange = { referralInput = it }, label = { Text("Code reçu") }, modifier = Modifier.fillMaxWidth(), colors = profileFieldColors(), singleLine = true)
+                        OutlinedButton(onClick = { vm.applyReferral(referralInput) }, enabled = referralInput.isNotBlank()) { Text("Utiliser un code") }
+                    }
+
+                    // Revenus créateurs
+                    OutlinedButton(
+                        onClick = {
+                            if (!showCreatorEarnings) {
+                                showCreatorEarnings = true
+                                vm.loadCreatorEarnings()
+                            } else {
+                                showCreatorEarnings = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(if (showCreatorEarnings) "Masquer mes revenus créateur" else "Mes revenus créateur") }
+
+                    if (showCreatorEarnings) {
+                        val totalEarnings = creatorEarnings?.optInt("totalEarnings", 0) ?: 0
+                        val characterEarnings = creatorEarnings?.optInt("characterEarnings", 0) ?: 0
+                        val storyEarnings = creatorEarnings?.optInt("storyEarnings", 0) ?: 0
+                        val transactions = creatorEarnings?.optJSONArray("recentTransactions") ?: org.json.JSONArray()
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text("Mes Revenus", color = TextPrimary, style = MaterialTheme.typography.titleSmall)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Total gagné", color = TextSecondary)
+                                Text("$totalEarnings Pièces", color = VioletAccent, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Personnages", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                                Text("+$characterEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Histoires", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                                Text("+$storyEarnings Pièces", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                            }
+
+                            OutlinedButton(
+                                onClick = onOpenCreatorEarnings,
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                            ) {
+                                Text("Classement & Détails complets")
+                            }
+                        }
+                    }
+
+                    OutlinedButton(onClick = { showLegalDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Mentions légales")
+                    }
+
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    ) {
+                        Text("Suppression du profil")
+                    }
+                }
+            }
+
+            // Bouton Déconnexion
+            Button(
+                onClick = onLogout,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("Se déconnecter", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+
             if (!error.isNullOrBlank()) Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
             Spacer(Modifier.height(8.dp))
         }
+    }
+
+    if (showLegalDialog) {
+        AlertDialog(
+            onDismissRequest = { showLegalDialog = false },
+            title = { Text("Mentions Légales") },
+            text = { Text("CHATILE est une application de discussion avec des personnages IA et d'histoires interactives.\n\nTous droits réservés © 2025 CHATILE.\n\nLes données personnelles sont traitées conformément aux règles de confidentialité.") },
+            confirmButton = {
+                TextButton(onClick = { showLegalDialog = false }) { Text("Fermer") }
+            }
+        )
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Supprimer le compte") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Attention : cette action est irréversible. Toutes vos données, pièces et personnages seront supprimés.")
+                    Text("Tapez CONFIRMER ci-dessous :", color = Color.Red, style = MaterialTheme.typography.bodySmall)
+                    TextField(
+                        value = deleteConfirmText,
+                        onValueChange = { deleteConfirmText = it },
+                        singleLine = true,
+                        colors = profileFieldColors()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (deleteConfirmText == "CONFIRMER") {
+                            showDeleteDialog = false
+                            vm.deleteAccount(onSuccess = onLogout)
+                        }
+                    },
+                    enabled = deleteConfirmText == "CONFIRMER"
+                ) {
+                    Text("Supprimer", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
     }
 }
 

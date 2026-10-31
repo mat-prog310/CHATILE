@@ -64,4 +64,32 @@ class AuthManager(private val context: Context) {
     fun getCurrentUser(): FirebaseUser? = firebaseAuth.currentUser
     suspend fun getIdToken(): String? = firebaseAuth.currentUser?.getIdToken(false)?.await()?.token
     fun signOut() = firebaseAuth.signOut()
+
+    suspend fun signInWithEmail(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val idToken = authResult.user?.getIdToken(false)?.await()?.token
+            if (!idToken.isNullOrBlank()) {
+                ApiClient.setFirebaseIdToken(idToken)
+                ApiClient.loginWithFirebase(idToken)
+            }
+            Result.success(authResult.user!!)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun signUpWithEmail(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val authResult = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val idToken = authResult.user?.getIdToken(false)?.await()?.token
+            if (!idToken.isNullOrBlank()) {
+                ApiClient.setFirebaseIdToken(idToken)
+                ApiClient.loginWithFirebase(idToken)
+            }
+            Result.success(authResult.user!!)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

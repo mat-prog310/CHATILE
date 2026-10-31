@@ -694,6 +694,14 @@ class ChatViewModel : ViewModel() {
         }
     }
 
+    fun deleteAccount(onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.deleteAccount() }
+                .onSuccess { onSuccess() }
+                .onFailure { _error.value = it.message ?: "Impossible de supprimer le compte." }
+        }
+    }
+
     fun uploadProfileAvatar(context: Context, uri: Uri) {
         viewModelScope.launch {
             runCatching { ApiClient.uploadAvatar(context, uri) }

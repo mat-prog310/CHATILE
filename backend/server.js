@@ -715,50 +715,73 @@ function getFallbackReply(character, message) {
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
-async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
-  if (!process.env.MISTRAL_API_KEY) throw new Error('MISTRAL_API_KEY_NOT_CONFIGURED');
+async function callOpenAI(messages, model = 'gpt-4o-mini') {
+  if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY_NOT_CONFIGURED');
 
-  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: model || 'mistral-small-latest',
+      model: model || 'gpt-4o-mini',
       messages,
-      max_tokens: 500,
-      temperature: 0.6,
-      top_p: 0.9,
+      max_tokens: 600,
+      temperature: 0.85,
+      presence_penalty: 0.4,
+      frequency_penalty: 0.4,
     }),
     signal: AbortSignal.timeout(45_000),
   });
 
-  if (response.status === 401) {
-    console.error('Clé API Mistral invalide ou révoquée');
-    throw new Error('MISTRAL_INVALID_API_KEY');
-  }
-  if (response.status === 403) {
-    throw new Error('BLOCKED_BY_GUARDRAIL');
-  }
-  if (response.status === 429) {
-    console.error('Rate limit Mistral atteint');
-    throw new Error('MISTRAL_RATE_LIMIT_EXCEEDED');
-  }
-  if (response.status >= 500) {
-    console.error('Erreur serveur Mistral');
-    throw new Error('MISTRAL_SERVER_ERROR');
-  }
   if (!response.ok) {
     const detail = await response.text();
-    console.error('Mistral request failed:', response.status, detail.slice(0, 500));
-    throw new Error('MISTRAL_REQUEST_FAILED');
+    console.error('OpenAI request failed:', response.status, detail.slice(0, 500));
+    throw new Error('OPENAI_REQUEST_FAILED');
   }
 
   const data = await response.json();
   const text = data.choices?.[0]?.message?.content;
-  if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_MISTRAL_RESPONSE');
+  if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_OPENAI_RESPONSE');
   return text.trim();
+}
+
+async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
+  try {
+    if (!process.env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY.startsWith('dev_key') || process.env.MISTRAL_API_KEY.trim() === '') {
+      const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+      return await callOpenAI(messages, openaiModel);
+    }
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: model || 'mistral-small-latest',
+        messages,
+        max_tokens: 500,
+        temperature: 0.6,
+        top_p: 0.9,
+      }),
+      signal: AbortSignal.timeout(45_000),
+    });
+
+    if (!response.ok) {
+      throw new Error(`MISTRAL_ERROR_${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_MISTRAL_RESPONSE');
+    return text.trim();
+  } catch (_error) {
+    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+    return await callOpenAI(messages, openaiModel);
+  }
 }
 
 function parseFacts(summary) {
@@ -1112,6 +1135,14 @@ app.put('/api/profile', (req, res) => {
   });
   update();
   res.json({ displayName, bio });
+});
+
+app.delete('/api/account', (req, res) => {
+  const deleteAccount = db.transaction(() => {
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.user.id);
+  });
+  deleteAccount();
+  res.json({ success: true });
 });
 
 app.post('/api/auth/firebase', async (req, res) => {
@@ -3045,6 +3076,7 @@ app.post('/api/chat', async (req, res) => {
       showInterstitial,
     });
   } catch (error) {
+    console.error('API CHAT ERROR:', error);
     if (error.message === 'BLOCKED_BY_GUARDRAIL') {
       return res.status(403).json({ error: 'Ce message a été bloqué par les règles de modération.' });
     }

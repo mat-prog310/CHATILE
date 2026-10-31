@@ -27,6 +27,8 @@ object ApiClient {
     private val BASE = BuildConfig.API_BASE_URL
     private const val PREFS = "pieces_ia"
     private const val DEVICE_ID_KEY = "device_id"
+    private const val FIREBASE_TOKEN_KEY = "firebase_token"
+    private var preferences: android.content.SharedPreferences? = null
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
@@ -42,13 +44,16 @@ object ApiClient {
 
     fun setFirebaseIdToken(token: String?) {
         firebaseIdToken = token
+        preferences?.edit()?.putString(FIREBASE_TOKEN_KEY, token)?.apply()
     }
 
     fun init(context: Context) {
-        val preferences = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        deviceId = preferences.getString(DEVICE_ID_KEY, null) ?: UUID.randomUUID().toString().also {
-            preferences.edit().putString(DEVICE_ID_KEY, it).apply()
+        val prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        preferences = prefs
+        deviceId = prefs.getString(DEVICE_ID_KEY, null) ?: UUID.randomUUID().toString().also {
+            prefs.edit().putString(DEVICE_ID_KEY, it).apply()
         }
+        firebaseIdToken = prefs.getString(FIREBASE_TOKEN_KEY, null)
     }
 
     suspend fun me(): MeResult {
@@ -752,6 +757,11 @@ object ApiClient {
             bio = json.optString("bio", ""),
             avatarUrl = json.optString("avatarUrl").ifBlank { null }
         )
+    }
+
+    suspend fun deleteAccount(): Boolean {
+        val json = request("DELETE", "/api/account")
+        return json.optBoolean("success", true)
     }
 
     suspend fun uploadAvatar(context: Context, uri: Uri): String = uploadImage(context, "/api/profile/avatar", uri)

@@ -42,6 +42,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,11 +61,18 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
     val context = LocalContext.current
     val authManager = remember { AuthManager(context) }
     var isCheckingAuth by remember { mutableStateOf(true) }
-    var isLoggedIn by remember { mutableStateOf(false) }
+    val isLoggedInState = remember { mutableStateOf(false) }
+    val isLoggedIn = isLoggedInState.value
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val viewModel: ChatViewModel = viewModel()
+
+    val onLogoutAction: () -> Unit = {
+        authManager.signOut()
+        com.chatile.ApiClient.setFirebaseIdToken(null)
+        isLoggedInState.value = false
+    }
 
     LaunchedEffect(Unit) {
         val signedIn = authManager.isSignedIn()
@@ -73,12 +81,12 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
             if (!token.isNullOrBlank()) {
                 com.chatile.ApiClient.setFirebaseIdToken(token)
                 viewModel.refresh()
-                isLoggedIn = true
+                isLoggedInState.value = true
             } else {
-                isLoggedIn = false
+                isLoggedInState.value = false
             }
         } else {
-            isLoggedIn = false
+            isLoggedInState.value = false
         }
         kotlinx.coroutines.delay(600)
         isCheckingAuth = false
@@ -89,7 +97,7 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
     } else if (!isLoggedIn) {
         LoginScreen(onLoginSuccess = {
             viewModel.refresh()
-            isLoggedIn = true
+            isLoggedInState.value = true
         })
     } else {
         val profile by viewModel.profile.collectAsState()
@@ -109,6 +117,11 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
                         viewModel = viewModel,
                         onWatchAd = onWatchAd,
                         onPurchase = onPurchase,
+                        onLogout = {
+                            AuthManager(context).signOut()
+                            com.chatile.ApiClient.setFirebaseIdToken(null)
+                            (context as? android.app.Activity)?.recreate()
+                        },
                         modifier = Modifier.padding(paddingValues)
                     )
                 }
@@ -211,7 +224,8 @@ fun NavGraph(
     viewModel: ChatViewModel,
     modifier: Modifier = Modifier,
     onWatchAd: () -> Unit = {},
-    onPurchase: (String) -> Unit = {}
+    onPurchase: (String) -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -269,11 +283,11 @@ fun NavGraph(
                 vm = viewModel,
                 onOpenShop = { navController.navigate("shop") },
                 onWatchAd = onWatchAd,
-                onOpenAdmin = { navController.navigate("admin") },
                 onOpenCreatorEarnings = { navController.navigate("creator_earnings") },
                 onOpenLootBoxes = { navController.navigate("loot_boxes") },
                 onOpenInventory = { navController.navigate("inventory") },
-                onOpenPublicProfile = { userId -> navController.navigate("public_profile/$userId") }
+                onOpenPublicProfile = { userId -> navController.navigate("public_profile/$userId") },
+                onLogout = onLogout
             )
         }
 

@@ -3,10 +3,12 @@ package com.chatile.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -122,12 +124,18 @@ fun ProfileScreen(
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (profile?.avatarUrl != null) {
-                    AsyncImage(profile?.avatarUrl, contentDescription = "Photo de profil", modifier = Modifier.size(76.dp).clip(CircleShape))
+                    val hasBraiseFrame = profile?.equippedFrame?.contains("Braise") == true
+                    val frameColor = if (hasBraiseFrame) androidx.compose.ui.graphics.Color.Red else VioletAccent
+                    val borderModifier = if (!profile?.equippedFrame.isNullOrBlank()) Modifier.border(3.dp, frameColor, CircleShape) else Modifier
+                    AsyncImage(profile?.avatarUrl, contentDescription = "Photo de profil", modifier = Modifier.size(76.dp).clip(CircleShape).then(borderModifier), contentScale = ContentScale.Crop)
                 } else {
                     CharacterAvatar(name.ifBlank { "Moi" }, size = 76.dp)
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(name.ifBlank { "Votre profil" }, color = TextPrimary, style = MaterialTheme.typography.titleLarge)
+                    if (!profile?.equippedTitle.isNullOrBlank()) {
+                        Text("• ${profile?.equippedTitle} •", color = VioletAccent, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                    }
                     OutlinedButton(onClick = { imagePicker.launch("image/*") }) { Text("Modifier la photo") }
                 }
             }

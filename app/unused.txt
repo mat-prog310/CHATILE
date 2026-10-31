@@ -75357,6 +75357,10 @@ com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$4:
     public final void invoke$14()
 com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$5:
     public final void invoke$14()
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$6:
+    public final void invoke$14()
+com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2$1$7:
+    public final void invoke$14()
 com.chatile.ui.PublicProfileScreenKt$PublicProfileScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.SearchScreenKt$$InternalSyntheticLambda$4$931ba3a06fbe693298f060c6b86de5eb9924931c8a282e6ff13c5ab78bea938d$0:

@@ -737,7 +737,11 @@ object ApiClient {
             avatarUrl = json.optString("avatarUrl").ifBlank { null },
             badgeType = json.optString("badgeType").ifBlank { null },
             role = json.optString("role", "user"),
-            createdAt = json.optString("createdAt")
+            createdAt = json.optString("createdAt"),
+            equippedTheme = json.optString("equippedTheme").ifBlank { null },
+            equippedTitle = json.optString("equippedTitle").ifBlank { null },
+            equippedFrame = json.optString("equippedFrame").ifBlank { null },
+            equippedEffect = json.optString("equippedEffect").ifBlank { null }
         )
     }
 

@@ -205,7 +205,7 @@ fun InventoryScreen(
                                                 runCatching { ApiClient.equipItem(invId) }
                                                     .onSuccess {
                                                         loadInventory()
-                                                        vm.loadProfile()
+                                                        vm.refresh() // Met à jour le thème global de l'appli et les pièces
                                                     }
                                             }
                                         },

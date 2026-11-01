@@ -3,8 +3,8 @@
 # min_api: 24
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.2"}
-# pg_map_id: d6a3623
-# pg_map_hash: SHA-256 d6a3623b808094ec206005aaed0c70c5dddd2692742a97d270688ea35ff1944c
+# pg_map_id: 06953e5
+# pg_map_hash: SHA-256 06953e5a1cb9601ea3be2871d69a150f0358d493f39b1860f5c92da79283261f
 _COROUTINE.ArtificialStackFrames -> R8$$REMOVED$$CLASS$$0:
 # {"id":"sourceFile","fileName":"CoroutineDebugging.kt"}
 _COROUTINE.CoroutineDebuggingKt -> R8$$REMOVED$$CLASS$$1:
@@ -294697,7 +294697,7 @@ com.chatile.ApiClient -> s2.K:
     446:453:java.lang.Object listCharacters(kotlin.coroutines.Continuation):176 -> B
     454:460:java.lang.Object listCharacters(kotlin.coroutines.Continuation):176:176 -> B
     461:465:java.lang.Object listCharacters(kotlin.coroutines.Continuation):175:175 -> B
-    1:20:java.lang.Object loginWithFirebase(java.lang.String,kotlin.coroutines.Continuation):79:79 -> C
+    1:32:java.lang.Object loginWithFirebase(java.lang.String,kotlin.coroutines.Continuation):79:79 -> C
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ljava/lang/String;LB4/c;)Ljava/lang/Object;"}
     35:57:java.lang.Object me(kotlin.coroutines.Continuation):59:59 -> D
       # {"id":"com.android.tools.r8.residualsignature","signature":"(LB4/c;)Ljava/lang/Object;"}

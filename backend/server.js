@@ -620,17 +620,26 @@ if (admin.apps.length === 0 && process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 }
 
-function getOrCreateFirebaseUser(decoded) {
+function getOrCreateFirebaseUser(decoded, deviceId = null) {
   let user = db.prepare('SELECT * FROM users WHERE firebase_uid = ?').get(decoded.uid);
   const targetAdminEmail = process.env.ADMIN_EMAIL || 'matthias.duprey1@gmail.com';
   const isAdmin = decoded.email && decoded.email.toLowerCase() === targetAdminEmail.toLowerCase();
   const role = isAdmin ? 'admin' : 'user';
 
+  if (!user && deviceId) {
+    const guestUser = db.prepare('SELECT * FROM users WHERE device_id = ? AND firebase_uid IS NULL').get(deviceId);
+    if (guestUser) {
+      db.prepare("UPDATE users SET firebase_uid = ?, display_name = COALESCE(NULLIF(display_name, ''), ?), avatar_url = COALESCE(avatar_url, ?) WHERE id = ?")
+        .run(decoded.uid, decoded.name || guestUser.display_name, decoded.picture || guestUser.avatar_url, guestUser.id);
+      user = db.prepare('SELECT * FROM users WHERE id = ?').get(guestUser.id);
+    }
+  }
+
   if (!user) {
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
        VALUES (?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
-    ).run(`firebase_${decoded.uid}`, decoded.uid, decoded.name || 'Utilisateur CHATILE', decoded.picture || null, role);
+    ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, decoded.name || 'Utilisateur CHATILE', decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
       .run(user.id, decoded.name || 'Utilisateur CHATILE');
@@ -682,7 +691,7 @@ async function identifyUser(req, res, next) {
   }
   let user;
   try {
-    user = getOrCreateFirebaseUser(decoded);
+    user = getOrCreateFirebaseUser(decoded, req.get('x-device-id'));
   } catch (error) {
     console.error('Firebase user sync failed:', error.message);
     return next(error);
@@ -1154,7 +1163,7 @@ app.delete('/api/account', (req, res) => {
 });
 
 app.post('/api/auth/firebase', async (req, res) => {
-  const { idToken } = req.body;
+  const { idToken, deviceId } = req.body;
   if (!idToken) return res.status(400).json({ error: 'idToken requis' });
   let decoded;
   if (admin.apps.length > 0) {
@@ -1185,7 +1194,7 @@ app.post('/api/auth/firebase', async (req, res) => {
   }
 
   try {
-    const user = getOrCreateFirebaseUser(decoded);
+    const user = getOrCreateFirebaseUser(decoded, deviceId || req.get('x-device-id'));
     if (user.banned_until && Date.parse(user.banned_until) > Date.now()) {
       return res.status(403).json({ error: 'Compte suspendu.', bannedUntil: user.banned_until });
     }

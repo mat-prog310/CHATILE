@@ -76,7 +76,7 @@ object ApiClient {
     }
 
     suspend fun loginWithFirebase(idToken: String): JSONObject =
-        request("POST", "/api/auth/firebase", JSONObject().put("idToken", idToken))
+        request("POST", "/api/auth/firebase", JSONObject().put("idToken", idToken).put("deviceId", deviceId ?: ""))
 
     suspend fun watchAd(): Int = request("POST", "/api/watch-ad", JSONObject()).getInt("pieces")
 

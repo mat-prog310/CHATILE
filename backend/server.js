@@ -2468,7 +2468,7 @@ app.post('/api/characters', (req, res) => {
 
   const existingCount = db.prepare('SELECT COUNT(*) AS count FROM characters WHERE user_id = ? AND is_system = 0')
     .get(req.user.id).count;
-  const creationCost = req.user.role === 'admin' ? 0 : existingCount === 0 ? 0 : 100;
+  const creationCost = req.user.role === 'admin' ? 0 : 200;
 
   if (creationCost > 0 && req.user.pieces < creationCost) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: creationCost, currentPieces: req.user.pieces });
@@ -4168,9 +4168,9 @@ app.get('/api/loot-boxes/pity', (req, res) => {
   });
 });
 
-// Open Loot Box (300 Pièces)
+// Open Loot Box (50 Pièces)
 app.post('/api/loot-boxes/open', (req, res) => {
-  const cost = 300;
+  const cost = 50;
   const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   if (!user || user.pieces < cost) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: cost, currentPieces: user?.pieces || 0 });

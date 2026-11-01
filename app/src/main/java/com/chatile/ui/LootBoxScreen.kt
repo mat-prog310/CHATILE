@@ -146,15 +146,15 @@ fun LootBoxScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CoinOrb(size = 20.dp)
                         Spacer(Modifier.width(8.dp))
-                        Text("300 Pièces", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("50 Pièces", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
 
                     Button(
                         onClick = onOpenOpening,
-                        enabled = pieces >= 300,
+                        enabled = pieces >= 50,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Ouvrir un coffre (300 Pièces)")
+                        Text("Ouvrir un coffre (50 Pièces)")
                     }
                 }
             }

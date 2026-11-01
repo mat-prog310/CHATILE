@@ -130,9 +130,11 @@ fun ProfileScreen(
             }
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 if (profile?.avatarUrl != null) {
-                    val hasBraiseFrame = profile?.equippedFrame?.contains("Braise") == true
-                    val frameColor = if (hasBraiseFrame) androidx.compose.ui.graphics.Color.Red else VioletAccent
-                    val borderModifier = if (!profile?.equippedFrame.isNullOrBlank()) Modifier.border(3.dp, frameColor, CircleShape) else Modifier
+                    val frameName = profile?.equippedFrame.orEmpty()
+                    val hasLegendaryFrame = frameName.contains("Braise") || frameName.contains("Légendaire") || frameName.contains("Épique")
+                    val frameColor = if (hasLegendaryFrame) Color(0xFFFF5722) else VioletAccent
+                    val borderWidth = if (hasLegendaryFrame) 4.dp else 3.dp
+                    val borderModifier = if (frameName.isNotBlank()) Modifier.border(borderWidth, frameColor, CircleShape) else Modifier
                     AsyncImage(profile?.avatarUrl, contentDescription = "Photo de profil", modifier = Modifier.size(76.dp).clip(CircleShape).then(borderModifier), contentScale = ContentScale.Crop)
                 } else {
                     CharacterAvatar(name.ifBlank { "Moi" }, size = 76.dp)
@@ -287,7 +289,7 @@ fun ProfileScreen(
             OutlinedButton(
                 onClick = onOpenLootBoxes,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Coffres Mystères (300 Pièces)") }
+            ) { Text("Coffres Mystères (50 Pièces)") }
 
             OutlinedButton(
                 onClick = onOpenInventory,

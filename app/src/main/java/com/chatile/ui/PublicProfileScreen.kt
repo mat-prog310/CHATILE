@@ -121,13 +121,17 @@ fun PublicProfileScreen(
                 modifier = Modifier.size(110.dp)
             ) {
                 if (!avatarUrl.isNullOrBlank()) {
+                    val isLegendaryFrame = equippedFrame.contains("Braise") || equippedFrame.contains("Légendaire") || equippedFrame.contains("Épique")
+                    val borderColor = if (isLegendaryFrame) androidx.compose.ui.graphics.Color(0xFFFF5722) else VioletAccent
+                    val borderWidth = if (isLegendaryFrame) 4.dp else 3.dp
+
                     AsyncImage(
                         model = avatarUrl,
                         contentDescription = displayName,
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .border(3.dp, if (equippedFrame.contains("Braise")) androidx.compose.ui.graphics.Color.Red else VioletAccent, CircleShape),
+                            .border(borderWidth, borderColor, CircleShape),
                         contentScale = ContentScale.Crop
                     )
                 } else {

@@ -16,7 +16,7 @@ if (!process.env.MISTRAL_API_KEY) {
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const databasePath = resolve(__dirname, 'data', 'pieces.sqlite');
+const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : resolve(__dirname, 'data', 'pieces.sqlite');
 mkdirSync(dirname(databasePath), { recursive: true });
 
 const db = new Database(databasePath);

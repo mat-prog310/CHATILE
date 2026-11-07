@@ -471,6 +471,8 @@ db.exec(`
 ensureColumn('virtual_items', 'image_url', 'TEXT');
 ensureColumn('virtual_items', 'thumbnail_url', 'TEXT');
 ensureColumn('virtual_items', 'preview_url', 'TEXT');
+ensureColumn('virtual_items', 'unlock_method', "TEXT DEFAULT 'pieces'");
+ensureColumn('virtual_items', 'is_exclusive', 'INTEGER DEFAULT 0');
 ensureColumn('virtual_avatars', 'base_appearance', "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn('virtual_avatars', 'equipped_items', "TEXT NOT NULL DEFAULT '[]'");
 ensureColumn('virtual_avatars', 'avatar_image_url', 'TEXT');
@@ -548,6 +550,23 @@ const insertVirtualSeeds = db.transaction(() => {
   ];
   const insertLocation = db.prepare('INSERT OR IGNORE INTO virtual_locations (name, description, image_url) VALUES (?, ?, ?)');
   locations.forEach(l => insertLocation.run(...l));
+
+  const insertExclusiveItem = db.prepare(`
+    INSERT OR IGNORE INTO virtual_items (name, category, price_pieces, description, rarity, unlock_method, is_exclusive, image_url, thumbnail_url, preview_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const exclusiveItems = [
+    ['Veste de Sponsor', 'clothing', 0, 'Une veste aux couleurs de sponsors exclusifs.', 'rare', 'ad_reward', 1],
+    ['Tenue de Soirée', 'clothing', 0, 'Une tenue élégante débloquée au niveau 5.', 'epique', 'level_up', 1],
+    ['Canapé Gamer', 'furniture', 0, 'Un canapé RGB ultra confortable.', 'rare', 'ad_reward', 1],
+    ['Fontaine de Jardin', 'furniture', 0, 'Une fontaine relaxante débloquée au niveau 3.', 'epique', 'level_up', 1],
+    ['Chien Robot', 'pet', 0, 'Un compagnon high-tech fidèle.', 'epique', 'ad_reward', 1],
+    ['Dragon de Compagnie', 'pet', 0, 'Un majestueux dragon miniature débloqué au niveau 8.', 'legendaire', 'level_up', 1],
+  ];
+  exclusiveItems.forEach(item => {
+    const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(item[0])}`;
+    insertExclusiveItem.run(item[0], item[1], item[2], item[3], item[4], item[5], item[6], img, img, img);
+  });
 });
 
 insertVirtualSeeds();
@@ -4801,6 +4820,91 @@ app.post('/api/virtual/watch-ad', (req, res) => {
 
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   res.json({ success: true, pieces: updated.pieces });
+});
+
+app.post('/api/virtual/watch-ad-reward', (req, res) => {
+  const lastAd = db.prepare("SELECT created_at FROM virtual_events WHERE user_id = ? AND event_type = 'exclusive_ad_reward' ORDER BY id DESC LIMIT 1").get(req.user.id);
+  if (lastAd) {
+    const lastTime = Date.parse(`${lastAd.created_at.replace(' ', 'T')}Z`);
+    if (Date.now() - lastTime < 30 * 1000) {
+      return res.status(429).json({ error: 'Patientez 30 secondes avant de regarder une nouvelle publicité.' });
+    }
+  }
+
+  const ownedItemIds = db.prepare('SELECT item_id FROM user_inventory_virtual WHERE user_id = ?').all(req.user.id).map(r => r.item_id);
+  const availableItems = db.prepare("SELECT * FROM virtual_items WHERE unlock_method = 'ad_reward' AND is_exclusive = 1").all().filter(i => !ownedItemIds.includes(i.id));
+
+  if (availableItems.length === 0) {
+    return res.json({ success: false, message: 'Tu as déjà débloqué tous les objets exclusifs disponibles par pub !' });
+  }
+
+  const selected = availableItems[Math.floor(Math.random() * availableItems.length)];
+
+  const rewardTrans = db.transaction(() => {
+    db.prepare('INSERT INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, selected.id);
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'exclusive_ad_reward', ?)").run(req.user.id, `Objet exclusif débloqué par pub : ${selected.name}`);
+  });
+  rewardTrans();
+
+  res.json({
+    success: true,
+    isNew: true,
+    item: {
+      id: selected.id,
+      name: selected.name,
+      category: selected.category,
+      rarity: selected.rarity,
+      imageUrl: selected.image_url
+    }
+  });
+});
+
+app.post('/api/virtual/claim-level-reward', (req, res) => {
+  const { level, adWatched } = req.body ?? {};
+  if (!adWatched && req.user.subscription_tier === 'free') {
+    return res.status(400).json({ error: 'Publicité requise pour réclamer cette récompense de niveau.' });
+  }
+
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
+
+  if (avatar.level < Number(level)) {
+    return res.status(400).json({ error: 'Niveau insuffisant.' });
+  }
+
+  const levelItems = db.prepare("SELECT * FROM virtual_items WHERE unlock_method = 'level_up' AND rarity != 'legendaire'").all();
+  const rewardItem = levelItems[Math.floor(Math.random() * levelItems.length)];
+
+  const claimTrans = db.transaction(() => {
+    if (rewardItem) {
+      db.prepare('INSERT OR IGNORE INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, rewardItem.id);
+    }
+    db.prepare('UPDATE users SET pieces = pieces + 100 WHERE id = ?').run(req.user.id);
+    recordPieceTransaction(req.user.id, 100, 'level_reward', `Récompense de palier niveau ${level}`);
+  });
+  claimTrans();
+
+  res.json({ success: true, rewardItem, bonusPieces: 100 });
+});
+
+app.post('/api/relationships/:id/claim-milestone', (req, res) => {
+  const relId = Number(req.params.id);
+  const { milestoneId, adWatched } = req.body ?? {};
+  if (!adWatched && req.user.subscription_tier === 'free') {
+    return res.status(400).json({ error: 'Publicité requise pour valider ce palier de relation.' });
+  }
+
+  const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
+  if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
+
+  const claimTrans = db.transaction(() => {
+    db.prepare('INSERT OR IGNORE INTO relationship_milestones (relationship_id, milestone_type) VALUES (?, ?)').run(relId, milestoneId || 'milestone_reached');
+    db.prepare('UPDATE users SET pieces = pieces + 150 WHERE id = ?').run(req.user.id);
+    recordPieceTransaction(req.user.id, 150, 'relationship_milestone', `Palier de relation atteint`);
+  });
+  claimTrans();
+
+  res.json({ success: true, bonusPieces: 150 });
 });
 
 app.use((error, req, res, next) => {

@@ -406,6 +406,11 @@ object ApiClient {
     suspend fun getLocations(): JSONObject = request("GET", "/api/virtual/locations")
     suspend fun travelVirtual(locationId: Long): JSONObject = request("POST", "/api/virtual/travel", JSONObject().put("locationId", locationId))
     suspend fun watchVirtualAd(): JSONObject = request("POST", "/api/virtual/watch-ad", JSONObject())
+    suspend fun watchVirtualAdReward(): JSONObject = request("POST", "/api/virtual/watch-ad-reward", JSONObject())
+    suspend fun claimLevelReward(level: Int, adWatched: Boolean): JSONObject =
+        request("POST", "/api/virtual/claim-level-reward", JSONObject().put("level", level).put("adWatched", adWatched))
+    suspend fun claimRelationshipMilestone(relationshipId: Long, milestoneId: String, adWatched: Boolean): JSONObject =
+        request("POST", "/api/relationships/$relationshipId/claim-milestone", JSONObject().put("milestoneId", milestoneId).put("adWatched", adWatched))
 
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))

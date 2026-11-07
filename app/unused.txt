@@ -36906,6 +36906,8 @@ com.chatile.ApiClient:
     public static final synthetic java.lang.Object access$request(com.chatile.ApiClient,java.lang.String,java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)
     public final java.lang.Object banUser(long,java.lang.String,java.lang.String,kotlin.coroutines.Continuation)
     public static synthetic java.lang.Object chat$default(com.chatile.ApiClient,java.lang.String,java.lang.Long,boolean,java.lang.String,kotlin.coroutines.Continuation,int,java.lang.Object)
+    public final java.lang.Object claimLevelReward(int,boolean,kotlin.coroutines.Continuation)
+    public final java.lang.Object claimRelationshipMilestone(long,java.lang.String,boolean,kotlin.coroutines.Continuation)
     public final java.lang.Object completeChallenge(long,kotlin.coroutines.Continuation)
     public final java.lang.Object cowrite(long,java.lang.String,kotlin.coroutines.Continuation)
     public final java.lang.Object createAdminPost(java.lang.String,java.lang.String,java.lang.String,java.lang.Long,kotlin.coroutines.Continuation)
@@ -36981,6 +36983,7 @@ com.chatile.ApiClient:
     public final java.lang.Object updateVirtualAvatar(java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)
     public final java.lang.Object votePoll(long,int,kotlin.coroutines.Continuation)
     public final java.lang.Object warnUser(long,java.lang.String,kotlin.coroutines.Continuation)
+    public final java.lang.Object watchVirtualAdReward(kotlin.coroutines.Continuation)
 com.chatile.AuthManager:
     public final com.google.firebase.auth.FirebaseUser getCurrentUser()
 com.chatile.Character:
@@ -74424,6 +74427,8 @@ com.chatile.Feedback:
     public static java.lang.Long getId()
     public static java.lang.Long getUserId()
 com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6d956efbff765acdeed0def8b3a17dbe14660$2:
+    public final void onAuthStateChanged(com.google.firebase.auth.FirebaseAuth)
+com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6d956efbff765acdeed0def8b3a17dbe14660$3:
     public final void onInitializationComplete(com.google.android.gms.ads.initialization.InitializationStatus)
 com.chatile.MainActivity$$InternalSyntheticLambda$1$16b242de8d8d6f84a2dd986a9d748825063782f556af56a77a31db469714ee20$0:
     public final void onUserEarnedReward()
@@ -74431,13 +74436,13 @@ com.chatile.MainActivity$loadInterstitialAd$1:
     public static void onAdLoaded()
 com.chatile.MainActivity$loadRewardedAd$1:
     public static void onAdLoaded$1()
-com.chatile.MainActivity$onCreate$4$1$1$1:
+com.chatile.MainActivity$onCreate$5$1$1$1:
     public final void invoke()
-com.chatile.MainActivity$onCreate$4$1$2$1:
+com.chatile.MainActivity$onCreate$5$1$2$1:
     public static void invoke$96()
-com.chatile.MainActivity$onCreate$4$1:
+com.chatile.MainActivity$onCreate$5$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.MainActivity$onCreate$4:
+com.chatile.MainActivity$onCreate$5:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.MainActivity$signInWithGoogle$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -79394,7 +79399,7 @@ com.google.firebase.auth.FirebaseAuth$$InternalSyntheticThrowCCEIfNotNull$15$b2e
 com.google.firebase.auth.FirebaseAuth$$InternalSyntheticThrowCCEIfNotNull$25$099b4186506739b73d5647da6ad5cded0aa8edff97998d7da7009dae3b284370$0
 com.google.firebase.auth.FirebaseAuth$$InternalSyntheticThrowCCEIfNotNull$25$099b4186506739b73d5647da6ad5cded0aa8edff97998d7da7009dae3b284370$1
 com.google.firebase.auth.FirebaseAuth$AuthStateListener:
-    public abstract void onAuthStateChanged()
+    public abstract void onAuthStateChanged(com.google.firebase.auth.FirebaseAuth)
 com.google.firebase.auth.FirebaseAuth$IdTokenListener:
     public abstract void onIdTokenChanged()
 com.google.firebase.auth.FirebaseAuthException:
@@ -79653,14 +79658,10 @@ com.google.firebase.auth.zzm:
 com.google.firebase.auth.zzn
 com.google.firebase.auth.zzs:
     public final void zza()
-com.google.firebase.auth.zzv:
-    public final synthetic com.google.firebase.auth.FirebaseAuth$AuthStateListener zza
-    public final synthetic com.google.firebase.auth.FirebaseAuth zzb
 com.google.firebase.auth.zzw$$InternalSyntheticThrowCCEIfNotNull$15$a419f82975c82f18653a8abbcb40f0525a27e6aa7331459cd267c2614101961f$0
 com.google.firebase.auth.zzw$$InternalSyntheticThrowCCEIfNotNull$15$a419f82975c82f18653a8abbcb40f0525a27e6aa7331459cd267c2614101961f$1
 com.google.firebase.auth.zzw:
     public final synthetic com.google.firebase.internal.InternalTokenResult zzb
-com.google.firebase.auth.zzz$$InternalSyntheticThrowCCEIfNotNull$15$0446d699370e302db2a76afb2dfd3ea8a5591ce6aa8a2a6007b6313eabeab999$0
 com.google.firebase.components.Component$1
 com.google.firebase.components.Component$Builder:
     public static com.google.firebase.components.Component$Builder eagerInDefaultApp()

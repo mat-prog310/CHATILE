@@ -67,6 +67,12 @@ class MainActivity : ComponentActivity() {
                 vm.refresh()
             }
         }
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            auth.currentUser?.getIdToken(false)?.addOnSuccessListener { token ->
+                ApiClient.setFirebaseIdToken(token.token)
+                vm.refresh()
+            }
+        }
 
         importSharedLink(intent)
         MobileAds.initialize(this) { loadRewardedAd(); loadInterstitialAd() }

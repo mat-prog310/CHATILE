@@ -468,8 +468,19 @@ db.exec(`
   );
 `);
 
+ensureColumn('virtual_items', 'image_url', 'TEXT');
+ensureColumn('virtual_items', 'thumbnail_url', 'TEXT');
+ensureColumn('virtual_items', 'preview_url', 'TEXT');
+ensureColumn('virtual_avatars', 'base_appearance', "TEXT NOT NULL DEFAULT '{}'");
+ensureColumn('virtual_avatars', 'equipped_items', "TEXT NOT NULL DEFAULT '[]'");
+ensureColumn('virtual_avatars', 'avatar_image_url', 'TEXT');
+
 const insertVirtualSeeds = db.transaction(() => {
-  const insertItem = db.prepare('INSERT OR IGNORE INTO virtual_items (name, category, price_pieces, description, rarity) VALUES (?, ?, ?, ?, ?)');
+  const insertItem = db.prepare(`
+    INSERT OR IGNORE INTO virtual_items (name, category, price_pieces, description, rarity, image_url, thumbnail_url, preview_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
   const houses = [
     ['Studio', 'house', 500, 'Un petit studio cosy pour commencer.', 'commun'],
     ['Appartement', 'house', 2000, 'Un bel appartement moderne.', 'rare'],
@@ -478,7 +489,10 @@ const insertVirtualSeeds = db.transaction(() => {
     ['Manoir', 'house', 25000, 'Un immense manoir historique.', 'epique'],
     ['Château', 'house', 50000, 'Un château majestueux.', 'legendaire'],
   ];
-  houses.forEach(h => insertItem.run(...h));
+  houses.forEach(h => {
+    const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(h[0])}`;
+    insertItem.run(h[0], h[1], h[2], h[3], h[4], img, img, img);
+  });
 
   const clothes = [
     ['T-shirt', 'clothing', 50, 'Un t-shirt décontracté.', 'commun'],
@@ -488,7 +502,10 @@ const insertVirtualSeeds = db.transaction(() => {
     ['Chaussures de sport', 'clothing', 150, 'Des baskets confortables.', 'commun'],
     ['Montre de luxe', 'clothing', 500, 'Une montre étincelante.', 'epique'],
   ];
-  clothes.forEach(c => insertItem.run(...c));
+  clothes.forEach(c => {
+    const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(c[0])}`;
+    insertItem.run(c[0], c[1], c[2], c[3], c[4], img, img, img);
+  });
 
   const vehicles = [
     ['Vélo', 'vehicle', 200, 'Pour pédaler en ville.', 'commun'],
@@ -497,7 +514,10 @@ const insertVirtualSeeds = db.transaction(() => {
     ['Voiture de sport', 'vehicle', 5000, 'Vitesse et sensations fortes.', 'epique'],
     ['Jet privé', 'vehicle', 50000, 'Le sommet du transport.', 'legendaire'],
   ];
-  vehicles.forEach(v => insertItem.run(...v));
+  vehicles.forEach(v => {
+    const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(v[0])}`;
+    insertItem.run(v[0], v[1], v[2], v[3], v[4], img, img, img);
+  });
 
   const pets = [
     ['Chat', 'pet', 300, 'Un chat joueur et câlin.', 'commun'],
@@ -505,7 +525,10 @@ const insertVirtualSeeds = db.transaction(() => {
     ['Dragon', 'pet', 5000, 'Un bébé dragon cracheur de feu.', 'legendaire'],
     ['Licorne', 'pet', 20000, 'Une créature féerique.', 'legendaire'],
   ];
-  pets.forEach(p => insertItem.run(...p));
+  pets.forEach(p => {
+    const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(p[0])}`;
+    insertItem.run(p[0], p[1], p[2], p[3], p[4], img, img, img);
+  });
 
   const jobs = [
     ['Serveur', 5, 1, 'Servir les clients au café.'],
@@ -4634,57 +4657,80 @@ app.post('/api/virtual/job/apply', (req, res) => {
 });
 
 app.get('/api/virtual/shop', (req, res) => {
-  const items = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, description, rarity FROM virtual_items').all();
+  const items = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, thumbnail_url as thumbnailUrl, preview_url as previewUrl, description, rarity FROM virtual_items').all();
   const jobs = db.prepare('SELECT id, title, salary_pieces as salaryPieces, required_level as requiredLevel, description FROM virtual_jobs').all();
   res.json({ items, jobs });
 });
 
-app.post('/api/virtual/buy', (req, res) => {
-  const { itemId } = req.body ?? {};
-  const item = db.prepare('SELECT * FROM virtual_items WHERE id = ?').get(itemId);
-  if (!item) return res.status(404).json({ error: 'Article introuvable.' });
+app.get('/api/virtual/avatar', (req, res) => {
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
 
-  const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-  if (!user || user.pieces < item.price_pieces) {
-    return res.status(402).json({ error: 'Pas assez de Pièces.', needPieces: item.price_pieces });
+  let equippedIds = [];
+  try {
+    equippedIds = JSON.parse(avatar.equipped_items || '[]');
+  } catch (_e) {}
+
+  let equippedItemsDetails = [];
+  if (equippedIds.length > 0) {
+    const placeholders = equippedIds.map(() => '?').join(',');
+    equippedItemsDetails = db.prepare(`
+      SELECT vi.id, vi.name, vi.category, vi.image_url as imageUrl, vi.rarity
+      FROM virtual_items vi
+      WHERE vi.id IN (${placeholders})
+    `).all(...equippedIds);
   }
 
-  const buyTrans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(item.price_pieces, req.user.id, item.price_pieces);
-    recordPieceTransaction(req.user.id, -item.price_pieces, 'virtual_purchase', `Achat virtuel : ${item.name}`);
-    db.prepare('INSERT INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, item.id);
+  let baseAppearance = {};
+  try {
+    baseAppearance = JSON.parse(avatar.base_appearance || '{}');
+  } catch (_e) {}
 
-    if (item.category === 'house') {
-      db.prepare('UPDATE virtual_worlds SET house_id = ? WHERE user_id = ?').run(item.id, req.user.id);
-    }
+  res.json({
+    name: avatar.name,
+    baseAppearance,
+    equippedItems: equippedItemsDetails,
+    avatarImageUrl: avatar.avatar_image_url || null
   });
-  buyTrans();
-
-  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-  res.json({ success: true, pieces: updated.pieces });
 });
 
 app.post('/api/virtual/equip', (req, res) => {
-  const { inventoryId } = req.body ?? {};
-  const inv = db.prepare(`
-    SELECT ui.*, vi.category FROM user_inventory_virtual ui
-    JOIN virtual_items vi ON ui.item_id = vi.id
-    WHERE ui.id = ? AND ui.user_id = ?
-  `).get(inventoryId, req.user.id);
-  if (!inv) return res.status(404).json({ error: 'Objet introuvable dans l’inventaire.' });
+  const { itemId, inventoryId } = req.body ?? {};
+  let targetItemId = itemId;
+  if (!targetItemId && inventoryId) {
+    const inv = db.prepare('SELECT item_id FROM user_inventory_virtual WHERE id = ? AND user_id = ?').get(inventoryId, req.user.id);
+    targetItemId = inv?.item_id;
+  }
+  if (!targetItemId) return res.status(400).json({ error: 'ID d’objet invalide.' });
 
-  const equipTrans = db.transaction(() => {
-    if (inv.category === 'clothing') {
-      db.prepare(`
-        UPDATE user_inventory_virtual SET is_equipped = 0
-        WHERE user_id = ? AND item_id IN (SELECT id FROM virtual_items WHERE category = 'clothing')
-      `).run(req.user.id);
+  const item = db.prepare(`
+    SELECT vi.* FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ? AND ui.item_id = ?
+  `).get(req.user.id, targetItemId);
+  if (!item) return res.status(404).json({ error: 'Objet non possédé dans l’inventaire virtuel.' });
+
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
+
+  let equippedIds = [];
+  try {
+    equippedIds = JSON.parse(avatar.equipped_items || '[]');
+  } catch (_e) {}
+
+  const isCurrentlyEquipped = equippedIds.includes(item.id);
+  if (isCurrentlyEquipped) {
+    equippedIds = equippedIds.filter(id => id !== item.id);
+  } else {
+    if (['clothing', 'shoes', 'house'].includes(item.category)) {
+      const sameCategoryItems = db.prepare('SELECT id FROM virtual_items WHERE category = ?').all(item.category).map(i => i.id);
+      equippedIds = equippedIds.filter(id => !sameCategoryItems.includes(id));
     }
-    const newStatus = inv.is_equipped ? 0 : 1;
-    db.prepare('UPDATE user_inventory_virtual SET is_equipped = ? WHERE id = ?').run(newStatus, inv.id);
-  });
-  equipTrans();
-  res.json({ success: true, isEquipped: inv.is_equipped === 0 });
+    equippedIds.push(item.id);
+  }
+
+  db.prepare('UPDATE virtual_avatars SET equipped_items = ? WHERE user_id = ?').run(JSON.stringify(equippedIds), req.user.id);
+  res.json({ success: true, equippedItems: equippedIds, isEquipped: !isCurrentlyEquipped });
 });
 
 app.get('/api/virtual/house', (req, res) => {

@@ -2,9 +2,11 @@ package com.chatile.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,9 +15,12 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.chatile.ChatViewModel
 import com.chatile.ui.theme.*
 import org.json.JSONArray
@@ -28,12 +33,18 @@ fun VirtualShopScreen(
     onBack: () -> Unit
 ) {
     val shopData by vm.virtualShop.collectAsState()
+    val summary by vm.virtualSummary.collectAsState()
+    val userMoney = summary?.optInt("money", 0) ?: 0
+
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Maisons", "Vêtements", "Véhicules", "Animaux")
     val categoryKeys = listOf("house", "clothing", "vehicle", "pet")
 
+    var selectedItemForDetail by remember { mutableStateOf<JSONObject?>(null) }
+
     LaunchedEffect(Unit) {
         vm.loadVirtualShop()
+        vm.loadVirtualSummary()
     }
 
     val itemsArray = shopData?.optJSONArray("items") ?: JSONArray()
@@ -104,44 +115,109 @@ fun VirtualShopScreen(
                     Text("Aucun article dans cette catégorie", color = TextSecondary)
                 }
             } else {
-                LazyColumn(
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(itemList, key = { it.getLong("id") }) { item ->
                         val itemId = item.getLong("id")
                         val name = item.getString("name")
-                        val desc = item.optString("description", "")
                         val price = item.optInt("pricePieces", 100)
+                        val imageUrl = item.optString("imageUrl")
+                        val canAfford = userMoney >= price
 
                         Card(
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = NightSurface),
-                            modifier = Modifier.fillMaxWidth().border(1.dp, SubtleBorder, RoundedCornerShape(16.dp))
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedItemForDetail = item }
+                                .border(1.dp, SubtleBorder, RoundedCornerShape(16.dp))
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(name, color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(desc, color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-                                    Spacer(Modifier.height(4.dp))
-                                    Text("💰 $price Pièces", color = VioletAccent, fontWeight = FontWeight.Bold)
-                                }
-
-                                Button(
-                                    onClick = { vm.buyVirtualItem(itemId) { } },
-                                    colors = ButtonDefaults.buttonColors(containerColor = VioletAccent)
-                                ) {
-                                    Text("Acheter")
-                                }
+                                AsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = name,
+                                    modifier = Modifier
+                                        .size(110.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(NightSurfaceRaised),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    name,
+                                    color = TextPrimary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    "💰 $price Pièces",
+                                    color = if (canAfford) VioletAccent else Color.Red,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // Detail Bottom Sheet
+    if (selectedItemForDetail != null) {
+        val item = selectedItemForDetail!!
+        val itemId = item.getLong("id")
+        val name = item.getString("name")
+        val desc = item.optString("description", "")
+        val price = item.optInt("pricePieces", 100)
+        val imageUrl = item.optString("imageUrl")
+        val canAfford = userMoney >= price
+
+        ModalBottomSheet(
+            onDismissRequest = { selectedItemForDetail = null },
+            containerColor = NightSurface
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = name,
+                    modifier = Modifier
+                        .size(160.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(NightSurfaceRaised),
+                    contentScale = ContentScale.Crop
+                )
+                Text(name, color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(desc, color = TextSecondary, style = MaterialTheme.typography.bodyMedium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Text("Prix : 💰 $price Pièces", color = if (canAfford) VioletAccent else Color.Red, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+                Button(
+                    onClick = {
+                        vm.buyVirtualItem(itemId) { selectedItemForDetail = null }
+                    },
+                    enabled = canAfford,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = VioletAccent)
+                ) {
+                    Text(if (canAfford) "Acheter" else "Pièces insuffisantes")
+                }
+                Spacer(Modifier.height(16.dp))
             }
         }
     }

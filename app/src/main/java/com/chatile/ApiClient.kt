@@ -387,6 +387,7 @@ object ApiClient {
 
     // ========== Virtual Life ==========
     suspend fun getVirtualSummary(): JSONObject = request("GET", "/api/virtual/summary")
+    suspend fun getVirtualAvatar(): JSONObject = request("GET", "/api/virtual/avatar")
     suspend fun createVirtualAvatar(name: String, appearance: JSONObject = JSONObject()): JSONObject =
         request("POST", "/api/virtual/avatar", JSONObject().put("name", name).put("appearance", appearance))
     suspend fun updateVirtualAvatar(name: String?, appearance: JSONObject?): JSONObject {

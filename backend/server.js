@@ -4669,7 +4669,22 @@ app.post('/api/virtual/job/apply', (req, res) => {
 });
 
 app.get('/api/virtual/shop', (req, res) => {
-  const items = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, thumbnail_url as thumbnailUrl, preview_url as previewUrl, description, rarity FROM virtual_items').all();
+  const rawItems = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, thumbnail_url as thumbnailUrl, preview_url as previewUrl, description, rarity FROM virtual_items').all();
+  const items = rawItems.map(item => {
+    let style = 'shapes';
+    if (item.category === 'clothing' || item.category === 'furniture') style = 'icons';
+    else if (item.category === 'pet') style = 'bottts';
+    else if (item.category === 'vehicle') style = 'shapes';
+    else style = 'shapes';
+
+    const randImg = `https://api.dicebear.com/7.x/${style}/png?seed=${item.category}_${item.id}_${req.user.id}&backgroundColor=1a1428,b47cff`;
+    return {
+      ...item,
+      imageUrl: randImg,
+      thumbnailUrl: randImg,
+      previewUrl: randImg
+    };
+  });
   const jobs = db.prepare('SELECT id, title, salary_pieces as salaryPieces, required_level as requiredLevel, description FROM virtual_jobs').all();
   res.json({ items, jobs });
 });
@@ -4686,11 +4701,15 @@ app.get('/api/virtual/avatar', (req, res) => {
   let equippedItemsDetails = [];
   if (equippedIds.length > 0) {
     const placeholders = equippedIds.map(() => '?').join(',');
-    equippedItemsDetails = db.prepare(`
+    const rawEquipped = db.prepare(`
       SELECT vi.id, vi.name, vi.category, vi.image_url as imageUrl, vi.rarity
       FROM virtual_items vi
       WHERE vi.id IN (${placeholders})
     `).all(...equippedIds);
+    equippedItemsDetails = rawEquipped.map(eq => ({
+      ...eq,
+      imageUrl: `https://api.dicebear.com/7.x/icons/png?seed=equip_${req.user.id}_${eq.id}&backgroundColor=1a1428,b47cff`
+    }));
   }
 
   let baseAppearance = {};
@@ -4702,7 +4721,7 @@ app.get('/api/virtual/avatar', (req, res) => {
     name: avatar.name,
     baseAppearance,
     equippedItems: equippedItemsDetails,
-    avatarImageUrl: avatar.avatar_image_url || null
+    avatarImageUrl: `https://api.dicebear.com/7.x/avataaars/png?seed=avatar_${req.user.id}`
   });
 });
 
@@ -4747,19 +4766,31 @@ app.post('/api/virtual/equip', (req, res) => {
 
 app.get('/api/virtual/house', (req, res) => {
   const world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
-  const house = world?.house_id ? db.prepare('SELECT id, name, description, rarity, image_url as imageUrl FROM virtual_items WHERE id = ?').get(world.house_id) : null;
+  const houseRaw = world?.house_id ? db.prepare('SELECT id, name, description, rarity, image_url as imageUrl FROM virtual_items WHERE id = ?').get(world.house_id) : null;
+  const house = houseRaw ? {
+    ...houseRaw,
+    imageUrl: `https://api.dicebear.com/7.x/shapes/png?seed=house_${req.user.id}_${houseRaw.id}&backgroundColor=1a1428,b47cff`
+  } : null;
+
   const furniture = db.prepare(`
-    SELECT ui.id, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
+    SELECT ui.id, vi.id as itemId, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
     FROM user_inventory_virtual ui
     JOIN virtual_items vi ON ui.item_id = vi.id
     WHERE ui.user_id = ? AND vi.category = 'furniture'
-  `).all(req.user.id);
+  `).all(req.user.id).map(f => ({
+    ...f,
+    imageUrl: `https://api.dicebear.com/7.x/icons/png?seed=furn_${req.user.id}_${f.id}_${f.itemId}&backgroundColor=1a1428,b47cff`
+  }));
+
   const pets = db.prepare(`
-    SELECT ui.id, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
+    SELECT ui.id, vi.id as itemId, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
     FROM user_inventory_virtual ui
     JOIN virtual_items vi ON ui.item_id = vi.id
     WHERE ui.user_id = ? AND vi.category = 'pet'
-  `).all(req.user.id);
+  `).all(req.user.id).map(p => ({
+    ...p,
+    imageUrl: `https://api.dicebear.com/7.x/bottts/png?seed=pet_${req.user.id}_${p.id}_${p.itemId}&backgroundColor=1a1428,b47cff`
+  }));
 
   res.json({ house, furniture, pets });
 });

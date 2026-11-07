@@ -14,8 +14,8 @@ android {
         applicationId = "com.chatile"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26
-        versionName = "2.6"
+        versionCode = 28
+        versionName = "2.8"
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",

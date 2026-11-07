@@ -15,7 +15,7 @@ fun BannerAdView(modifier: Modifier = Modifier) {
         factory = { context ->
             AdView(context).apply {
                 setAdSize(AdSize.BANNER)
-                adUnitId = "ca-app-pub-3940256099942544/6300978111" // Test Ad ID for Google AdMob
+                adUnitId = "ca-app-pub-8964953556750058/8168818299" // Production Ad Unit ID
                 loadAd(AdRequest.Builder().build())
             }
         }

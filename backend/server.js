@@ -571,13 +571,6 @@ const insertVirtualSeeds = db.transaction(() => {
 
 insertVirtualSeeds();
 
-function ensureColumn(table, column, declaration) {
-  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
-  if (!columns.some((item) => item.name === column)) {
-    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${declaration}`);
-  }
-}
-
 for (const [column, declaration] of [
   ['username', 'TEXT'], ['firebase_uid', 'TEXT'], ['subscription_tier', "TEXT NOT NULL DEFAULT 'free'"],
   ['subscription_expires_at', 'TEXT'], ['last_daily_claim', 'TEXT'],

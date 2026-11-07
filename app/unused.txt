@@ -9660,7 +9660,6 @@ androidx.compose.material.icons.outlined.BackpackKt
 androidx.compose.material.icons.outlined.BackspaceKt
 androidx.compose.material.icons.outlined.BackupKt
 androidx.compose.material.icons.outlined.BackupTableKt
-androidx.compose.material.icons.outlined.BadgeKt
 androidx.compose.material.icons.outlined.BakeryDiningKt
 androidx.compose.material.icons.outlined.BalanceKt
 androidx.compose.material.icons.outlined.BalconyKt
@@ -10370,7 +10369,6 @@ androidx.compose.material.icons.outlined.HiveKt
 androidx.compose.material.icons.outlined.HlsKt
 androidx.compose.material.icons.outlined.HlsOffKt
 androidx.compose.material.icons.outlined.HolidayVillageKt
-androidx.compose.material.icons.outlined.HomeKt
 androidx.compose.material.icons.outlined.HomeMaxKt
 androidx.compose.material.icons.outlined.HomeMiniKt
 androidx.compose.material.icons.outlined.HomeRepairServiceKt
@@ -10730,7 +10728,6 @@ androidx.compose.material.icons.outlined.NotesKt
 androidx.compose.material.icons.outlined.NotificationAddKt
 androidx.compose.material.icons.outlined.NotificationImportantKt
 androidx.compose.material.icons.outlined.NotificationsActiveKt
-androidx.compose.material.icons.outlined.NotificationsKt
 androidx.compose.material.icons.outlined.NotificationsNoneKt
 androidx.compose.material.icons.outlined.NotificationsOffKt
 androidx.compose.material.icons.outlined.NotificationsPausedKt
@@ -11234,7 +11231,6 @@ androidx.compose.material.icons.outlined.StopCircleKt
 androidx.compose.material.icons.outlined.StopKt
 androidx.compose.material.icons.outlined.StopScreenShareKt
 androidx.compose.material.icons.outlined.StorageKt
-androidx.compose.material.icons.outlined.StoreKt
 androidx.compose.material.icons.outlined.StoreMallDirectoryKt
 androidx.compose.material.icons.outlined.StorefrontKt
 androidx.compose.material.icons.outlined.StormKt
@@ -11539,7 +11535,6 @@ androidx.compose.material.icons.outlined.WineBarKt
 androidx.compose.material.icons.outlined.Woman2Kt
 androidx.compose.material.icons.outlined.WomanKt
 androidx.compose.material.icons.outlined.WorkHistoryKt
-androidx.compose.material.icons.outlined.WorkKt
 androidx.compose.material.icons.outlined.WorkOffKt
 androidx.compose.material.icons.outlined.WorkOutlineKt
 androidx.compose.material.icons.outlined.WorkspacePremiumKt
@@ -36925,6 +36920,7 @@ com.chatile.ApiClient:
     public final java.lang.Object deleteComment(long,kotlin.coroutines.Continuation)
     public final java.lang.Object deleteMessage(long,kotlin.coroutines.Continuation)
     public final java.lang.Object deletePost(long,kotlin.coroutines.Continuation)
+    public final java.lang.Object equipVirtualItem(long,kotlin.coroutines.Continuation)
     public final java.lang.Object favoriteMessage(long,kotlin.coroutines.Continuation)
     public final java.lang.Object generateChallenge(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getCharacterAvatarStatus(long,kotlin.coroutines.Continuation)
@@ -36939,6 +36935,7 @@ com.chatile.ApiClient:
     public static synthetic java.lang.Object getFollowing$default(com.chatile.ApiClient,long,int,kotlin.coroutines.Continuation,int,java.lang.Object)
     public final java.lang.Object getGallery(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getJournal(long,kotlin.coroutines.Continuation)
+    public final java.lang.Object getLocations(kotlin.coroutines.Continuation)
     public final java.lang.Object getNotes(long,kotlin.coroutines.Continuation)
     public final java.lang.Object getNotifications(int,int,kotlin.coroutines.Continuation)
     public static synthetic java.lang.Object getNotifications$default(com.chatile.ApiClient,int,int,kotlin.coroutines.Continuation,int,java.lang.Object)
@@ -36977,9 +36974,11 @@ com.chatile.ApiClient:
     public final java.lang.Object toggleCommentLike(long,kotlin.coroutines.Continuation)
     public final java.lang.Object toggleFollow(long,kotlin.coroutines.Continuation)
     public final java.lang.Object togglePostLike(long,kotlin.coroutines.Continuation)
+    public final java.lang.Object travelVirtual(long,kotlin.coroutines.Continuation)
     public final java.lang.Object unbanUser(long,kotlin.coroutines.Continuation)
     public final java.lang.Object unpublishCharacter(long,kotlin.coroutines.Continuation)
     public final java.lang.Object updateMessage(long,java.lang.String,kotlin.coroutines.Continuation)
+    public final java.lang.Object updateVirtualAvatar(java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)
     public final java.lang.Object votePoll(long,int,kotlin.coroutines.Continuation)
     public final java.lang.Object warnUser(long,java.lang.String,kotlin.coroutines.Continuation)
 com.chatile.AuthManager:
@@ -37060,6 +37059,7 @@ com.chatile.ChatViewModel$loadEvents$1
 com.chatile.ChatViewModel$loadFeed$1
 com.chatile.ChatViewModel$loadGallery$1
 com.chatile.ChatViewModel$loadJournal$1
+com.chatile.ChatViewModel$loadLocations$1
 com.chatile.ChatViewModel$loadMessages$1
 com.chatile.ChatViewModel$loadNotes$1
 com.chatile.ChatViewModel$loadNotifications$1
@@ -37086,6 +37086,7 @@ com.chatile.ChatViewModel$sharePost$2
 com.chatile.ChatViewModel$toggleCommentLike$2
 com.chatile.ChatViewModel$toggleFollow$2
 com.chatile.ChatViewModel$togglePostLike$2
+com.chatile.ChatViewModel$travelVirtual$1
 com.chatile.ChatViewModel$unpublishCharacter$2
 com.chatile.ChatViewModel:
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_comments$p(com.chatile.ChatViewModel)
@@ -37098,6 +37099,7 @@ com.chatile.ChatViewModel:
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_unreadCount$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_userPosts$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_userProfile$p(com.chatile.ChatViewModel)
+    public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_virtualLocations$p(com.chatile.ChatViewModel)
     public final void banUser(long,java.lang.String,java.lang.String,kotlin.jvm.functions.Function0)
     public static synthetic void banUser$default(com.chatile.ChatViewModel,long,java.lang.String,java.lang.String,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit banUser$lambda$22()
@@ -37142,6 +37144,7 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlow getUnreadCount()
     public final kotlinx.coroutines.flow.StateFlow getUserPosts()
     public final kotlinx.coroutines.flow.StateFlow getUserProfile()
+    public final kotlinx.coroutines.flow.StateFlow getVirtualLocations()
     public final void importCharacter(long)
     private static final kotlin.Unit importCharacter$lambda$12(long)
     public final void loadComments(long,int,int)
@@ -37152,6 +37155,7 @@ com.chatile.ChatViewModel:
     public static synthetic void loadFeedback$default(com.chatile.ChatViewModel,java.lang.String,int,java.lang.Object)
     public final void loadGallery(long)
     public final void loadJournal(long)
+    public final void loadLocations()
     public final void loadMessages(long,int)
     public static synthetic void loadMessages$default(com.chatile.ChatViewModel,long,int,int,java.lang.Object)
     public final void loadNotes(long)
@@ -37202,6 +37206,7 @@ com.chatile.ChatViewModel:
     public final void togglePostLike(long,kotlin.jvm.functions.Function0)
     public static synthetic void togglePostLike$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit togglePostLike$lambda$7()
+    public final void travelVirtual(long,kotlin.jvm.functions.Function0)
     public final void unpublishCharacter(long,kotlin.jvm.functions.Function0)
     public static synthetic void unpublishCharacter$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit unpublishCharacter$lambda$14()
@@ -37528,8 +37533,8 @@ com.chatile.ui.CharacterListScreenKt$CharacterListScreen$2$invoke$lambda$25$lamb
 com.chatile.ui.FeedbackScreenKt:
     public static final void FeedbackScreenPreview(androidx.compose.runtime.Composer,int)
     private static final kotlin.Unit FeedbackScreenPreview$lambda$19(int,androidx.compose.runtime.Composer,int)
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$10$lambda$9$lambda$8$$inlined$items$default$2
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$lambda$17$$inlined$items$default$2
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$12$lambda$11$lambda$10$$inlined$items$default$2
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$21$lambda$20$lambda$19$$inlined$items$default$2
 com.chatile.ui.HomeScreenKt:
     private static final com.chatile.UserProfile HomeScreen$lambda$0(androidx.compose.runtime.State)
     private static final int HomeScreen$lambda$1(androidx.compose.runtime.State)
@@ -59841,6 +59846,8 @@ androidx.compose.material.icons.outlined.AccountBalanceWalletKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.AutoAwesomeKt:
     static void <clinit>()
+androidx.compose.material.icons.outlined.BadgeKt:
+    static void <clinit>()
 androidx.compose.material.icons.outlined.BookKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.CallEndKt:
@@ -59857,6 +59864,8 @@ androidx.compose.material.icons.outlined.EditKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.EmojiEventsKt:
     static void <clinit>()
+androidx.compose.material.icons.outlined.HomeKt:
+    static void <clinit>()
 androidx.compose.material.icons.outlined.InfoKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.Inventory2Kt:
@@ -59864,6 +59873,8 @@ androidx.compose.material.icons.outlined.Inventory2Kt:
 androidx.compose.material.icons.outlined.MicKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.MicOffKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.NotificationsKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.PersonKt:
     static void <clinit>()
@@ -59880,6 +59891,10 @@ androidx.compose.material.icons.outlined.ReplayKt:
 androidx.compose.material.icons.outlined.ShareKt:
     static void <clinit>()
 androidx.compose.material.icons.outlined.StarKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.StoreKt:
+    static void <clinit>()
+androidx.compose.material.icons.outlined.WorkKt:
     static void <clinit>()
 androidx.compose.material.pullrefresh.ArrowValues:
     public final float rotation
@@ -60851,7 +60866,6 @@ androidx.compose.material3.TabRowDefaults$Indicator$1:
     public final synthetic int $$default
     public final void invoke(androidx.compose.runtime.Composer,int)
 androidx.compose.material3.TabRowDefaults$SecondaryIndicator$1:
-    public final synthetic int $$default
     public final void invoke(androidx.compose.runtime.Composer,int)
 androidx.compose.material3.TabRowDefaults$tabIndicatorOffset$$inlined$debugInspectorInfo$1
 androidx.compose.material3.TabRowDefaults$tabIndicatorOffset$2$1$1:
@@ -74012,9 +74026,12 @@ com.chatile.ApiClient:
     public static final java.lang.String BASE
     public static final synthetic java.lang.String access$getBASE$p()
     public static java.lang.Object applyReferral()
+    public static java.lang.Object applyVirtualJob()
+    public static java.lang.Object buyVirtualItem()
     public static java.lang.Object claimQuest()
     public static java.lang.Object claimReward()
     public static java.lang.Object createCharacter()
+    public static java.lang.Object createVirtualAvatar()
     public static java.lang.Object deleteCharacter()
     public static java.lang.Object endVoiceCall(long,int,kotlin.coroutines.jvm.internal.SuspendLambda)
     public static java.lang.Object equipItem()
@@ -74024,6 +74041,10 @@ com.chatile.ApiClient:
     public static java.lang.Object getCreatorLeaderboard()
     public static java.lang.Object getLootPity()
     public static java.lang.Object getPublicProfile()
+    public static java.lang.Object getVirtualEvents()
+    public static java.lang.Object getVirtualHouse()
+    public static java.lang.Object getVirtualShop()
+    public static java.lang.Object getVirtualSummary()
     public static java.lang.Object getWidgetData()
     public static java.lang.Object makeStoryChoice()
     public static java.lang.Object mysteryBox()
@@ -74051,6 +74072,8 @@ com.chatile.ApiClient:
     public static java.lang.Object unpinPostGlobal()
     public static java.lang.Object uploadAvatar()
     public final java.lang.Object uploadCharacterAvatar(android.content.Context,long,android.net.Uri,kotlin.coroutines.jvm.internal.SuspendLambda)
+    public static java.lang.Object watchVirtualAd()
+    public static java.lang.Object workVirtual()
 com.chatile.AuthManager:
     public static final int $stable
     static void <clinit>()
@@ -74080,7 +74103,13 @@ com.chatile.ChatResult:
     public static java.lang.String getReply()
     public static boolean getShowInterstitial()
 com.chatile.ChatViewModel$$InternalSyntheticLambda$8$2129386e6e10c4bea1f77138125a536ac0b1a58169a9cae247badd028e818e6f$0
+com.chatile.ChatViewModel$applyJob$1:
+    public final synthetic com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$3$1$3$1$1$2$1$1 $onDone
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$applyReferral$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$buyVirtualItem$1:
+    public final synthetic com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$1$1$2$1$1 $onDone
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$claimDailyReward$2:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -74091,6 +74120,8 @@ com.chatile.ChatViewModel$claimQuest$1:
 com.chatile.ChatViewModel$claimReward$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$completeTutorialStep$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$createAvatar$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$createCharacter$2:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -74144,6 +74175,14 @@ com.chatile.ChatViewModel$loadShop$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$loadStories$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$loadVirtualEvents$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$loadVirtualHouse$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$loadVirtualShop$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$loadVirtualSummary$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$makeStoryChoice$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$openLootBox$1:
@@ -74189,6 +74228,10 @@ com.chatile.ChatViewModel$uploadProfileAvatar$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$watchAd$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$watchVirtualAd$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$workVirtual$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel:
     public static final int $stable
     public final kotlinx.coroutines.flow.StateFlowImpl _comments
@@ -74201,6 +74244,7 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlowImpl _unreadCount
     public final kotlinx.coroutines.flow.StateFlowImpl _userPosts
     public final kotlinx.coroutines.flow.StateFlowImpl _userProfile
+    public final kotlinx.coroutines.flow.StateFlowImpl _virtualLocations
     public final kotlinx.coroutines.flow.StateFlow activeStorySessionId
     public final kotlinx.coroutines.flow.StateFlow badgeType
     public final kotlinx.coroutines.flow.StateFlow canWatchAd
@@ -74223,6 +74267,7 @@ com.chatile.ChatViewModel:
     public final kotlinx.coroutines.flow.StateFlow unreadCount
     public final kotlinx.coroutines.flow.StateFlow userPosts
     public final kotlinx.coroutines.flow.StateFlow userProfile
+    public final kotlinx.coroutines.flow.StateFlow virtualLocations
     public static synthetic kotlin.Unit $r8$lambda$-HGoWc7lOFUjDqVg67tZ_5LWTXw()
     public static synthetic kotlin.Unit $r8$lambda$C-fzVn6AxDPc3c2JxFD2TgDd9nM()
     public static synthetic kotlin.Unit $r8$lambda$Hg-S1TzE7j0iOwPj8PHPu-tBSAc()
@@ -74235,7 +74280,9 @@ com.chatile.ChatViewModel:
     public static synthetic kotlin.Unit $r8$lambda$yVyqbXj-4nKqqn75Vxam8SXJOnw()
     static void <clinit>()
     public static void appendSystemMessage()
+    public static void applyJob()
     public static void applyReferral()
+    public static void buyVirtualItem()
     public static void claimDailyReward()
     public static final kotlin.Unit claimDailyReward$lambda$25()
     public static void claimMysteryBox()
@@ -74244,6 +74291,7 @@ com.chatile.ChatViewModel:
     public static void claimReward()
     public final void clearError()
     public static void completeTutorialStep()
+    public final void createAvatar(java.lang.String,kotlin.jvm.functions.Function0)
     public static void createCharacter()
     public static void deleteAccount()
     public static void deleteCharacter()
@@ -74293,6 +74341,10 @@ com.chatile.ChatViewModel:
     public static kotlinx.coroutines.flow.StateFlow getTodayReward()
     public static kotlinx.coroutines.flow.StateFlow getTotalEndings()
     public static boolean getUseAdForLootBox()
+    public static kotlinx.coroutines.flow.StateFlow getVirtualEvent()
+    public static kotlinx.coroutines.flow.StateFlow getVirtualHouse()
+    public static kotlinx.coroutines.flow.StateFlow getVirtualShop()
+    public static kotlinx.coroutines.flow.StateFlow getVirtualSummary()
     public static void importSharedCharacter()
     public static final kotlin.Unit importSharedCharacter$lambda$6()
     public static kotlinx.coroutines.flow.StateFlow isLoading()
@@ -74315,6 +74367,9 @@ com.chatile.ChatViewModel:
     public final void loadShop()
     public final void loadStories()
     public static java.lang.Object loadUser()
+    public static void loadVirtualEvents()
+    public static void loadVirtualHouse()
+    public final void loadVirtualShop()
     public static void makeStoryChoice()
     public static void openLootBox()
     public static void pinPostGlobal()
@@ -74344,6 +74399,8 @@ com.chatile.ChatViewModel:
     public static void updateProfile()
     public static void uploadProfileAvatar()
     public static void watchAd()
+    public static void watchVirtualAd()
+    public static void workVirtual()
 com.chatile.DailyClaimResult:
     static void <clinit>()
     public static java.lang.String getMessage()
@@ -74584,15 +74641,8 @@ com.chatile.ui.AppNavHostKt$NavGraph$4$1$10:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$11:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$12$1$1:
-    public int label
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$12:
-    public static synthetic kotlin.Unit $r8$lambda$b2QinVxPTR0ND0SUEl0PgbL1vO0()
-    public static synthetic kotlin.Unit $r8$lambda$nf_eUEwPZ8sCBFxpbXdef3EBbio()
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-    public static final kotlin.Unit invoke$lambda$6$lambda$5()
-    public static final kotlin.Unit invoke$lambda$8$lambda$7()
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$13:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$14:
@@ -74601,8 +74651,15 @@ com.chatile.ui.AppNavHostKt$NavGraph$4$1$15:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$16:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$17$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$17:
+    public static synthetic kotlin.Unit $r8$lambda$_tFXGU3x6KGXqmIiO15E5-ZJrDI()
+    public static synthetic kotlin.Unit $r8$lambda$fnASlCxlZZfKp5_191Sf8JyrJVA()
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+    public static final kotlin.Unit invoke$lambda$6$lambda$5()
+    public static final kotlin.Unit invoke$lambda$8$lambda$7()
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$18:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$19:
@@ -74614,6 +74671,16 @@ com.chatile.ui.AppNavHostKt$NavGraph$4$1$20:
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$21:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$22:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$23:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$24:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$25:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$26:
+    public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
+com.chatile.ui.AppNavHostKt$NavGraph$4$1$27:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$NavGraph$4$1$2:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
@@ -75092,6 +75159,61 @@ com.chatile.ui.ComposableSingletons$StoriesScreenKt:
     public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-2$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-3$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+com.chatile.ui.ComposableSingletons$VirtualHouseScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualHouseScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$VirtualHouseScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+com.chatile.ui.ComposableSingletons$VirtualJobScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualJobScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$VirtualJobScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-2$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-3$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-4$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-5$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-6$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-7$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-8$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-6$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-7$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
+com.chatile.ui.ComposableSingletons$VirtualShopScreenKt$lambda-1$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualShopScreenKt$lambda-2$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualShopScreenKt:
+    public static final com.chatile.ui.ComposableSingletons$VirtualShopScreenKt INSTANCE
+    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
 com.chatile.ui.ComposableSingletons$VisualComponentsKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$VisualComponentsKt:
@@ -75171,25 +75293,27 @@ com.chatile.ui.HomeScreenKt$HomeScreen$1$1:
 com.chatile.ui.HomeScreenKt$HomeScreen$2$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.HomeScreenKt$HomeScreen$4$1$2$2:
+com.chatile.ui.HomeScreenKt$HomeScreen$4$1$2:
     public final void invoke$14()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$1$3$1$1$1$1$1:
-    public final void invoke()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$1$4$3$1$1$1$1:
-    public final void invoke()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$1$4$3$1$1$2:
+com.chatile.ui.HomeScreenKt$HomeScreen$4$1$4$2:
     public final void invoke$14()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$10$lambda$9$lambda$8$$inlined$items$default$1
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$10$lambda$9$lambda$8$$inlined$items$default$3:
-    public final synthetic com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$10$lambda$9$lambda$8$$inlined$items$default$1 $contentType
+com.chatile.ui.HomeScreenKt$HomeScreen$4$1$5$1$1$1$1$1:
+    public final void invoke()
+com.chatile.ui.HomeScreenKt$HomeScreen$4$1$6$3$1$1$1$1:
+    public final void invoke()
+com.chatile.ui.HomeScreenKt$HomeScreen$4$1$6$3$1$1$2:
+    public final void invoke$14()
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$12$lambda$11$lambda$10$$inlined$items$default$1
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$12$lambda$11$lambda$10$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$12$lambda$11$lambda$10$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke$12()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$10$lambda$9$lambda$8$$inlined$items$default$4:
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$12$lambda$11$lambda$10$$inlined$items$default$4:
     public final void invoke$19()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$lambda$17$$inlined$items$default$1
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$lambda$17$$inlined$items$default$3:
-    public final synthetic com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$lambda$17$$inlined$items$default$1 $contentType
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$21$lambda$20$lambda$19$$inlined$items$default$1
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$21$lambda$20$lambda$19$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$21$lambda$20$lambda$19$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke$12()
-com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$20$lambda$19$lambda$18$lambda$17$$inlined$items$default$4:
+com.chatile.ui.HomeScreenKt$HomeScreen$4$invoke$lambda$22$lambda$21$lambda$20$lambda$19$$inlined$items$default$4:
     public final void invoke$19()
 com.chatile.ui.HomeScreenKt$HomeScreen$4:
     public final void invoke$97()
@@ -75510,6 +75634,84 @@ com.chatile.ui.StoriesScreenKt$StoriesScreen$2$1$3$1$2:
 com.chatile.ui.StoriesScreenKt$StoriesScreen$2$1$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.StoriesScreenKt$StoriesScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$2:
+    public final void invoke$14()
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2$1$2:
+    public final void invoke$14()
+com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2$1$3:
+    public final void invoke$14()
+com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$2:
+    public final void invoke$14()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$3$1$3$1$1$2$1$1
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$3$1$3$1$1$2$1:
+    public final void invoke()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$3$1$3$1$1$3:
+    public final void invoke$98()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$1$3$1$3$1:
+    public final void invoke$14()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$2:
+    public final java.lang.Object invoke$12()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1 $contentType
+    public final java.lang.Object invoke$12()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$4:
+    public final void invoke$19()
+com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$2:
+    public final void invoke$14()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$3:
+    public final void invoke$14()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$4:
+    public final void invoke$14()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$6$1:
+    public final void invoke$98()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$7:
+    public static synthetic kotlin.Unit $r8$lambda$3N-agi82MZW-LnxK0nUisKVdqJw()
+    public final void invoke$14()
+    public static final kotlin.Unit invoke$lambda$4$lambda$3$lambda$2$lambda$1()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2:
+    public static synthetic kotlin.Unit $r8$lambda$aQlWKfkhzhP3ASY2ij21rjfts6A()
+    public final void invoke(androidx.compose.runtime.Composer,int)
+    public static final kotlin.Unit invoke$lambda$6$lambda$4$lambda$3$lambda$2$lambda$1()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$1$1:
+    public int label
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$2:
+    public final void invoke$46()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$3$1$2:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$3:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$1$1$2$1$1
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$1$1$2$1:
+    public final void invoke()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$1:
+    public final void invoke$14()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$2:
+    public final java.lang.Object invoke$12()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$1 $contentType
+    public final java.lang.Object invoke$12()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$4:
+    public final void invoke$19()
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.VisualComponentsKt$$InternalSyntheticLambda$8$d63bebe2537f00f049afe195aee67898cad29f903191e2b6e5c473874fa98197$2:
     public final synthetic int f$4

@@ -130,6 +130,114 @@ class ChatViewModel : ViewModel() {
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
     val notifications: StateFlow<List<Notification>> = _notifications.asStateFlow()
 
+    // Virtual Life states
+    private val _virtualSummary = MutableStateFlow<JSONObject?>(null)
+    val virtualSummary: StateFlow<JSONObject?> = _virtualSummary.asStateFlow()
+
+    private val _virtualShop = MutableStateFlow<JSONObject?>(null)
+    val virtualShop: StateFlow<JSONObject?> = _virtualShop.asStateFlow()
+
+    private val _virtualHouse = MutableStateFlow<JSONObject?>(null)
+    val virtualHouse: StateFlow<JSONObject?> = _virtualHouse.asStateFlow()
+
+    private val _virtualLocations = MutableStateFlow<JSONObject?>(null)
+    val virtualLocations: StateFlow<JSONObject?> = _virtualLocations.asStateFlow()
+
+    private val _virtualEvent = MutableStateFlow<JSONObject?>(null)
+    val virtualEvent: StateFlow<JSONObject?> = _virtualEvent.asStateFlow()
+
+    fun loadVirtualSummary() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getVirtualSummary() }
+                .onSuccess { _virtualSummary.value = it }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun createAvatar(name: String, onDone: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.createVirtualAvatar(name) }
+                .onSuccess { loadVirtualSummary(); onDone() }
+                .onFailure { _error.value = it.message ?: "Création d'avatar impossible." }
+        }
+    }
+
+    fun workVirtual(onResult: (JSONObject?) -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.workVirtual() }
+                .onSuccess { res ->
+                    loadVirtualSummary()
+                    refresh()
+                    onResult(res)
+                }
+                .onFailure { _error.value = it.message; onResult(null) }
+        }
+    }
+
+    fun applyJob(title: String, onDone: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.applyVirtualJob(title) }
+                .onSuccess { loadVirtualSummary(); onDone() }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun loadVirtualShop() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getVirtualShop() }
+                .onSuccess { _virtualShop.value = it }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun buyVirtualItem(itemId: Long, onDone: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.buyVirtualItem(itemId) }
+                .onSuccess { loadVirtualSummary(); refresh(); onDone() }
+                .onFailure { _error.value = it.message ?: "Achat impossible." }
+        }
+    }
+
+    fun loadVirtualHouse() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getVirtualHouse() }
+                .onSuccess { _virtualHouse.value = it }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun loadVirtualEvents() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getVirtualEvents() }
+                .onSuccess { _virtualEvent.value = it.optJSONObject("event") }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun loadLocations() {
+        viewModelScope.launch {
+            runCatching { ApiClient.getLocations() }
+                .onSuccess { _virtualLocations.value = it }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun travelVirtual(locationId: Long, onDone: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.travelVirtual(locationId) }
+                .onSuccess { loadLocations(); onDone() }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
+    fun watchVirtualAd(onDone: () -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.watchVirtualAd() }
+                .onSuccess { loadVirtualSummary(); refresh(); onDone() }
+                .onFailure { _error.value = it.message }
+        }
+    }
+
     private val _unreadCount = MutableStateFlow(0)
     val unreadCount: StateFlow<Int> = _unreadCount.asStateFlow()
 

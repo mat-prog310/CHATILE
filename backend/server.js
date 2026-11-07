@@ -3,7 +3,7 @@ import express from 'express';
 import Database from 'better-sqlite3';
 import { google } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
-import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, writeFileSync, copyFileSync, readdirSync, unlinkSync, statSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -19,9 +19,54 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : resolve(__dirname, 'data', 'pieces.sqlite');
 mkdirSync(dirname(databasePath), { recursive: true });
 
+function performStartupBackup() {
+  try {
+    const backupDir = resolve(dirname(databasePath), 'backups');
+    mkdirSync(backupDir, { recursive: true });
+
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:T]/g, '-').slice(0, 16);
+    const backupPath = resolve(backupDir, `pieces_${timestamp}.sqlite`);
+
+    if (existsSync(databasePath)) {
+      copyFileSync(databasePath, backupPath);
+      console.log(`[Backup] Sauvegarde créée : ${backupPath}`);
+
+      const files = readdirSync(backupDir)
+        .filter(f => f.startsWith('pieces_') && f.endsWith('.sqlite'))
+        .map(f => ({ name: f, path: resolve(backupDir, f), time: statSync(resolve(backupDir, f)).mtime.getTime() }))
+        .sort((a, b) => b.time - a.time);
+
+      if (files.length > 7) {
+        for (let i = 7; i < files.length; i++) {
+          unlinkSync(files[i].path);
+          console.log(`[Backup] Ancienne sauvegarde supprimée : ${files[i].name}`);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Backup Error]', err.message);
+  }
+}
+
+performStartupBackup();
+
 const db = new Database(databasePath);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+
+function ensureColumn(tableName, columnName, columnDefinition) {
+  try {
+    const tableInfo = db.pragma(`table_info(${tableName})`);
+    const exists = tableInfo.some((col) => col.name === columnName);
+    if (!exists) {
+      db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnDefinition};`);
+      console.log(`[Migration] Colonne ${columnName} ajoutée à la table ${tableName}.`);
+    }
+  } catch (err) {
+    console.error(`[Migration Error] Impossible d'ajouter la colonne ${columnName} à ${tableName}:`, err.message);
+  }
+}
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -361,7 +406,128 @@ db.exec(`
     ending_reached_id INTEGER REFERENCES story_nodes(id) ON DELETE SET NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS virtual_avatars (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    appearance TEXT NOT NULL DEFAULT '{}',
+    job TEXT,
+    level INTEGER DEFAULT 1,
+    xp INTEGER DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS virtual_worlds (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    current_location_id INTEGER REFERENCES virtual_locations(id) ON DELETE SET NULL,
+    house_id INTEGER REFERENCES virtual_items(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS virtual_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    category TEXT NOT NULL,
+    price_pieces INTEGER NOT NULL,
+    image_url TEXT,
+    description TEXT,
+    rarity TEXT NOT NULL DEFAULT 'commun'
+  );
+
+  CREATE TABLE IF NOT EXISTS user_inventory_virtual (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    item_id INTEGER NOT NULL REFERENCES virtual_items(id) ON DELETE CASCADE,
+    is_equipped INTEGER NOT NULL DEFAULT 0,
+    purchased_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS virtual_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT UNIQUE NOT NULL,
+    salary_pieces INTEGER NOT NULL,
+    required_level INTEGER NOT NULL DEFAULT 1,
+    description TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS virtual_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,
+    description TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS virtual_locations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT,
+    image_url TEXT
+  );
 `);
+
+const insertVirtualSeeds = db.transaction(() => {
+  const insertItem = db.prepare('INSERT OR IGNORE INTO virtual_items (name, category, price_pieces, description, rarity) VALUES (?, ?, ?, ?, ?)');
+  const houses = [
+    ['Studio', 'house', 500, 'Un petit studio cosy pour commencer.', 'commun'],
+    ['Appartement', 'house', 2000, 'Un bel appartement moderne.', 'rare'],
+    ['Maison de ville', 'house', 5000, 'Une charmante maison avec jardin.', 'rare'],
+    ['Villa', 'house', 10000, 'Une luxueuse villa avec piscine.', 'epique'],
+    ['Manoir', 'house', 25000, 'Un immense manoir historique.', 'epique'],
+    ['Château', 'house', 50000, 'Un château majestueux.', 'legendaire'],
+  ];
+  houses.forEach(h => insertItem.run(...h));
+
+  const clothes = [
+    ['T-shirt', 'clothing', 50, 'Un t-shirt décontracté.', 'commun'],
+    ['Jean', 'clothing', 80, 'Un jean classique.', 'commun'],
+    ['Robe', 'clothing', 120, 'Une robe élégante.', 'rare'],
+    ['Costume', 'clothing', 200, 'Un costume sur mesure.', 'rare'],
+    ['Chaussures de sport', 'clothing', 150, 'Des baskets confortables.', 'commun'],
+    ['Montre de luxe', 'clothing', 500, 'Une montre étincelante.', 'epique'],
+  ];
+  clothes.forEach(c => insertItem.run(...c));
+
+  const vehicles = [
+    ['Vélo', 'vehicle', 200, 'Pour pédaler en ville.', 'commun'],
+    ['Scooter', 'vehicle', 500, 'Rapide et maniable.', 'commun'],
+    ['Voiture citadine', 'vehicle', 1500, 'Pratique pour les trajets.', 'rare'],
+    ['Voiture de sport', 'vehicle', 5000, 'Vitesse et sensations fortes.', 'epique'],
+    ['Jet privé', 'vehicle', 50000, 'Le sommet du transport.', 'legendaire'],
+  ];
+  vehicles.forEach(v => insertItem.run(...v));
+
+  const pets = [
+    ['Chat', 'pet', 300, 'Un chat joueur et câlin.', 'commun'],
+    ['Chien', 'pet', 400, 'Le meilleur ami de l’homme.', 'commun'],
+    ['Dragon', 'pet', 5000, 'Un bébé dragon cracheur de feu.', 'legendaire'],
+    ['Licorne', 'pet', 20000, 'Une créature féerique.', 'legendaire'],
+  ];
+  pets.forEach(p => insertItem.run(...p));
+
+  const jobs = [
+    ['Serveur', 5, 1, 'Servir les clients au café.'],
+    ['Développeur', 15, 2, 'Coder des applications.'],
+    ['Médecin', 30, 4, 'Soigner les patients.'],
+    ['Célébrité', 100, 6, 'Briller sous les spotlights.'],
+  ];
+  const insertJob = db.prepare('INSERT OR IGNORE INTO virtual_jobs (title, salary_pieces, required_level, description) VALUES (?, ?, ?, ?)');
+  jobs.forEach(j => insertJob.run(...j));
+
+  const locations = [
+    ['Café', 'Un endroit chaleureux pour discuter.', 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb'],
+    ['Parc', 'Un grand espace vert paisible.', 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f'],
+    ['Plage', 'Du sable fin et des vagues.', 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e'],
+    ['Centre commercial', 'Pour faire du shopping.', 'https://images.unsplash.com/photo-1555529771-835f59fc5efe'],
+    ['Boîte de nuit', 'Pour faire la fête jusqu’au bout de la nuit.', 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7'],
+  ];
+  const insertLocation = db.prepare('INSERT OR IGNORE INTO virtual_locations (name, description, image_url) VALUES (?, ?, ?)');
+  locations.forEach(l => insertLocation.run(...l));
+});
+
+insertVirtualSeeds();
 
 function ensureColumn(table, column, declaration) {
   const columns = db.prepare(`PRAGMA table_info(${table})`).all();
@@ -4345,6 +4511,250 @@ app.get('/api/users/:id/public-profile', (req, res) => {
     stories: stories.map((s) => formatStory(s, req)),
     totalEarnings,
   });
+});
+
+// --- VIRTUAL LIFE ROUTES ---
+
+app.get('/api/virtual/summary', (req, res) => {
+  let avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) {
+    return res.json({ hasAvatar: false });
+  }
+  let world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
+  if (!world) {
+    const defaultLoc = db.prepare('SELECT id FROM virtual_locations LIMIT 1').get();
+    db.prepare('INSERT INTO virtual_worlds (user_id, current_location_id) VALUES (?, ?)').run(req.user.id, defaultLoc?.id || null);
+    world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
+  }
+
+  const house = world.house_id ? db.prepare('SELECT name FROM virtual_items WHERE id = ?').get(world.house_id) : null;
+  const petsCount = db.prepare(`
+    SELECT count(*) as c FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ? AND vi.category = 'pet'
+  `).get(req.user.id).c;
+
+  const jobObj = avatar.job ? db.prepare('SELECT salary_pieces FROM virtual_jobs WHERE title = ?').get(avatar.job) : null;
+  const xpToNextLevel = avatar.level * 100;
+
+  res.json({
+    hasAvatar: true,
+    avatarName: avatar.name,
+    avatarUrl: req.user.avatar_url || null,
+    job: avatar.job || 'Sans emploi',
+    level: avatar.level,
+    xp: avatar.xp,
+    xpToNextLevel,
+    money: req.user.pieces,
+    houseName: house?.name || 'Sans domicile',
+    petsCount,
+    salaryPerHour: jobObj?.salary_pieces || 0
+  });
+});
+
+app.post('/api/virtual/avatar', (req, res) => {
+  const { name, appearance = {} } = req.body ?? {};
+  if (!name || typeof name !== 'string' || name.trim().length > 50) {
+    return res.status(400).json({ error: 'Nom d’avatar invalide.' });
+  }
+
+  const existing = db.prepare('SELECT id FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (existing) return res.status(409).json({ error: 'Avatar déjà existant.' });
+
+  const create = db.transaction(() => {
+    db.prepare('INSERT INTO virtual_avatars (user_id, name, appearance) VALUES (?, ?, ?)').run(req.user.id, name.trim(), JSON.stringify(appearance));
+    const defaultLoc = db.prepare('SELECT id FROM virtual_locations LIMIT 1').get();
+    db.prepare('INSERT OR IGNORE INTO virtual_worlds (user_id, current_location_id) VALUES (?, ?)').run(req.user.id, defaultLoc?.id || null);
+  });
+  create();
+  res.json({ success: true });
+});
+
+app.put('/api/virtual/avatar', (req, res) => {
+  const { name, appearance } = req.body ?? {};
+  const avatar = db.prepare('SELECT id FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
+
+  if (name) db.prepare('UPDATE virtual_avatars SET name = ? WHERE user_id = ?').run(name.trim(), req.user.id);
+  if (appearance) db.prepare('UPDATE virtual_avatars SET appearance = ? WHERE user_id = ?').run(JSON.stringify(appearance), req.user.id);
+  res.json({ success: true });
+});
+
+app.post('/api/virtual/work', (req, res) => {
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar || !avatar.job) return res.status(400).json({ error: 'Vous devez avoir un emploi pour travailler.' });
+
+  const job = db.prepare('SELECT * FROM virtual_jobs WHERE title = ?').get(avatar.job);
+  if (!job) return res.status(404).json({ error: 'Emploi introuvable.' });
+
+  const lastWork = db.prepare("SELECT created_at FROM virtual_events WHERE user_id = ? AND event_type = 'work' ORDER BY id DESC LIMIT 1").get(req.user.id);
+  if (lastWork) {
+    const lastTime = Date.parse(`${lastWork.created_at.replace(' ', 'T')}Z`);
+    if (Date.now() - lastTime < 60 * 60 * 1000) {
+      const minutesLeft = Math.ceil((60 * 60 * 1000 - (Date.now() - lastTime)) / (60 * 1000));
+      return res.status(429).json({ error: `Vous devez patienter encore ${minutesLeft} minutes avant de retravailler.` });
+    }
+  }
+
+  const workTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(job.salary_pieces, req.user.id);
+    recordPieceTransaction(req.user.id, job.salary_pieces, 'virtual_work', `Salaire : ${job.title}`);
+
+    let newXp = avatar.xp + 25;
+    let newLevel = avatar.level;
+    const xpNeeded = newLevel * 100;
+    if (newXp >= xpNeeded) {
+      newXp -= xpNeeded;
+      newLevel += 1;
+    }
+    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ? WHERE user_id = ?').run(newXp, newLevel, req.user.id);
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${job.salary_pieces} Pièces.`);
+  });
+  workTrans();
+
+  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  const updatedAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updated.pieces, earned: job.salary_pieces, level: updatedAvatar.level, xp: updatedAvatar.xp });
+});
+
+app.post('/api/virtual/job/apply', (req, res) => {
+  const { title } = req.body ?? {};
+  const job = db.prepare('SELECT * FROM virtual_jobs WHERE title = ?').get(title);
+  if (!job) return res.status(404).json({ error: 'Métier introuvable.' });
+
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
+
+  if (avatar.level < job.required_level) {
+    return res.status(403).json({ error: `Niveau requis : ${job.required_level}. Votre niveau : ${avatar.level}.` });
+  }
+
+  db.prepare('UPDATE virtual_avatars SET job = ? WHERE user_id = ?').run(job.title, req.user.id);
+  res.json({ success: true, job: job.title });
+});
+
+app.get('/api/virtual/shop', (req, res) => {
+  const items = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, description, rarity FROM virtual_items').all();
+  const jobs = db.prepare('SELECT id, title, salary_pieces as salaryPieces, required_level as requiredLevel, description FROM virtual_jobs').all();
+  res.json({ items, jobs });
+});
+
+app.post('/api/virtual/buy', (req, res) => {
+  const { itemId } = req.body ?? {};
+  const item = db.prepare('SELECT * FROM virtual_items WHERE id = ?').get(itemId);
+  if (!item) return res.status(404).json({ error: 'Article introuvable.' });
+
+  const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  if (!user || user.pieces < item.price_pieces) {
+    return res.status(402).json({ error: 'Pas assez de Pièces.', needPieces: item.price_pieces });
+  }
+
+  const buyTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(item.price_pieces, req.user.id, item.price_pieces);
+    recordPieceTransaction(req.user.id, -item.price_pieces, 'virtual_purchase', `Achat virtuel : ${item.name}`);
+    db.prepare('INSERT INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, item.id);
+
+    if (item.category === 'house') {
+      db.prepare('UPDATE virtual_worlds SET house_id = ? WHERE user_id = ?').run(item.id, req.user.id);
+    }
+  });
+  buyTrans();
+
+  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updated.pieces });
+});
+
+app.post('/api/virtual/equip', (req, res) => {
+  const { inventoryId } = req.body ?? {};
+  const inv = db.prepare(`
+    SELECT ui.*, vi.category FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.id = ? AND ui.user_id = ?
+  `).get(inventoryId, req.user.id);
+  if (!inv) return res.status(404).json({ error: 'Objet introuvable dans l’inventaire.' });
+
+  const equipTrans = db.transaction(() => {
+    if (inv.category === 'clothing') {
+      db.prepare(`
+        UPDATE user_inventory_virtual SET is_equipped = 0
+        WHERE user_id = ? AND item_id IN (SELECT id FROM virtual_items WHERE category = 'clothing')
+      `).run(req.user.id);
+    }
+    const newStatus = inv.is_equipped ? 0 : 1;
+    db.prepare('UPDATE user_inventory_virtual SET is_equipped = ? WHERE id = ?').run(newStatus, inv.id);
+  });
+  equipTrans();
+  res.json({ success: true, isEquipped: inv.is_equipped === 0 });
+});
+
+app.get('/api/virtual/house', (req, res) => {
+  const world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
+  const house = world?.house_id ? db.prepare('SELECT id, name, description, rarity, image_url as imageUrl FROM virtual_items WHERE id = ?').get(world.house_id) : null;
+  const furniture = db.prepare(`
+    SELECT ui.id, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
+    FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ? AND vi.category = 'furniture'
+  `).all(req.user.id);
+  const pets = db.prepare(`
+    SELECT ui.id, vi.name, vi.description, vi.rarity, vi.image_url as imageUrl
+    FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ? AND vi.category = 'pet'
+  `).all(req.user.id);
+
+  res.json({ house, furniture, pets });
+});
+
+app.get('/api/virtual/events', (req, res) => {
+  let event = db.prepare("SELECT * FROM virtual_events WHERE user_id = ? AND date(created_at) = date('now') ORDER BY id DESC LIMIT 1").get(req.user.id);
+  if (!event) {
+    const eventsPool = [
+      "Vous avez trouvé 50 Pièces par terre !",
+      "Une promotion surprise vous a permis d’économiser.",
+      "Votre animal de compagnie a fait une pitrerie qui a fait rire tout le quartier.",
+      "Vous avez rencontré une vieille connaissance au café."
+    ];
+    const desc = eventsPool[Math.floor(Math.random() * eventsPool.length)];
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'daily', ?)").run(req.user.id, desc);
+    event = db.prepare("SELECT * FROM virtual_events WHERE user_id = ? ORDER BY id DESC LIMIT 1").get(req.user.id);
+  }
+  res.json({ event });
+});
+
+app.get('/api/virtual/locations', (req, res) => {
+  const locations = db.prepare('SELECT id, name, description, image_url as imageUrl FROM virtual_locations').all();
+  const world = db.prepare('SELECT current_location_id as currentLocationId FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
+  res.json({ locations, currentLocationId: world?.currentLocationId || null });
+});
+
+app.post('/api/virtual/travel', (req, res) => {
+  const { locationId } = req.body ?? {};
+  const loc = db.prepare('SELECT id FROM virtual_locations WHERE id = ?').get(locationId);
+  if (!loc) return res.status(404).json({ error: 'Lieu introuvable.' });
+
+  db.prepare('UPDATE virtual_worlds SET current_location_id = ? WHERE user_id = ?').run(loc.id, req.user.id);
+  res.json({ success: true });
+});
+
+app.post('/api/virtual/watch-ad', (req, res) => {
+  const lastAd = db.prepare("SELECT created_at FROM virtual_events WHERE user_id = ? AND event_type = 'virtual_ad' ORDER BY id DESC LIMIT 1").get(req.user.id);
+  if (lastAd) {
+    const lastTime = Date.parse(`${lastAd.created_at.replace(' ', 'T')}Z`);
+    if (Date.now() - lastTime < 60 * 60 * 1000) {
+      return res.status(429).json({ error: 'Vous devez patienter 1 heure avant de regarder une autre publicité virtuelle.' });
+    }
+  }
+
+  const adTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces + 50 WHERE id = ?').run(req.user.id);
+    recordPieceTransaction(req.user.id, 50, 'virtual_watch_ad', 'Publicité Vie Virtuelle (+50 Pièces)');
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'virtual_ad', 'Visionnage d’une publicité (+50 Pièces)')").run(req.user.id);
+  });
+  adTrans();
+
+  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updated.pieces });
 });
 
 app.use((error, req, res, next) => {

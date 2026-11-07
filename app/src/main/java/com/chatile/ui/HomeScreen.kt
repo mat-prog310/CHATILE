@@ -37,7 +37,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.chatile.ui.theme.NightSurface
+import com.chatile.ui.theme.TextPrimary
 import com.chatile.ui.theme.TextSecondary
+import com.chatile.ui.theme.VioletAccent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -71,6 +73,7 @@ fun HomeScreen(
     val pieces by viewModel.pieces.collectAsState()
     val characterOfTheDay by viewModel.characterOfTheDay.collectAsState()
     val allCharacters by viewModel.characters.collectAsState()
+    val virtualSummary by viewModel.virtualSummary.collectAsState()
     val error by viewModel.error.collectAsState()
     
     LaunchedEffect(error) {
@@ -87,6 +90,7 @@ fun HomeScreen(
         viewModel.refresh()
         viewModel.loadProfile()
         viewModel.loadCharacterOfTheDay()
+        viewModel.loadVirtualSummary()
     }
 
     Scaffold(
@@ -111,6 +115,33 @@ fun HomeScreen(
                     Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
                     Spacer(Modifier.height(4.dp))
                     BannerAdView()
+                }
+            }
+
+            // Carte "Votre vie virtuelle"
+            val hasAvatar = virtualSummary?.optBoolean("hasAvatar", false) == true
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("virtual_life") }
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("🎮 Ma Vie Virtuelle", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        if (hasAvatar) {
+                            val name = virtualSummary?.optString("avatarName") ?: "Avatar"
+                            val level = virtualSummary?.optInt("level", 1) ?: 1
+                            val job = virtualSummary?.optString("job", "Sans emploi") ?: "Sans emploi"
+                            Text("$name · Niv. $level · $job", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        } else {
+                            Text("Crée ton avatar et vis dans le monde virtuel !", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = VioletAccent)
                 }
             }
 

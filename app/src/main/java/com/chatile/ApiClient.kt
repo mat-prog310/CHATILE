@@ -385,6 +385,27 @@ object ApiClient {
     suspend fun equipItem(inventoryId: Long): JSONObject = request("POST", "/api/inventory/$inventoryId/equip")
     suspend fun getPublicProfile(userId: Long): JSONObject = request("GET", "/api/users/$userId/public-profile")
 
+    // ========== Virtual Life ==========
+    suspend fun getVirtualSummary(): JSONObject = request("GET", "/api/virtual/summary")
+    suspend fun createVirtualAvatar(name: String, appearance: JSONObject = JSONObject()): JSONObject =
+        request("POST", "/api/virtual/avatar", JSONObject().put("name", name).put("appearance", appearance))
+    suspend fun updateVirtualAvatar(name: String?, appearance: JSONObject?): JSONObject {
+        val payload = JSONObject()
+        if (name != null) payload.put("name", name)
+        if (appearance != null) payload.put("appearance", appearance)
+        return request("PUT", "/api/virtual/avatar", payload)
+    }
+    suspend fun workVirtual(): JSONObject = request("POST", "/api/virtual/work", JSONObject())
+    suspend fun applyVirtualJob(title: String): JSONObject = request("POST", "/api/virtual/job/apply", JSONObject().put("title", title))
+    suspend fun getVirtualShop(): JSONObject = request("GET", "/api/virtual/shop")
+    suspend fun buyVirtualItem(itemId: Long): JSONObject = request("POST", "/api/virtual/buy", JSONObject().put("itemId", itemId))
+    suspend fun equipVirtualItem(inventoryId: Long): JSONObject = request("POST", "/api/virtual/equip", JSONObject().put("inventoryId", inventoryId))
+    suspend fun getVirtualHouse(): JSONObject = request("GET", "/api/virtual/house")
+    suspend fun getVirtualEvents(): JSONObject = request("GET", "/api/virtual/events")
+    suspend fun getLocations(): JSONObject = request("GET", "/api/virtual/locations")
+    suspend fun travelVirtual(locationId: Long): JSONObject = request("POST", "/api/virtual/travel", JSONObject().put("locationId", locationId))
+    suspend fun watchVirtualAd(): JSONObject = request("POST", "/api/virtual/watch-ad", JSONObject())
+
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))
 

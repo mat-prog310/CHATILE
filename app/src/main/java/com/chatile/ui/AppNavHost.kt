@@ -318,6 +318,30 @@ fun NavGraph(
             )
         }
 
+        // Virtual Life
+        composable("virtual_life") {
+            VirtualLifeScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onOpenShop = { navController.navigate("virtual_shop") },
+                onOpenHouse = { navController.navigate("virtual_house") },
+                onOpenJob = { navController.navigate("virtual_job") },
+                onOpenAvatar = { navController.navigate("virtual_avatar") }
+            )
+        }
+        composable("virtual_shop") {
+            VirtualShopScreen(vm = viewModel, onBack = { navController.popBackStack() })
+        }
+        composable("virtual_house") {
+            VirtualHouseScreen(vm = viewModel, onBack = { navController.popBackStack() })
+        }
+        composable("virtual_job") {
+            VirtualJobScreen(vm = viewModel, onBack = { navController.popBackStack() })
+        }
+        composable("virtual_avatar") {
+            VirtualAvatarScreen(vm = viewModel, onBack = { navController.popBackStack() })
+        }
+
         // Public Profile
         composable("public_profile/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId")?.toLongOrNull()

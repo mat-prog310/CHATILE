@@ -290,7 +290,7 @@ class MainActivity : ComponentActivity() {
     private fun loadInterstitialAd() {
         InterstitialAd.load(
             this,
-            "ca-app-pub-3940256099942544/1033173712",
+            "ca-app-pub-8964953556750058/7311800102",
             AdRequest.Builder().build(),
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(ad: InterstitialAd) { interstitialAd = ad }

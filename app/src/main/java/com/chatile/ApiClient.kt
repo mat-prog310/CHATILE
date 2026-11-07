@@ -377,7 +377,8 @@ object ApiClient {
     suspend fun createStoryManual(title: String, description: String, genre: String, nodes: JSONArray): JSONObject =
         request("POST", "/api/stories", JSONObject().put("title", title).put("description", description).put("genre", genre).put("nodes", nodes))
 
-    suspend fun openLootBox(): JSONObject = request("POST", "/api/loot-boxes/open")
+    suspend fun openLootBox(useAd: Boolean = false): JSONObject =
+        request("POST", "/api/loot-boxes/open", JSONObject().put("useAd", useAd))
     suspend fun getLootPity(): JSONObject = request("GET", "/api/loot-boxes/pity")
     suspend fun getInventory(): JSONArray = request("GET", "/api/inventory").getJSONArray("items")
     suspend fun recycleItem(inventoryId: Long): JSONObject = request("POST", "/api/inventory/$inventoryId/recycle")

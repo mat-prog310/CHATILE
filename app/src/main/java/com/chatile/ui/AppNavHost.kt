@@ -296,7 +296,10 @@ fun NavGraph(
             LootBoxScreen(
                 vm = viewModel,
                 onBack = { navController.popBackStack() },
-                onOpenOpening = { navController.navigate("loot_opening") }
+                onOpenOpening = { useAd ->
+                    viewModel.useAdForLootBox = useAd
+                    navController.navigate("loot_opening")
+                }
             )
         }
 

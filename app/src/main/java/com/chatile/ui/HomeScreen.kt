@@ -36,6 +36,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.chatile.ui.theme.NightSurface
+import com.chatile.ui.theme.TextSecondary
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -99,6 +101,19 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // Carré de pub léger sur l'accueil
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                    Spacer(Modifier.height(4.dp))
+                    BannerAdView()
+                }
+            }
+
             // Header: CHATILE logo 24dp + "CHATILE" text
             Row(
                 verticalAlignment = Alignment.CenterVertically,

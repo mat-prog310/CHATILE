@@ -70,12 +70,13 @@ fun LootBoxOpeningScreen(
         shakeAnim.animateTo(0f)
         isShaking = false
 
-        runCatching { ApiClient.openLootBox() }
-            .onSuccess { res ->
+        vm.openLootBox(vm.useAdForLootBox) { res ->
+            if (res != null) {
                 openedResult = res
-                vm.refresh()
+            } else {
+                errorMessage = "Échec de l'ouverture du coffre."
             }
-            .onFailure { errorMessage = it.message ?: "Échec de l'ouverture du coffre." }
+        }
     }
 
     ChatileScreenBackground {

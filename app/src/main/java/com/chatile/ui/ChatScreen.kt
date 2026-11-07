@@ -56,6 +56,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -212,10 +214,27 @@ fun ChatScreen(
         previousPieces = pieces
     }
 
+    var showMessageBannerAd by remember { mutableStateOf(false) }
+
+    LaunchedEffect(displayedMessages.size) {
+        val size = displayedMessages.size
+        if (size > 0) {
+            if (size % 20 == 0) {
+                showMessageBannerAd = true
+            } else {
+                showMessageBannerAd = false
+            }
+            if (size % 30 == 0) {
+                onWatchAd()
+            }
+        }
+    }
+
     fun sendDraft() {
         val content = draft.trim()
         if (content.isBlank()) return
         isReplying = true
+        showMessageBannerAd = false
         vm.send(content, usePremium)
         draft = ""
     }
@@ -310,6 +329,20 @@ fun ChatScreen(
                 }
 
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    if (showMessageBannerAd) {
+                        Card(
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = NightSurface),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                                Spacer(Modifier.height(2.dp))
+                                BannerAdView()
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,

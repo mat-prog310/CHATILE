@@ -1075,10 +1075,9 @@ app.get('/api/me', (req, res) => {
     return nextMonday.toISOString();
   })();
   
-  // Watch ad status
-  const lastWatchAd = req.user.last_watch_ad ? Date.parse(`${req.user.last_watch_ad.replace(' ', 'T')}Z`) : 0;
-  const canWatchAd = !lastWatchAd || Date.now() - lastWatchAd >= 60 * 60 * 1000;
-  const nextWatchAdAt = canWatchAd ? null : new Date(lastWatchAd + 60 * 60 * 1000).toISOString();
+  // Watch ad status (infinite, no cooldown)
+  const canWatchAd = true;
+  const nextWatchAdAt = null;
   
   res.json({
     pieces: req.user.pieces,
@@ -1403,27 +1402,11 @@ app.post('/api/watch-ad', (req, res) => {
     return res.status(403).json({ error: 'Les publicités ne sont pas disponibles avec votre abonnement.' });
   }
   const claim = db.transaction(() => {
-    const adCountToday = db.prepare(`
-      SELECT COUNT(*) AS count FROM piece_transactions
-      WHERE user_id = ? AND type = 'watch_ad' AND date(created_at) = date('now')
-    `).get(req.user.id).count;
-    if (adCountToday >= 10) {
-      return { success: false, error: 'daily_limit_reached', message: 'Maximum de 10 publicités par jour atteint pour les pièces.' };
-    }
-
-    const user = db.prepare('SELECT last_watch_ad FROM users WHERE id = ?').get(req.user.id);
-    const last = user.last_watch_ad ? Date.parse(`${user.last_watch_ad.replace(' ', 'T')}Z`) : 0;
-    if (last && Date.now() - last < 5 * 60 * 1000) {
-      return { success: false, error: 'too_soon', nextClaimAt: new Date(last + 5 * 60 * 1000).toISOString(), message: 'Attends encore 5 minutes avant de regarder une autre publicité.' };
-    }
     const awardedAt = new Date().toISOString().replace('T', ' ').slice(0, 19);
     db.prepare('UPDATE users SET pieces = pieces + 5, last_watch_ad = ? WHERE id = ?').run(awardedAt, req.user.id);
     recordPieceTransaction(req.user.id, 5, 'watch_ad', 'Publicité récompensée (+5 Pièces)');
     return { success: true };
   })();
-  if (!claim.success) {
-    return res.status(429).json(claim);
-  }
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   res.json({ success: true, pieces: updated.pieces });
 });
@@ -4170,9 +4153,10 @@ app.get('/api/loot-boxes/pity', (req, res) => {
 
 // Open Loot Box (50 Pièces)
 app.post('/api/loot-boxes/open', (req, res) => {
-  const cost = 50;
+  const useAd = req.body?.useAd === true;
+  const cost = useAd ? 0 : 50;
   const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-  if (!user || user.pieces < cost) {
+  if (!useAd && (!user || user.pieces < cost)) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: cost, currentPieces: user?.pieces || 0 });
   }
 
@@ -4196,8 +4180,10 @@ app.post('/api/loot-boxes/open', (req, res) => {
   const selectedItem = itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
 
   const openTrans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
-    recordPieceTransaction(req.user.id, -cost, 'loot_box', 'Ouverture de Coffre Mystère');
+    if (!useAd) {
+      db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
+      recordPieceTransaction(req.user.id, -cost, 'loot_box', 'Ouverture de Coffre Mystère');
+    }
 
     if (rarity === 'legendaire') {
       db.prepare('UPDATE user_pity_counter SET boxes_opened_since_legendary = 0, total_boxes_opened = total_boxes_opened + 1 WHERE user_id = ?').run(req.user.id);

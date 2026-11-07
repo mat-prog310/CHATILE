@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CardGiftcard
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,7 +66,7 @@ import com.chatile.ui.theme.VioletAccent
 fun LootBoxScreen(
     vm: ChatViewModel,
     onBack: () -> Unit,
-    onOpenOpening: () -> Unit,
+    onOpenOpening: (Boolean) -> Unit,
 ) {
     val pieces by vm.pieces.collectAsState()
     var showDropRates by remember { mutableStateOf(false) }
@@ -150,11 +151,19 @@ fun LootBoxScreen(
                     }
 
                     Button(
-                        onClick = onOpenOpening,
+                        onClick = { onOpenOpening(false) },
                         enabled = pieces >= 50,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Ouvrir un coffre (50 Pièces)")
+                    }
+
+                    OutlinedButton(
+                        onClick = { onOpenOpening(true) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = VioletAccent)
+                    ) {
+                        Text("Regarder une pub (Gratuit)")
                     }
                 }
             }

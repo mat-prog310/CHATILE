@@ -109,6 +109,8 @@ class ChatViewModel : ViewModel() {
     private val _theme = MutableStateFlow("violet")
     val theme: StateFlow<String> = _theme.asStateFlow()
 
+    var useAdForLootBox = false
+
     private val _tutorialCompleted = MutableStateFlow(false)
     val tutorialCompleted: StateFlow<Boolean> = _tutorialCompleted.asStateFlow()
 
@@ -424,6 +426,20 @@ class ChatViewModel : ViewModel() {
     fun loadPiecesHistory() { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.getPiecesHistory() }.onSuccess { _piecesHistory.value = it }.onFailure { _error.value = it.message }; _isLoading.value = false } }
     fun loadReferralCode() { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.getReferralCode() }.onSuccess { _referralCode.value = it }.onFailure { _error.value = it.message }; _isLoading.value = false } }
     fun applyReferral(code: String) { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.applyReferral(code) }.onSuccess { refresh() }.onFailure { _error.value = it.message }; _isLoading.value = false } }
+    
+    fun openLootBox(useAd: Boolean, onResult: (JSONObject?) -> Unit) {
+        viewModelScope.launch {
+            runCatching { ApiClient.openLootBox(useAd) }
+                .onSuccess { res ->
+                    refresh()
+                    onResult(res)
+                }
+                .onFailure {
+                    _error.value = it.message ?: "Échec de l'ouverture du coffre."
+                    onResult(null)
+                }
+        }
+    }
     fun setTheme(theme: String) { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.setTheme(theme) }.onSuccess { result -> _theme.value = result ?: theme }.onFailure { _error.value = it.message }; _isLoading.value = false } }
     fun loadRetrospective() { viewModelScope.launch { _isLoading.value = true; runCatching { ApiClient.getRetrospective() }.onSuccess { _retrospective.value = it }.onFailure { _error.value = it.message }; _isLoading.value = false } }
     fun setMood(mood: String, note: String, characterId: Long? = null) { viewModelScope.launch { runCatching { ApiClient.setMood(mood, note, characterId) }.onFailure { _error.value = it.message } } }

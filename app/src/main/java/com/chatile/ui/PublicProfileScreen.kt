@@ -71,7 +71,14 @@ fun PublicProfileScreen(
     val avatarUrl = user?.optString("avatarUrl")?.takeIf { it.isNotBlank() }
     val badgeType = user?.optString("badgeType")?.takeIf { it.isNotBlank() }
     val totalEarnings = profileData?.optInt("totalEarnings", 0) ?: 0
+    val pieces = profileData?.optInt("pieces", 0) ?: 0
     val equippedItems = profileData?.optJSONArray("equippedItems")
+    val virtualAvatar = profileData?.optJSONObject("virtualAvatar")
+    val vAvatarName = virtualAvatar?.optString("name") ?: ""
+    val vLevel = virtualAvatar?.optInt("level", 1) ?: 1
+    val vJob = virtualAvatar?.optString("job") ?: ""
+    val vHouse = virtualAvatar?.optString("houseName") ?: ""
+    val vPets = virtualAvatar?.optInt("petsCount", 0) ?: 0
 
     var equippedTitle = ""
     var equippedFrame = ""
@@ -156,6 +163,27 @@ fun PublicProfileScreen(
 
             if (equippedTitle.isNotBlank()) {
                 Text("• $equippedTitle •", color = VioletAccent, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            }
+
+            // Virtual Life & Earnings Card
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("🎮 Vie Virtuelle & Économie", color = TextPrimary, fontWeight = FontWeight.Bold)
+                    if (vAvatarName.isNotBlank()) {
+                        Text("Avatar : $vAvatarName (Niveau $vLevel)", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        Text("Métier : $vJob", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        Text("Maison : $vHouse · Animaux : $vPets 🐾", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        Text("Aucun avatar virtuel créé.", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text("💰 Pièces actuelles : $pieces", color = VioletAccent, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                    Text("📈 Revenu total cumulé : $totalEarnings Pièces", color = VioletAccent, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                }
             }
 
             // Stats Card

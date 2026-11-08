@@ -4522,7 +4522,7 @@ function formatUser(u, req) {
 app.get('/api/users/:id/public-profile', (req, res) => {
   const userId = Number(req.params.id);
   const user = db.prepare(`
-    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at
+    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at, u.pieces
     FROM users u WHERE u.id = ?
   `).get(userId);
 
@@ -4535,16 +4535,53 @@ app.get('/api/users/:id/public-profile', (req, res) => {
     WHERE ui.user_id = ? AND ui.is_equipped = 1
   `).all(userId);
 
+  const virtualAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(userId);
+  const virtualWorld = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(userId);
+  const house = virtualWorld?.house_id ? db.prepare('SELECT name, image_url as imageUrl FROM virtual_items WHERE id = ?').get(virtualWorld.house_id) : null;
+  const petsCount = db.prepare(`
+    SELECT count(*) as c FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ? AND vi.category = 'pet'
+  `).get(userId)?.c || 0;
+
+  const totalEarnings = db.prepare('SELECT COALESCE(SUM(amount), 0) AS sum FROM piece_transactions WHERE user_id = ? AND amount > 0').get(userId).sum;
+
+  let virtualAvatarDetails = null;
+  if (virtualAvatar) {
+    let equippedIds = [];
+    try {
+      equippedIds = JSON.parse(virtualAvatar.equipped_items || '[]');
+    } catch (_e) {}
+    let equippedVirtualItems = [];
+    if (equippedIds.length > 0) {
+      const placeholders = equippedIds.map(() => '?').join(',');
+      equippedVirtualItems = db.prepare(`
+        SELECT vi.id, vi.name, vi.category, vi.image_url as imageUrl, vi.rarity
+        FROM virtual_items vi WHERE vi.id IN (${placeholders})
+      `).all(...equippedIds);
+    }
+    virtualAvatarDetails = {
+      name: virtualAvatar.name,
+      level: virtualAvatar.level,
+      job: virtualAvatar.job || 'Sans emploi',
+      houseName: house?.name || 'Sans domicile',
+      houseImageUrl: house?.imageUrl || null,
+      petsCount,
+      equippedVirtualItems
+    };
+  }
+
   const characters = db.prepare('SELECT * FROM characters WHERE user_id = ? AND is_public = 1 AND is_system = 0').all(userId);
   const stories = db.prepare('SELECT * FROM stories WHERE user_id = ? AND is_public = 1 AND status = \'published\'').all(userId);
-  const totalEarnings = db.prepare('SELECT COALESCE(SUM(amount), 0) AS sum FROM creator_transactions WHERE creator_id = ?').get(userId).sum;
 
   res.json({
     user: formatUser(user, req),
     equippedItems,
+    virtualAvatar: virtualAvatarDetails,
+    totalEarnings,
+    pieces: user.pieces,
     characters: characters.map((c) => formatCharacter(c, req)),
     stories: stories.map((s) => formatStory(s, req)),
-    totalEarnings,
   });
 });
 

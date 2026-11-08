@@ -4668,21 +4668,56 @@ app.post('/api/virtual/job/apply', (req, res) => {
   res.json({ success: true, job: job.title });
 });
 
+function getItemIllustration(name, category, userId, itemId) {
+  const map = {
+    'Studio': 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&auto=format&fit=crop&q=80',
+    'Appartement': 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=600&auto=format&fit=crop&q=80',
+    'Maison de ville': 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80',
+    'Villa': 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&auto=format&fit=crop&q=80',
+    'Manoir': 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format&fit=crop&q=80',
+    'Château': 'https://images.unsplash.com/photo-1533158307587-828f0a76ef46?w=600&auto=format&fit=crop&q=80',
+    'T-shirt': 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=600&auto=format&fit=crop&q=80',
+    'Jean': 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&auto=format&fit=crop&q=80',
+    'Robe': 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format&fit=crop&q=80',
+    'Costume': 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&auto=format&fit=crop&q=80',
+    'Chaussures de sport': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+    'Montre de luxe': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
+    'Vélo': 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=600&auto=format&fit=crop&q=80',
+    'Scooter': 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80',
+    'Voiture citadine': 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80',
+    'Voiture de sport': 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&auto=format&fit=crop&q=80',
+    'Jet privé': 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&auto=format&fit=crop&q=80',
+    'Chat': 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop&q=80',
+    'Chien': 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80',
+    'Dragon': 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600&auto=format&fit=crop&q=80',
+    'Licorne': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80',
+    'Veste de Sponsor': 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&auto=format&fit=crop&q=80',
+    'Tenue de Soirée': 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&auto=format&fit=crop&q=80',
+    'Canapé Gamer': 'https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=600&auto=format&fit=crop&q=80',
+    'Fontaine de Jardin': 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=600&auto=format&fit=crop&q=80',
+    'Chien Robot': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
+    'Dragon de Compagnie': 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=80',
+  };
+  if (map[name]) return map[name];
+  const fallbacks = {
+    'house': 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&auto=format&fit=crop&q=80',
+    'clothing': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&auto=format&fit=crop&q=80',
+    'vehicle': 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80',
+    'pet': 'https://images.unsplash.com/photo-1534361960057-19889db9621e?w=600&auto=format&fit=crop&q=80',
+    'furniture': 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&auto=format&fit=crop&q=80'
+  };
+  return fallbacks[category] || `https://picsum.photos/seed/item_${itemId}_${userId}/600/400`;
+}
+
 app.get('/api/virtual/shop', (req, res) => {
   const rawItems = db.prepare('SELECT id, name, category, price_pieces as pricePieces, image_url as imageUrl, thumbnail_url as thumbnailUrl, preview_url as previewUrl, description, rarity FROM virtual_items').all();
   const items = rawItems.map(item => {
-    let style = 'shapes';
-    if (item.category === 'clothing' || item.category === 'furniture') style = 'icons';
-    else if (item.category === 'pet') style = 'bottts';
-    else if (item.category === 'vehicle') style = 'shapes';
-    else style = 'shapes';
-
-    const randImg = `https://api.dicebear.com/7.x/${style}/png?seed=${item.category}_${item.id}_${req.user.id}&backgroundColor=1a1428,b47cff`;
+    const img = getItemIllustration(item.name, item.category, req.user.id, item.id);
     return {
       ...item,
-      imageUrl: randImg,
-      thumbnailUrl: randImg,
-      previewUrl: randImg
+      imageUrl: img,
+      thumbnailUrl: img,
+      previewUrl: img
     };
   });
   const jobs = db.prepare('SELECT id, title, salary_pieces as salaryPieces, required_level as requiredLevel, description FROM virtual_jobs').all();
@@ -4708,7 +4743,7 @@ app.get('/api/virtual/avatar', (req, res) => {
     `).all(...equippedIds);
     equippedItemsDetails = rawEquipped.map(eq => ({
       ...eq,
-      imageUrl: `https://api.dicebear.com/7.x/icons/png?seed=equip_${req.user.id}_${eq.id}&backgroundColor=1a1428,b47cff`
+      imageUrl: getItemIllustration(eq.name, eq.category, req.user.id, eq.id)
     }));
   }
 
@@ -4769,7 +4804,7 @@ app.get('/api/virtual/house', (req, res) => {
   const houseRaw = world?.house_id ? db.prepare('SELECT id, name, description, rarity, image_url as imageUrl FROM virtual_items WHERE id = ?').get(world.house_id) : null;
   const house = houseRaw ? {
     ...houseRaw,
-    imageUrl: `https://api.dicebear.com/7.x/shapes/png?seed=house_${req.user.id}_${houseRaw.id}&backgroundColor=1a1428,b47cff`
+    imageUrl: getItemIllustration(houseRaw.name, 'house', req.user.id, houseRaw.id)
   } : null;
 
   const furniture = db.prepare(`
@@ -4779,7 +4814,7 @@ app.get('/api/virtual/house', (req, res) => {
     WHERE ui.user_id = ? AND vi.category = 'furniture'
   `).all(req.user.id).map(f => ({
     ...f,
-    imageUrl: `https://api.dicebear.com/7.x/icons/png?seed=furn_${req.user.id}_${f.id}_${f.itemId}&backgroundColor=1a1428,b47cff`
+    imageUrl: getItemIllustration(f.name, 'furniture', req.user.id, f.itemId)
   }));
 
   const pets = db.prepare(`
@@ -4789,7 +4824,7 @@ app.get('/api/virtual/house', (req, res) => {
     WHERE ui.user_id = ? AND vi.category = 'pet'
   `).all(req.user.id).map(p => ({
     ...p,
-    imageUrl: `https://api.dicebear.com/7.x/bottts/png?seed=pet_${req.user.id}_${p.id}_${p.itemId}&backgroundColor=1a1428,b47cff`
+    imageUrl: getItemIllustration(p.name, 'pet', req.user.id, p.itemId)
   }));
 
   res.json({ house, furniture, pets });

@@ -334,8 +334,17 @@ fun NavGraph(
                 onOpenHouse = { navController.navigate("virtual_house") },
                 onOpenJob = { navController.navigate("virtual_job") },
                 onOpenAvatar = { navController.navigate("virtual_avatar") },
+                onOpenPublicProfile = { navController.navigate("public_virtual_profile/1") },
                 onWatchAd = onWatchAd,
                 onShowInterstitial = onShowInterstitial
+            )
+        }
+        composable("public_virtual_profile/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")?.toLongOrNull() ?: 1L
+            PublicVirtualProfileScreen(
+                userId = userId,
+                vm = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable("virtual_shop") {

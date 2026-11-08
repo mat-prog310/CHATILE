@@ -211,7 +211,7 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Regarder une publicité", color = TextPrimary, style = MaterialTheme.typography.titleSmall)
-                    Text("+5 Pièces (max 10/jour, attente 5 min)", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    Text("+5 Pièces", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                 }
                 Button(
                     onClick = onWatchAd,

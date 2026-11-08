@@ -30,6 +30,7 @@ fun VirtualLifeScreen(
     onOpenHouse: () -> Unit,
     onOpenJob: () -> Unit,
     onOpenAvatar: () -> Unit,
+    onOpenPublicProfile: () -> Unit,
     onWatchAd: () -> Unit = {},
     onShowInterstitial: () -> Unit = {}
 ) {
@@ -208,6 +209,16 @@ fun VirtualLifeScreen(
                         Spacer(Modifier.width(6.dp))
                         Text("Carrière & Métiers")
                     }
+                }
+
+                OutlinedButton(
+                    onClick = onOpenPublicProfile,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = VioletAccent)
+                ) {
+                    Icon(Icons.Outlined.Person, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Voir mon profil public")
                 }
 
                 // Coffre du Monde (Exclusive item ad reward)

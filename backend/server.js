@@ -476,6 +476,7 @@ ensureColumn('virtual_items', 'is_exclusive', 'INTEGER DEFAULT 0');
 ensureColumn('virtual_avatars', 'base_appearance', "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn('virtual_avatars', 'equipped_items', "TEXT NOT NULL DEFAULT '[]'");
 ensureColumn('virtual_avatars', 'avatar_image_url', 'TEXT');
+ensureColumn('virtual_avatars', 'total_work_earnings', 'INTEGER DEFAULT 0');
 
 const insertVirtualSeeds = db.transaction(() => {
   const insertItem = db.prepare(`
@@ -4624,6 +4625,34 @@ app.get('/api/virtual/summary', (req, res) => {
   });
 });
 
+app.get('/api/virtual/profile/:userId', (req, res) => {
+  const userId = Number(req.params.userId);
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(userId);
+  if (!avatar) {
+    return res.status(404).json({ error: 'Avatar virtuel introuvable.' });
+  }
+
+  const inventoryItems = db.prepare(`
+    SELECT vi.id, vi.name, vi.category
+    FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ?
+  `).all(userId);
+
+  const houses = inventoryItems.filter(i => i.category === 'house').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+  const vehicles = inventoryItems.filter(i => i.category === 'vehicle').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+  const pets = inventoryItems.filter(i => i.category === 'pet').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+
+  res.json({
+    avatarName: avatar.name,
+    job: avatar.job || 'Sans emploi',
+    totalWorkEarnings: avatar.total_work_earnings || 0,
+    houses,
+    vehicles,
+    pets
+  });
+});
+
 app.post('/api/virtual/avatar', (req, res) => {
   const { name, appearance = {} } = req.body ?? {};
   if (!name || typeof name !== 'string' || name.trim().length > 50) {
@@ -4679,7 +4708,7 @@ app.post('/api/virtual/work', (req, res) => {
       newXp -= xpNeeded;
       newLevel += 1;
     }
-    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ? WHERE user_id = ?').run(newXp, newLevel, req.user.id);
+    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ?, total_work_earnings = total_work_earnings + ? WHERE user_id = ?').run(newXp, newLevel, job.salary_pieces, req.user.id);
     db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${job.salary_pieces} Pièces.`);
   });
   workTrans();

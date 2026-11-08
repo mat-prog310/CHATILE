@@ -31,10 +31,6 @@ fun getImageResourceForItem(itemName: String): Int {
         "villa" -> R.drawable.villa
         "manoir" -> R.drawable.manoir
         "château", "chateau" -> R.drawable.chateau
-        "t-shirt", "t-shirt tye-die", "tshirt" -> R.drawable.tshirt
-        "jean" -> R.drawable.tshirt
-        "robe", "tenue de soirée" -> R.drawable.robe
-        "costume", "costume sur-mesure" -> R.drawable.costume
         "chaussures de sport", "sneakers" -> R.drawable.chaussure
         "montre de luxe", "montre" -> R.drawable.montre
         "vélo", "velo" -> R.drawable.v_lo
@@ -46,8 +42,6 @@ fun getImageResourceForItem(itemName: String): Int {
         "chien" -> R.drawable.chien
         "dragon", "dragon de compagnie" -> R.drawable.dragon
         "licorne" -> R.drawable.licorne
-        "veste de sponsor" -> R.drawable.veste
-        "canapé gamer" -> R.drawable.studio
         "fontaine de jardin" -> R.drawable.villa
         "chien robot" -> R.drawable.robot
         else -> R.drawable.logo_chatile

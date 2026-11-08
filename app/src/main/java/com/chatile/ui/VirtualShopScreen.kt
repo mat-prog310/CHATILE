@@ -1,6 +1,5 @@
 package com.chatile.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,17 +9,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.chatile.ChatViewModel
 import com.chatile.ui.theme.*
 import org.json.JSONArray
@@ -33,12 +31,9 @@ fun VirtualShopScreen(
     onBack: () -> Unit
 ) {
     val shopData by vm.virtualShop.collectAsState()
-    val summary by vm.virtualSummary.collectAsState()
-    val userMoney = summary?.optInt("money", 0) ?: 0
-
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Maisons", "Vêtements", "Véhicules", "Animaux")
-    val categoryKeys = listOf("house", "clothing", "vehicle", "pet")
+    val tabs = listOf("Maisons", "Véhicules", "Animaux", "Vêtements")
+    val categoryKeys = listOf("house", "vehicle", "pet", "clothing")
 
     var selectedItemForDetail by remember { mutableStateOf<JSONObject?>(null) }
 
@@ -51,6 +46,9 @@ fun VirtualShopScreen(
     val itemList = remember(shopData, selectedTab) {
         val cat = categoryKeys[selectedTab]
         val list = mutableListOf<JSONObject>()
+        if (cat == "clothing") {
+            return@remember list
+        }
         if (itemsArray != null && itemsArray.length() > 0) {
             for (i in 0 until itemsArray.length()) {
                 val obj = itemsArray.getJSONObject(i)
@@ -121,7 +119,45 @@ fun VirtualShopScreen(
                 }
             }
 
-            if (itemList.isEmpty()) {
+            if (categoryKeys[selectedTab] == "clothing") {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = NightSurface),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(2.dp, VioletAccent, RoundedCornerShape(24.dp))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(40.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Lock,
+                                contentDescription = "Verrouillé",
+                                tint = VioletAccent,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Text(
+                                text = "Vêtements & Avatar",
+                                color = TextPrimary,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Fonctionnalité à venir dans la prochaine mise à jour !",
+                                color = Color(0xFFA3A3A3),
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else if (itemList.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(32.dp),
                     contentAlignment = Alignment.Center
@@ -140,7 +176,7 @@ fun VirtualShopScreen(
                         val virtualItem = VirtualItem(
                             id = item.getLong("id"),
                             name = item.getString("name"),
-                            category = item.optString("category", "clothing"),
+                            category = item.optString("category", "house"),
                             price = item.optInt("pricePieces", 100),
                             rarity = item.optString("rarity", "commun")
                         )
@@ -157,15 +193,12 @@ fun VirtualShopScreen(
         }
     }
 
-    // Detail Bottom Sheet
     if (selectedItemForDetail != null) {
         val item = selectedItemForDetail!!
         val itemId = item.getLong("id")
         val name = item.getString("name")
-        val desc = item.optString("description", "")
+        val desc = item.optString("description", "Un superbe article pour votre monde virtuel.")
         val price = item.optInt("pricePieces", 100)
-        val imageUrl = item.optString("imageUrl")
-        val canAfford = userMoney >= price
 
         ModalBottomSheet(
             onDismissRequest = { selectedItemForDetail = null },
@@ -178,28 +211,18 @@ fun VirtualShopScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = name,
-                    modifier = Modifier
-                        .size(160.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(NightSurfaceRaised),
-                    contentScale = ContentScale.Crop
-                )
                 Text(name, color = TextPrimary, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(desc, color = TextSecondary, style = MaterialTheme.typography.bodyMedium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Text("Prix : 💰 $price Pièces", color = if (canAfford) VioletAccent else Color.Red, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(desc, color = TextSecondary, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                Text("Prix : 🪙 $price Pièces", color = VioletAccent, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                 Button(
                     onClick = {
                         vm.buyVirtualItem(itemId) { selectedItemForDetail = null }
                     },
-                    enabled = canAfford,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = VioletAccent)
                 ) {
-                    Text(if (canAfford) "Acheter" else "Pièces insuffisantes")
+                    Text("Acheter")
                 }
                 Spacer(Modifier.height(16.dp))
             }

@@ -22856,7 +22856,6 @@ androidx.compose.ui.graphics.AndroidPath:
     public synthetic void addRoundRect(androidx.compose.ui.geometry.RoundRect)
     public void arcTo(androidx.compose.ui.geometry.Rect,float,float,boolean)
     public static synthetic void isConvex$annotations()
-    public void quadraticBezierTo(float,float,float,float)
     public void relativeQuadraticBezierTo(float,float,float,float)
     public void transform-58bKbWc(float[])
 androidx.compose.ui.graphics.AndroidPathEffect:
@@ -23336,7 +23335,6 @@ androidx.compose.ui.graphics.Path:
     public androidx.compose.ui.graphics.Path minus(androidx.compose.ui.graphics.Path)
     public androidx.compose.ui.graphics.Path or(androidx.compose.ui.graphics.Path)
     public androidx.compose.ui.graphics.Path plus(androidx.compose.ui.graphics.Path)
-    public abstract void quadraticBezierTo(float,float,float,float)
     public abstract void relativeQuadraticBezierTo(float,float,float,float)
     public void transform-58bKbWc(float[])
     public androidx.compose.ui.graphics.Path xor(androidx.compose.ui.graphics.Path)
@@ -23649,7 +23647,6 @@ androidx.compose.ui.graphics.drawscope.DrawScope:
     public static synthetic void drawPoints-F8ZwMP8$default(androidx.compose.ui.graphics.drawscope.DrawScope,java.util.List,int,long,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
     public abstract void drawPoints-Gsft0Ws(java.util.List,int,androidx.compose.ui.graphics.Brush,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int)
     public static synthetic void drawPoints-Gsft0Ws$default(androidx.compose.ui.graphics.drawscope.DrawScope,java.util.List,int,androidx.compose.ui.graphics.Brush,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
-    public static synthetic void drawRoundRect-u-Aw5IA$default(androidx.compose.ui.graphics.drawscope.DrawScope,long,long,long,long,androidx.compose.ui.graphics.drawscope.DrawStyle,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
     public void record-JVtK1S4(androidx.compose.ui.graphics.layer.GraphicsLayer,long,kotlin.jvm.functions.Function1)
     public static synthetic void record-JVtK1S4$default(androidx.compose.ui.graphics.drawscope.DrawScope,androidx.compose.ui.graphics.layer.GraphicsLayer,long,kotlin.jvm.functions.Function1,int,java.lang.Object)
 androidx.compose.ui.graphics.drawscope.DrawScopeKt
@@ -36955,6 +36952,7 @@ com.chatile.ApiClient:
     public final java.lang.Object getUserPosts(long,int,int,kotlin.coroutines.Continuation)
     public static synthetic java.lang.Object getUserPosts$default(com.chatile.ApiClient,long,int,int,kotlin.coroutines.Continuation,int,java.lang.Object)
     public final java.lang.Object getUserProfile(long,kotlin.coroutines.Continuation)
+    public final java.lang.Object getVirtualAvatar(kotlin.coroutines.Continuation)
     public final java.lang.Object markAllNotificationsRead(kotlin.coroutines.Continuation)
     public final java.lang.Object markNotificationRead(long,kotlin.coroutines.Continuation)
     public static synthetic java.lang.Object openLootBox$default(com.chatile.ApiClient,boolean,kotlin.coroutines.Continuation,int,java.lang.Object)
@@ -37569,9 +37567,20 @@ com.chatile.ui.SearchState$Loading
 com.chatile.ui.SearchState$Success
 com.chatile.ui.SearchState
 com.chatile.ui.StoriesScreenKt$StoriesListGrid$lambda$12$lambda$11$$inlined$items$default$3
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$3
+com.chatile.ui.VirtualAvatarKt
+com.chatile.ui.VirtualAvatarModel
 com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$3
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$3
+com.chatile.ui.VirtualItem:
+    public static final int $stable
+    public synthetic void <init>(long,java.lang.String,java.lang.String,int,java.lang.String,int,kotlin.jvm.internal.DefaultConstructorMarker)
+    public final long component1()
+    public final java.lang.String component2()
+    public final java.lang.String component3()
+    public final int component4()
+    public final java.lang.String component5()
+    public final com.chatile.ui.VirtualItem copy(long,java.lang.String,java.lang.String,int,java.lang.String)
+    public static synthetic com.chatile.ui.VirtualItem copy$default(com.chatile.ui.VirtualItem,long,java.lang.String,java.lang.String,int,java.lang.String,int,java.lang.Object)
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$3
 com.chatile.ui.VisualComponentsKt:
     public static final void QuietSurface(androidx.compose.ui.Modifier,kotlin.jvm.functions.Function3,androidx.compose.runtime.Composer,int,int)
     private static final kotlin.Unit QuietSurface$lambda$35(androidx.compose.ui.Modifier,kotlin.jvm.functions.Function3,int,int,androidx.compose.runtime.Composer,int)
@@ -64233,8 +64242,8 @@ androidx.compose.ui.graphics.AndroidPath:
     public static android.graphics.Path getInternalPath()
     public final boolean isConvex()
     public final boolean isEmpty()
-    public final void lineTo(float,float)
     public final void moveTo(float,float)
+    public final void quadraticBezierTo()
     public final void quadraticTo(float,float,float,float)
     public final void relativeCubicTo(float,float,float,float,float,float)
     public final void relativeLineTo(float,float)
@@ -64509,6 +64518,7 @@ androidx.compose.ui.graphics.Path:
     public abstract void lineTo(float,float)
     public abstract void moveTo(float,float)
     public abstract boolean op-N5in7k0(androidx.compose.ui.graphics.Path,androidx.compose.ui.graphics.Path,int)
+    public abstract void quadraticBezierTo()
     public abstract void quadraticTo(float,float,float,float)
     public abstract void relativeCubicTo(float,float,float,float,float,float)
     public abstract void relativeLineTo(float,float)
@@ -74043,14 +74053,13 @@ com.chatile.ApiClient:
     public static java.lang.Object createVirtualAvatar()
     public static java.lang.Object deleteCharacter()
     public static java.lang.Object endVoiceCall(long,int,kotlin.coroutines.jvm.internal.SuspendLambda)
-    public final java.lang.Object equipItem(long,kotlin.coroutines.jvm.internal.SuspendLambda)
+    public static java.lang.Object equipItem()
     public static java.lang.Object generateStory()
     public final java.lang.Object getCharacterOfTheDay(kotlin.coroutines.jvm.internal.SuspendLambda)
     public static java.lang.Object getCreatorEarnings()
     public static java.lang.Object getCreatorLeaderboard()
     public static java.lang.Object getLootPity()
     public static java.lang.Object getPublicProfile()
-    public static java.lang.Object getVirtualAvatar()
     public static java.lang.Object getVirtualEvents()
     public static java.lang.Object getVirtualHouse()
     public static java.lang.Object getVirtualShop()
@@ -75420,6 +75429,10 @@ com.chatile.ui.MemorySheetKt$MemorySheet$1$invoke$lambda$5$lambda$4$$inlined$ite
     public final void invoke$19()
 com.chatile.ui.MemorySheetKt$MemorySheet$1:
     public final void invoke$14()
+com.chatile.ui.MockVirtualData:
+    public static final int $stable
+    public static final com.chatile.ui.MockVirtualData INSTANCE
+    public static java.util.List getShopItems()
 com.chatile.ui.NavigationItem:
     static void <clinit>()
     public abstract androidx.compose.ui.graphics.vector.ImageVector getIcon()
@@ -75653,31 +75666,24 @@ com.chatile.ui.StoriesScreenKt$StoriesScreen$2$1$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.StoriesScreenKt$StoriesScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1:
-    public int label
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$1$2:
+com.chatile.ui.VirtualAvatarComposableKt$$InternalSyntheticLambda$10$ad23e0e45db18a73d1fcef0718a9eb91f95cbf9f227000023de82993814fec8b$1:
+    public final synthetic int f$2
+com.chatile.ui.VirtualAvatarComposableKt$$InternalSyntheticLambda$9$63034a2e2703cd4fe23fd0f23f547b26993f1bc4e25405ee11d5cb0aa33cc2d8$2:
+    public final synthetic int f$3
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$2:
     public final void invoke$14()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$1$3$1$2$1$1$1:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$1$3$1$2$1$1:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$3$1$2$1$1:
     public final void invoke()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$1$3$1$2$2:
-    public final void invoke$14()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$2:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$2:
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$4:
-    public final synthetic com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1 $contentType
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$5:
-    public final void invoke$21()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$2:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$4:
+    public final void invoke$19()
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$loadAvatarInfo$1:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.VirtualAvatarScreenKt:
-    public static final void access$VirtualAvatarScreen$loadAvatarInfo(kotlinx.coroutines.internal.ContextScope,androidx.compose.runtime.MutableState,androidx.compose.runtime.MutableState)
 com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -75695,6 +75701,13 @@ com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2$invoke$lambda$6$lambda$
     public final void invoke$21()
 com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualItem:
+    static void <clinit>()
+    public static java.lang.String getCategory()
+    public static long getId()
+    public static java.lang.String getName()
+    public static int getPrice()
+    public static java.lang.String getRarity()
 com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -75760,15 +75773,13 @@ com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$1$1:
     public final void invoke()
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$1$5$1$2$2:
-    public final void invoke$14()
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$1
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$2:
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$2:
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$4:
-    public final synthetic com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$1 $contentType
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$4:
+    public final synthetic com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$5:
+com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$5:
     public final void invoke$21()
 com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)

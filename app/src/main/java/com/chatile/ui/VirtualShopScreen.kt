@@ -123,49 +123,19 @@ fun VirtualShopScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(itemList, key = { it.getLong("id") }) { item ->
-                        val itemId = item.getLong("id")
-                        val name = item.getString("name")
-                        val price = item.optInt("pricePieces", 100)
-                        val imageUrl = item.optString("imageUrl")
-                        val canAfford = userMoney >= price
-
-                        Card(
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = NightSurface),
+                        val virtualItem = VirtualItem(
+                            id = item.getLong("id"),
+                            name = item.getString("name"),
+                            category = item.optString("category", "clothing"),
+                            price = item.optInt("pricePieces", 100),
+                            rarity = item.optString("rarity", "commun")
+                        )
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { selectedItemForDetail = item }
-                                .border(1.dp, SubtleBorder, RoundedCornerShape(16.dp))
                         ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                AsyncImage(
-                                    model = imageUrl,
-                                    contentDescription = name,
-                                    modifier = Modifier
-                                        .size(110.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(NightSurfaceRaised),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                Text(
-                                    name,
-                                    color = TextPrimary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    "💰 $price Pièces",
-                                    color = if (canAfford) VioletAccent else Color.Red,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            VirtualItemThumbnail(item = virtualItem, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }

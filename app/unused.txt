@@ -36899,6 +36899,7 @@ com.chatile.ApiClient$sharePost$1
 com.chatile.ApiClient$toggleCommentLike$1
 com.chatile.ApiClient$toggleFollow$1
 com.chatile.ApiClient$togglePostLike$1
+com.chatile.ApiClient$watchAd$1
 com.chatile.ApiClient:
     private static final java.lang.String DEVICE_ID_KEY
     private static final java.lang.String FIREBASE_TOKEN_KEY
@@ -36983,7 +36984,7 @@ com.chatile.ApiClient:
     public final java.lang.Object updateVirtualAvatar(java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)
     public final java.lang.Object votePoll(long,int,kotlin.coroutines.Continuation)
     public final java.lang.Object warnUser(long,java.lang.String,kotlin.coroutines.Continuation)
-    public final java.lang.Object watchVirtualAdReward(kotlin.coroutines.Continuation)
+    public final java.lang.Object watchAd(kotlin.coroutines.Continuation)
 com.chatile.AuthManager:
     public final com.google.firebase.auth.FirebaseUser getCurrentUser()
 com.chatile.Character:
@@ -37091,6 +37092,7 @@ com.chatile.ChatViewModel$toggleFollow$2
 com.chatile.ChatViewModel$togglePostLike$2
 com.chatile.ChatViewModel$travelVirtual$1
 com.chatile.ChatViewModel$unpublishCharacter$2
+com.chatile.ChatViewModel$watchAd$1
 com.chatile.ChatViewModel:
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_comments$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_notifications$p(com.chatile.ChatViewModel)
@@ -37213,6 +37215,7 @@ com.chatile.ChatViewModel:
     public final void unpublishCharacter(long,kotlin.jvm.functions.Function0)
     public static synthetic void unpublishCharacter$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit unpublishCharacter$lambda$14()
+    public final void watchAd()
 com.chatile.Comment
 com.chatile.DailyClaimResult:
     public static final int $stable
@@ -74080,6 +74083,7 @@ com.chatile.ApiClient:
     public static java.lang.Object uploadAvatar()
     public final java.lang.Object uploadCharacterAvatar(android.content.Context,long,android.net.Uri,kotlin.coroutines.jvm.internal.SuspendLambda)
     public static java.lang.Object watchVirtualAd()
+    public static java.lang.Object watchVirtualAdReward()
     public static java.lang.Object workVirtual()
 com.chatile.AuthManager:
     public static final int $stable
@@ -74231,8 +74235,6 @@ com.chatile.ChatViewModel$unpinPostGlobal$2:
 com.chatile.ChatViewModel$updateProfile$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$uploadProfileAvatar$1:
-    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ChatViewModel$watchAd$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$watchVirtualAd$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -74404,7 +74406,6 @@ com.chatile.ChatViewModel:
     public static final kotlin.Unit unpinPostGlobal$lambda$19()
     public static void updateProfile()
     public static void uploadProfileAvatar()
-    public static void watchAd()
     public static void watchVirtualAd()
     public static void workVirtual()
 com.chatile.DailyClaimResult:
@@ -74430,7 +74431,7 @@ com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6
     public final void onAuthStateChanged(com.google.firebase.auth.FirebaseAuth)
 com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6d956efbff765acdeed0def8b3a17dbe14660$3:
     public final void onInitializationComplete(com.google.android.gms.ads.initialization.InitializationStatus)
-com.chatile.MainActivity$$InternalSyntheticLambda$1$16b242de8d8d6f84a2dd986a9d748825063782f556af56a77a31db469714ee20$0:
+com.chatile.MainActivity$$InternalSyntheticLambda$1$a261c2db5ee4a430ec78f74d43949c1b4d9fd15d195231cd5b409edd83c5718c$0:
     public final void onUserEarnedReward()
 com.chatile.MainActivity$loadInterstitialAd$1:
     public static void onAdLoaded()
@@ -74439,6 +74440,8 @@ com.chatile.MainActivity$loadRewardedAd$1:
 com.chatile.MainActivity$onCreate$5$1$1$1:
     public final void invoke()
 com.chatile.MainActivity$onCreate$5$1$2$1:
+    public final void invoke()
+com.chatile.MainActivity$onCreate$5$1$3$1:
     public static void invoke$96()
 com.chatile.MainActivity$onCreate$5$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
@@ -74620,24 +74623,26 @@ com.chatile.ui.AdminScreenKt:
     public static synthetic kotlin.Unit $r8$lambda$lzgJcjsm0TiUUt6FDDEKWZY6IxY()
     public static final kotlin.Unit AdminPostsSection$lambda$19$lambda$13$lambda$12()
     public static final boolean access$AdminScreen$lambda$7(androidx.compose.runtime.MutableState)
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$3023545ed767eb0fa215a7fe83544cc9f386d9684a1c73fda6f540950075673f$0
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$3023545ed767eb0fa215a7fe83544cc9f386d9684a1c73fda6f540950075673f$1
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$3023545ed767eb0fa215a7fe83544cc9f386d9684a1c73fda6f540950075673f$4:
-    public final synthetic int f$3
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$655e01a6aa5d76d2cdae9c0bed72abba99cd59767c2f34ee5b19d3ad27ea6711$0
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$655e01a6aa5d76d2cdae9c0bed72abba99cd59767c2f34ee5b19d3ad27ea6711$1
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$655e01a6aa5d76d2cdae9c0bed72abba99cd59767c2f34ee5b19d3ad27ea6711$2
-com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$655e01a6aa5d76d2cdae9c0bed72abba99cd59767c2f34ee5b19d3ad27ea6711$4:
-    public final synthetic int f$7
-com.chatile.ui.AppNavHostKt$AppNavHost$3$1:
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$9a2161ce92fb7837c9d72b873346387d2a7009669092a3213666bd48bcaa22ba$0
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$9a2161ce92fb7837c9d72b873346387d2a7009669092a3213666bd48bcaa22ba$1
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$9a2161ce92fb7837c9d72b873346387d2a7009669092a3213666bd48bcaa22ba$2
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$2$9a2161ce92fb7837c9d72b873346387d2a7009669092a3213666bd48bcaa22ba$5:
+    public final synthetic int f$4
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$c9d742ea8dca7a26e244feb15470ac816a1a06ee348986b5aaa614cb5ba86a04$0
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$c9d742ea8dca7a26e244feb15470ac816a1a06ee348986b5aaa614cb5ba86a04$1
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$c9d742ea8dca7a26e244feb15470ac816a1a06ee348986b5aaa614cb5ba86a04$2
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$c9d742ea8dca7a26e244feb15470ac816a1a06ee348986b5aaa614cb5ba86a04$3
+com.chatile.ui.AppNavHostKt$$InternalSyntheticLambda$4$c9d742ea8dca7a26e244feb15470ac816a1a06ee348986b5aaa614cb5ba86a04$5:
+    public final synthetic int f$8
+com.chatile.ui.AppNavHostKt$AppNavHost$4$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.AppNavHostKt$AppNavHost$5$1$1:
+com.chatile.ui.AppNavHostKt$AppNavHost$6$1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$AppNavHost$5$1$2:
+com.chatile.ui.AppNavHostKt$AppNavHost$6$1$2:
     public final void invoke$97()
-com.chatile.ui.AppNavHostKt$AppNavHost$5$1:
+com.chatile.ui.AppNavHostKt$AppNavHost$6$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$AppNavHost$5:
+com.chatile.ui.AppNavHostKt$AppNavHost$6:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt$CustomBottomNavigationBar$2$1$1$1$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -74645,74 +74650,78 @@ com.chatile.ui.AppNavHostKt$CustomBottomNavigationBar$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
     public static final boolean invoke$lambda$11$lambda$10$lambda$1(androidx.compose.runtime.MutableState)
     public static final void invoke$lambda$11$lambda$10$lambda$2(androidx.compose.runtime.MutableState,boolean)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$10:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$10:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$11:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$11:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$12:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$12:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$13:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$13:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$14:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$14:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$15:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$15:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$16:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$16:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$17$1$1:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$17$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$17:
-    public static synthetic kotlin.Unit $r8$lambda$_tFXGU3x6KGXqmIiO15E5-ZJrDI()
-    public static synthetic kotlin.Unit $r8$lambda$fnASlCxlZZfKp5_191Sf8JyrJVA()
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$17:
+    public static synthetic kotlin.Unit $r8$lambda$43PZzVmV7LlCQkcOUUywLtWhtbc()
+    public static synthetic kotlin.Unit $r8$lambda$kLqh5QhcPw-iCRJfzmCsdakirzg()
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
     public static final kotlin.Unit invoke$lambda$6$lambda$5()
     public static final kotlin.Unit invoke$lambda$8$lambda$7()
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$18:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$18:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$19:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$19:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$1:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$1:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$20:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$20:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$21:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$21:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$22:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$22:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$23:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$23:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$24:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$24:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$25:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$25:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$26:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$26:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$27:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$27:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$2:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$2:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$3:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$3:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$4:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$4:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$5:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$5:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$6:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$6:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$7:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$7:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$8:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$8:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
-com.chatile.ui.AppNavHostKt$NavGraph$4$1$9:
+com.chatile.ui.AppNavHostKt$NavGraph$5$1$9:
     public final void invoke(androidx.compose.animation.AnimatedContentScope,androidx.navigation.NavBackStackEntry,androidx.compose.runtime.Composer,int)
 com.chatile.ui.AppNavHostKt:
     public static synthetic kotlin.Unit $r8$lambda$5gFmOHvrDKYfF_9PoGK7zMRYR0k()
-    public static synthetic kotlin.Unit $r8$lambda$mnRqLm9CHSmmhqpwiSPx4OWN_4s()
+    public static synthetic kotlin.Unit $r8$lambda$7YN_rs_jCcKljyMJfg5jum88DZs()
+    public static synthetic kotlin.Unit $r8$lambda$8zvFpUqlcfZ39NnSdrEa0YqmMqE()
+    public static synthetic kotlin.Unit $r8$lambda$STmXnKCCM9gPobeVrRkPmfJ2MhE()
     public static synthetic kotlin.Unit $r8$lambda$n1PNk8h_HpJwKubNf7vgn-vXwO8()
     public static final kotlin.Unit AppNavHost$lambda$1$lambda$0()
-    public static final kotlin.Unit NavGraph$lambda$22$lambda$21()
+    public static final kotlin.Unit AppNavHost$lambda$3$lambda$2()
+    public static final kotlin.Unit NavGraph$lambda$24$lambda$23()
     public static final kotlin.Unit NavGraph$lambda$26$lambda$25()
+    public static final kotlin.Unit NavGraph$lambda$30$lambda$29()
 com.chatile.ui.BannerAdViewKt$$InternalSyntheticLambda$7$1701e8db94f0c49b6aa7870c210e07a9ed2df1ed847564ca86a0f3fd4e9ac965$1:
     public final synthetic int f$2
 com.chatile.ui.CharacterDetailScreenKt$$InternalSyntheticLambda$6$68035c77e6e1600f74b762f397051804a57fe0738225309062ce9abfdf6e7444$1:
@@ -75198,6 +75207,8 @@ com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-7$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-8$1:
     public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt$lambda-9$1:
+    public final void invoke$98()
 com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt:
     public static final com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt INSTANCE
     public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
@@ -75208,6 +75219,7 @@ com.chatile.ui.ComposableSingletons$VirtualLifeScreenKt:
     public static kotlin.jvm.functions.Function3 getLambda-6$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-7$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-9$app_release()
 com.chatile.ui.ComposableSingletons$VirtualShopScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$VirtualShopScreenKt:
@@ -75376,17 +75388,22 @@ com.chatile.ui.LootBoxOpeningScreenKt$LootBoxOpeningScreen$2$1$1$3:
     public final void invoke$14()
 com.chatile.ui.LootBoxOpeningScreenKt$LootBoxOpeningScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.LootBoxScreenKt$LootBoxScreen$1$1:
+com.chatile.ui.LootBoxScreenKt$$InternalSyntheticLambda$6$98f75dfa8d240d4fef29c32d516c4ef9c2a5d49c494cc0f220488cf7373bb735$0
+com.chatile.ui.LootBoxScreenKt$$InternalSyntheticLambda$6$98f75dfa8d240d4fef29c32d516c4ef9c2a5d49c494cc0f220488cf7373bb735$2:
+    public final synthetic int f$5
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2$1$2:
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$3$1$2:
     public final void invoke$14()
-com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2$1$3:
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$3$1$3:
     public final void invoke$14()
-com.chatile.ui.LootBoxScreenKt$LootBoxScreen$2:
+com.chatile.ui.LootBoxScreenKt$LootBoxScreen$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.LootBoxScreenKt:
-    public static final void LootBoxScreen$lambda$3(androidx.compose.runtime.MutableState,boolean)
-    public static final int access$LootBoxScreen$lambda$0(androidx.compose.runtime.MutableState)
+    public static synthetic kotlin.Unit $r8$lambda$QTJT1xVZiXfYGfHrfyCv4xpdd4s()
+    public static final kotlin.Unit LootBoxScreen$lambda$1$lambda$0()
+    public static final void LootBoxScreen$lambda$5(androidx.compose.runtime.MutableState,boolean)
+    public static final int access$LootBoxScreen$lambda$2(androidx.compose.runtime.MutableState)
 com.chatile.ui.MemorySheetKt$MemorySheet$1$1$1$1:
     public final void invoke$99()
 com.chatile.ui.MemorySheetKt$MemorySheet$1$1$1$2$1$1:
@@ -75698,25 +75715,38 @@ com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2$invoke$lambda$6$lambda$5$la
     public final void invoke$19()
 com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$1$1:
+com.chatile.ui.VirtualLifeScreenKt$$InternalSyntheticLambda$6$6f954c7dbe2e728dac12483d5a44e9227a4e2a7292d7116f8e3e45b7b939ee0d$0
+com.chatile.ui.VirtualLifeScreenKt$$InternalSyntheticLambda$6$6f954c7dbe2e728dac12483d5a44e9227a4e2a7292d7116f8e3e45b7b939ee0d$1
+com.chatile.ui.VirtualLifeScreenKt$$InternalSyntheticLambda$6$6f954c7dbe2e728dac12483d5a44e9227a4e2a7292d7116f8e3e45b7b939ee0d$2:
+    public final synthetic int f$9
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$3$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$2:
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$2:
     public final void invoke$14()
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$3:
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$3:
     public final void invoke$14()
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$4:
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$4:
     public final void invoke$14()
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$6$1:
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$6$1:
     public final void invoke$98()
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2$1$7:
-    public static synthetic kotlin.Unit $r8$lambda$3N-agi82MZW-LnxK0nUisKVdqJw()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$7$1$1$1$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$7:
+    public final void invoke$14()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4$1$8:
+    public static synthetic kotlin.Unit $r8$lambda$U78opNKIV8vbLrtRZ7Y3y-DI-t4()
     public final void invoke$14()
     public static final kotlin.Unit invoke$lambda$4$lambda$3$lambda$2$lambda$1()
-com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$2:
-    public static synthetic kotlin.Unit $r8$lambda$aQlWKfkhzhP3ASY2ij21rjfts6A()
+com.chatile.ui.VirtualLifeScreenKt$VirtualLifeScreen$4:
+    public static synthetic kotlin.Unit $r8$lambda$tV7O16UKk_BhhjgtXoYBfeo4sZs()
     public final void invoke(androidx.compose.runtime.Composer,int)
     public static final kotlin.Unit invoke$lambda$6$lambda$4$lambda$3$lambda$2$lambda$1()
+com.chatile.ui.VirtualLifeScreenKt:
+    public static synthetic kotlin.Unit $r8$lambda$DcQKmAG_Lu1JbHYC03xdUd9vxfA()
+    public static synthetic kotlin.Unit $r8$lambda$GcalYNKbr6ztd065jx0b-Qx9SJs()
+    public static final kotlin.Unit VirtualLifeScreen$lambda$1$lambda$0()
+    public static final kotlin.Unit VirtualLifeScreen$lambda$3$lambda$2()
 com.chatile.ui.VirtualShopScreenKt$VirtualShopScreen$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)

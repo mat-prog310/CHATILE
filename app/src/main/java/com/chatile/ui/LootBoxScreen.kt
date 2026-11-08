@@ -67,6 +67,7 @@ fun LootBoxScreen(
     vm: ChatViewModel,
     onBack: () -> Unit,
     onOpenOpening: (Boolean) -> Unit,
+    onWatchAd: () -> Unit = {}
 ) {
     val pieces by vm.pieces.collectAsState()
     var showDropRates by remember { mutableStateOf(false) }
@@ -159,7 +160,10 @@ fun LootBoxScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { onOpenOpening(true) },
+                        onClick = {
+                            onWatchAd()
+                            onOpenOpening(true)
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = VioletAccent)
                     ) {

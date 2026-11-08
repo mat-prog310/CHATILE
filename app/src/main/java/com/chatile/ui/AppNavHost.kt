@@ -57,7 +57,11 @@ import com.chatile.ui.theme.ChatileBorder
 import com.chatile.ui.theme.ChatileScreenBackground
 
 @Composable
-fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
+fun AppNavHost(
+    onWatchAd: () -> Unit = {},
+    onShowInterstitial: () -> Unit = {},
+    onPurchase: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val authManager = remember { AuthManager(context) }
     var isCheckingAuth by remember { mutableStateOf(true) }
@@ -116,6 +120,7 @@ fun AppNavHost(onWatchAd: () -> Unit = {}, onPurchase: (String) -> Unit = {}) {
                         navController = navController,
                         viewModel = viewModel,
                         onWatchAd = onWatchAd,
+                        onShowInterstitial = onShowInterstitial,
                         onPurchase = onPurchase,
                         onLogout = {
                             AuthManager(context).signOut()
@@ -224,6 +229,7 @@ fun NavGraph(
     viewModel: ChatViewModel,
     modifier: Modifier = Modifier,
     onWatchAd: () -> Unit = {},
+    onShowInterstitial: () -> Unit = {},
     onPurchase: (String) -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
@@ -299,7 +305,8 @@ fun NavGraph(
                 onOpenOpening = { useAd ->
                     viewModel.useAdForLootBox = useAd
                     navController.navigate("loot_opening")
-                }
+                },
+                onWatchAd = onWatchAd
             )
         }
 
@@ -326,7 +333,9 @@ fun NavGraph(
                 onOpenShop = { navController.navigate("virtual_shop") },
                 onOpenHouse = { navController.navigate("virtual_house") },
                 onOpenJob = { navController.navigate("virtual_job") },
-                onOpenAvatar = { navController.navigate("virtual_avatar") }
+                onOpenAvatar = { navController.navigate("virtual_avatar") },
+                onWatchAd = onWatchAd,
+                onShowInterstitial = onShowInterstitial
             )
         }
         composable("virtual_shop") {

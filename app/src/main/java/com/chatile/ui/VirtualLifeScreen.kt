@@ -17,8 +17,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.chatile.ApiClient
 import com.chatile.ChatViewModel
 import com.chatile.ui.theme.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun VirtualLifeScreen(
@@ -27,11 +29,14 @@ fun VirtualLifeScreen(
     onOpenShop: () -> Unit,
     onOpenHouse: () -> Unit,
     onOpenJob: () -> Unit,
-    onOpenAvatar: () -> Unit
+    onOpenAvatar: () -> Unit,
+    onWatchAd: () -> Unit = {},
+    onShowInterstitial: () -> Unit = {}
 ) {
     val summary by vm.virtualSummary.collectAsState()
     val event by vm.virtualEvent.collectAsState()
     var avatarNameInput by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         vm.loadVirtualSummary()
@@ -205,6 +210,33 @@ fun VirtualLifeScreen(
                     }
                 }
 
+                // Coffre du Monde (Exclusive item ad reward)
+                Card(
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = NightSurface),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("🎁 Coffre du Monde", color = TextPrimary, fontWeight = FontWeight.Bold)
+                        Text("Regarde une pub pour débloquer un objet exclusif !", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        Button(
+                            onClick = {
+                                onWatchAd()
+                                scope.launch {
+                                    runCatching { ApiClient.watchVirtualAdReward() }
+                                        .onSuccess { vm.loadVirtualSummary() }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("▶ Débloquer un objet exclusif")
+                        }
+                    }
+                }
+
                 Card(
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = NightSurface),
@@ -218,7 +250,10 @@ fun VirtualLifeScreen(
                             Text("Pub Vie Virtuelle", color = TextPrimary, fontWeight = FontWeight.Bold)
                             Text("+50 Pièces (1 fois par heure)", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                         }
-                        Button(onClick = { vm.watchVirtualAd { } }) {
+                        Button(onClick = {
+                            onWatchAd()
+                            vm.watchVirtualAd { }
+                        }) {
                             Text("Regarder (+50)")
                         }
                     }

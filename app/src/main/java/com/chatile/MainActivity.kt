@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
             PiecesTheme(theme) {
                 AppNavHost(
                     onWatchAd = ::showRewardedAd,
+                    onShowInterstitial = ::showInterstitialAd,
                     onPurchase = ::launchPurchase
                 )
             }
@@ -264,10 +265,16 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun showRewardedAd() {
+    private var pendingRewardCallback: (() -> Unit)? = null
+    private var pendingInterstitialCallback: (() -> Unit)? = null
+
+    private fun showRewardedAd(onRewarded: (() -> Unit)? = null) {
+        pendingRewardCallback = onRewarded
         val ad = rewardedAd
         if (ad == null) {
-            Toast.makeText(this, "La publicité n’est pas encore disponible.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "La publicité n’est pas encore disponible. Récompense accordée !", Toast.LENGTH_SHORT).show()
+            pendingRewardCallback?.invoke()
+            pendingRewardCallback = null
             loadRewardedAd()
             return
         }
@@ -280,10 +287,13 @@ class MainActivity : ComponentActivity() {
             override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
                 rewardedAd = null
                 loadRewardedAd()
+                pendingRewardCallback?.invoke()
+                pendingRewardCallback = null
             }
         }
         ad.show(this) {
-            vm.watchAd()
+            pendingRewardCallback?.invoke()
+            pendingRewardCallback = null
         }
     }
 
@@ -299,16 +309,29 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    private fun showInterstitialAd() {
+    private fun showInterstitialAd(onDismiss: (() -> Unit)? = null) {
+        pendingInterstitialCallback = onDismiss
         val ad = interstitialAd
         if (ad == null) {
+            pendingInterstitialCallback?.invoke()
+            pendingInterstitialCallback = null
             loadInterstitialAd()
             return
         }
         interstitialAd = null
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() { loadInterstitialAd() }
-            override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) { loadInterstitialAd() }
+            override fun onAdDismissedFullScreenContent() {
+                loadInterstitialAd()
+                pendingInterstitialCallback?.invoke()
+                pendingInterstitialCallback = null
+            }
+
+            override fun onAdFailedToShowFullScreenContent(error: com.google.android.gms.ads.AdError) {
+                interstitialAd = null
+                loadInterstitialAd()
+                pendingInterstitialCallback?.invoke()
+                pendingInterstitialCallback = null
+            }
         }
         ad.show(this)
     }

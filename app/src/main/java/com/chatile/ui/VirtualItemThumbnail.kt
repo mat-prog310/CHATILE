@@ -1,6 +1,6 @@
 package com.chatile.ui
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,12 +14,45 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.chatile.R
 import com.chatile.ui.theme.NightSurface
 import com.chatile.ui.theme.TextPrimary
 import com.chatile.ui.theme.VioletAccent
+
+fun getImageResourceForItem(itemName: String): Int {
+    return when (itemName.trim().lowercase()) {
+        "studio", "studio cosy" -> R.drawable.studio
+        "appartement" -> R.drawable.appartement
+        "maison de ville" -> R.drawable.appartement
+        "villa" -> R.drawable.villa
+        "manoir" -> R.drawable.manoir
+        "château", "chateau" -> R.drawable.chateau
+        "t-shirt", "t-shirt tye-die", "tshirt" -> R.drawable.tshirt
+        "jean" -> R.drawable.tshirt
+        "robe", "tenue de soirée" -> R.drawable.robe
+        "costume", "costume sur-mesure" -> R.drawable.costume
+        "chaussures de sport", "sneakers" -> R.drawable.chaussure
+        "montre de luxe", "montre" -> R.drawable.montre
+        "vélo", "velo" -> R.drawable.v_lo
+        "scooter" -> R.drawable.moto
+        "voiture citadine" -> R.drawable.voiture_citadine
+        "voiture de sport", "voiture sport" -> R.drawable.voiture_sport
+        "jet privé", "jet prive" -> R.drawable.jet_priv_
+        "chat" -> R.drawable.chat
+        "chien" -> R.drawable.chien
+        "dragon", "dragon de compagnie" -> R.drawable.dragon
+        "licorne" -> R.drawable.licorne
+        "veste de sponsor" -> R.drawable.veste
+        "canapé gamer" -> R.drawable.studio
+        "fontaine de jardin" -> R.drawable.villa
+        "chien robot" -> R.drawable.robot
+        else -> R.drawable.logo_chatile
+    }
+}
 
 @Composable
 fun VirtualItemThumbnail(
@@ -60,60 +93,15 @@ fun VirtualItemThumbnail(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.size(60.dp)) {
-                    when (item.category) {
-                        "house" -> {
-                            val path = Path().apply {
-                                moveTo(size.width / 2f, 5f)
-                                lineTo(size.width - 5f, size.height / 2f)
-                                lineTo(size.width - 15f, size.height / 2f)
-                                lineTo(size.width - 15f, size.height - 5f)
-                                lineTo(15f, size.height - 5f)
-                                lineTo(15f, size.height / 2f)
-                                lineTo(5f, size.height / 2f)
-                                close()
-                            }
-                            drawPath(path, color = Color(0xFFB47CFF))
-                            drawRect(
-                                color = Color(0xFFFFD1A9),
-                                topLeft = Offset(size.width / 2f - 10f, size.height / 2f + 5f),
-                                size = androidx.compose.ui.geometry.Size(20f, 25f)
-                            )
-                        }
-                        "clothing" -> {
-                            val path = Path().apply {
-                                moveTo(size.width * 0.3f, 10f)
-                                quadraticBezierTo(size.width * 0.5f, 20f, size.width * 0.7f, 10f)
-                                lineTo(size.width * 0.9f, 25f)
-                                lineTo(size.width * 0.75f, 35f)
-                                lineTo(size.width * 0.7f, size.height - 5f)
-                                lineTo(size.width * 0.3f, size.height - 5f)
-                                lineTo(size.width * 0.25f, 35f)
-                                lineTo(size.width * 0.1f, 25f)
-                                close()
-                            }
-                            drawPath(path, color = Color(0xFF00E5FF))
-                        }
-                        "vehicle" -> {
-                            drawRoundRect(
-                                color = Color(0xFFFF5252),
-                                topLeft = Offset(5f, size.height * 0.4f),
-                                size = androidx.compose.ui.geometry.Size(size.width - 10f, size.height * 0.4f),
-                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f, 8f)
-                            )
-                            drawCircle(color = Color.DarkGray, radius = 10f, center = Offset(size.width * 0.3f, size.height * 0.8f))
-                            drawCircle(color = Color.DarkGray, radius = 10f, center = Offset(size.width * 0.7f, size.height * 0.8f))
-                        }
-                        "pet" -> {
-                            drawCircle(color = Color(0xFFFFB74D), radius = 22f, center = Offset(size.width / 2f, size.height / 2f + 5f))
-                            drawCircle(color = Color(0xFFF57C00), radius = 10f, center = Offset(size.width / 2f - 18f, size.height / 2f - 12f))
-                            drawCircle(color = Color(0xFFF57C00), radius = 10f, center = Offset(size.width / 2f + 18f, size.height / 2f - 12f))
-                        }
-                        else -> {
-                            drawCircle(color = VioletAccent, radius = 20f)
-                        }
-                    }
-                }
+                val imageRes = getImageResourceForItem(item.name)
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = item.name,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
+                    contentScale = ContentScale.Fit
+                )
             }
 
             Text(

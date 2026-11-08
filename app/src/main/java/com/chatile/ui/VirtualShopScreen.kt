@@ -47,14 +47,28 @@ fun VirtualShopScreen(
         vm.loadVirtualSummary()
     }
 
-    val itemsArray = shopData?.optJSONArray("items") ?: JSONArray()
+    val itemsArray = shopData?.optJSONArray("items")
     val itemList = remember(shopData, selectedTab) {
         val cat = categoryKeys[selectedTab]
         val list = mutableListOf<JSONObject>()
-        for (i in 0 until itemsArray.length()) {
-            val obj = itemsArray.getJSONObject(i)
-            if (obj.optString("category") == cat) {
-                list.add(obj)
+        if (itemsArray != null && itemsArray.length() > 0) {
+            for (i in 0 until itemsArray.length()) {
+                val obj = itemsArray.getJSONObject(i)
+                if (obj.optString("category") == cat) {
+                    list.add(obj)
+                }
+            }
+        } else {
+            val mockList = MockVirtualData.shopItems.filter { it.category == cat }
+            for (mock in mockList) {
+                val json = JSONObject().apply {
+                    put("id", mock.id)
+                    put("name", mock.name)
+                    put("category", mock.category)
+                    put("pricePieces", mock.price)
+                    put("rarity", mock.rarity)
+                }
+                list.add(json)
             }
         }
         list

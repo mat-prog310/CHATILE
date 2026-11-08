@@ -22856,6 +22856,7 @@ androidx.compose.ui.graphics.AndroidPath:
     public synthetic void addRoundRect(androidx.compose.ui.geometry.RoundRect)
     public void arcTo(androidx.compose.ui.geometry.Rect,float,float,boolean)
     public static synthetic void isConvex$annotations()
+    public void quadraticBezierTo(float,float,float,float)
     public void relativeQuadraticBezierTo(float,float,float,float)
     public void transform-58bKbWc(float[])
 androidx.compose.ui.graphics.AndroidPathEffect:
@@ -23335,6 +23336,7 @@ androidx.compose.ui.graphics.Path:
     public androidx.compose.ui.graphics.Path minus(androidx.compose.ui.graphics.Path)
     public androidx.compose.ui.graphics.Path or(androidx.compose.ui.graphics.Path)
     public androidx.compose.ui.graphics.Path plus(androidx.compose.ui.graphics.Path)
+    public abstract void quadraticBezierTo(float,float,float,float)
     public abstract void relativeQuadraticBezierTo(float,float,float,float)
     public void transform-58bKbWc(float[])
     public androidx.compose.ui.graphics.Path xor(androidx.compose.ui.graphics.Path)
@@ -23647,6 +23649,7 @@ androidx.compose.ui.graphics.drawscope.DrawScope:
     public static synthetic void drawPoints-F8ZwMP8$default(androidx.compose.ui.graphics.drawscope.DrawScope,java.util.List,int,long,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
     public abstract void drawPoints-Gsft0Ws(java.util.List,int,androidx.compose.ui.graphics.Brush,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int)
     public static synthetic void drawPoints-Gsft0Ws$default(androidx.compose.ui.graphics.drawscope.DrawScope,java.util.List,int,androidx.compose.ui.graphics.Brush,float,int,androidx.compose.ui.graphics.PathEffect,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
+    public static synthetic void drawRoundRect-u-Aw5IA$default(androidx.compose.ui.graphics.drawscope.DrawScope,long,long,long,long,androidx.compose.ui.graphics.drawscope.DrawStyle,float,androidx.compose.ui.graphics.ColorFilter,int,int,java.lang.Object)
     public void record-JVtK1S4(androidx.compose.ui.graphics.layer.GraphicsLayer,long,kotlin.jvm.functions.Function1)
     public static synthetic void record-JVtK1S4$default(androidx.compose.ui.graphics.drawscope.DrawScope,androidx.compose.ui.graphics.layer.GraphicsLayer,long,kotlin.jvm.functions.Function1,int,java.lang.Object)
 androidx.compose.ui.graphics.drawscope.DrawScopeKt
@@ -37351,6 +37354,9 @@ com.chatile.PublicCharacter:
     public final long getCreatorId()
     public final boolean isNsfw()
 com.chatile.Quest
+com.chatile.R$drawable:
+    public static int avatar_femme
+    public static int scene
 com.chatile.R$font:
     public static int space_grotesk
 com.chatile.R$string:
@@ -37534,6 +37540,13 @@ com.chatile.ui.AdminScreenKt:
     public static final void AdminScreenPreview(androidx.compose.runtime.Composer,int)
     private static final kotlin.Unit AdminScreenPreview$lambda$42(int,androidx.compose.runtime.Composer,int)
 com.chatile.ui.CharacterListScreenKt$CharacterListScreen$2$invoke$lambda$25$lambda$24$lambda$23$$inlined$itemsIndexed$default$2
+com.chatile.ui.ClothingItem:
+    public static final int $stable
+    public final long component1()
+    public final java.lang.String component2()
+    public final int component3()
+    public final com.chatile.ui.ClothingItem copy(long,java.lang.String,int)
+    public static synthetic com.chatile.ui.ClothingItem copy$default(com.chatile.ui.ClothingItem,long,java.lang.String,int,int,java.lang.Object)
 com.chatile.ui.FeedbackScreenKt:
     public static final void FeedbackScreenPreview(androidx.compose.runtime.Composer,int)
     private static final kotlin.Unit FeedbackScreenPreview$lambda$19(int,androidx.compose.runtime.Composer,int)
@@ -37567,8 +37580,12 @@ com.chatile.ui.SearchState$Loading
 com.chatile.ui.SearchState$Success
 com.chatile.ui.SearchState
 com.chatile.ui.StoriesScreenKt$StoriesListGrid$lambda$12$lambda$11$$inlined$items$default$3
+com.chatile.ui.VirtualAvatarComposableKt
 com.chatile.ui.VirtualAvatarKt
 com.chatile.ui.VirtualAvatarModel
+com.chatile.ui.VirtualAvatarScreenKt:
+    private static final void VirtualAvatarScreen$lambda$11(androidx.compose.runtime.MutableState,float)
+    private static final void VirtualAvatarScreen$lambda$8(androidx.compose.runtime.MutableState,float)
 com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$2$invoke$lambda$6$lambda$5$lambda$4$$inlined$items$default$3
 com.chatile.ui.VirtualItem:
     public static final int $stable
@@ -56594,11 +56611,8 @@ androidx.compose.foundation.HoverableNode:
 androidx.compose.foundation.ImageKt$Image$1$1:
     public final void invoke$2()
 androidx.compose.foundation.ImageKt$Image$2:
-    public final synthetic int $$default
-    public final synthetic java.lang.String $contentDescription
     public final void invoke(androidx.compose.runtime.Composer,int)
 androidx.compose.foundation.ImageKt$Image$semantics$1$1:
-    public final synthetic java.lang.String $contentDescription
     public final void invoke$12()
 androidx.compose.foundation.IndicationKt$LocalIndication$1:
     public static androidx.compose.foundation.Indication invoke()
@@ -64242,8 +64256,8 @@ androidx.compose.ui.graphics.AndroidPath:
     public static android.graphics.Path getInternalPath()
     public final boolean isConvex()
     public final boolean isEmpty()
+    public final void lineTo(float,float)
     public final void moveTo(float,float)
-    public final void quadraticBezierTo()
     public final void quadraticTo(float,float,float,float)
     public final void relativeCubicTo(float,float,float,float,float,float)
     public final void relativeLineTo(float,float)
@@ -64518,7 +64532,6 @@ androidx.compose.ui.graphics.Path:
     public abstract void lineTo(float,float)
     public abstract void moveTo(float,float)
     public abstract boolean op-N5in7k0(androidx.compose.ui.graphics.Path,androidx.compose.ui.graphics.Path,int)
-    public abstract void quadraticBezierTo()
     public abstract void quadraticTo(float,float,float,float)
     public abstract void relativeCubicTo(float,float,float,float,float,float)
     public abstract void relativeLineTo(float,float)
@@ -74520,8 +74533,30 @@ com.chatile.PublicCharacter:
     public static boolean isImported()
     public static boolean isLikedByCurrentUser()
 com.chatile.R$drawable:
+    public static int appartement
+    public static int avatar_homme
+    public static int chat
+    public static int chateau
+    public static int chaussure
+    public static int chien
+    public static int costume
+    public static int dragon
     public static int ic_google
+    public static int jet_priv_
+    public static int licorne
     public static int logo_chatile
+    public static int manoir
+    public static int montre
+    public static int moto
+    public static int robe
+    public static int robot
+    public static int studio
+    public static int tshirt
+    public static int v_lo
+    public static int veste
+    public static int villa
+    public static int voiture_citadine
+    public static int voiture_sport
 com.chatile.R$font:
     public static int inter
 com.chatile.Report:
@@ -74830,6 +74865,11 @@ com.chatile.ui.ChatScreenKt:
     public static final void ChatScreen$lambda$52(androidx.compose.runtime.MutableState,boolean)
     public static final boolean ChatScreen$lambda$8(androidx.compose.runtime.MutableState)
     public static final void access$ChatScreen$lambda$23(androidx.compose.runtime.MutableState,boolean)
+com.chatile.ui.ClothingItem:
+    static void <clinit>()
+    public static int getDrawableRes()
+    public static long getId()
+    public static java.lang.String getName()
 com.chatile.ui.ComposableSingletons$AdminScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$AdminScreenKt$lambda-2$1:
@@ -75187,9 +75227,21 @@ com.chatile.ui.ComposableSingletons$StoriesScreenKt:
     public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
 com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-2$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-3$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-4$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt$lambda-5$1:
+    public final void invoke$98()
 com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt:
     public static final com.chatile.ui.ComposableSingletons$VirtualAvatarScreenKt INSTANCE
     public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
 com.chatile.ui.ComposableSingletons$VirtualHouseScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$VirtualHouseScreenKt:
@@ -75666,24 +75718,25 @@ com.chatile.ui.StoriesScreenKt$StoriesScreen$2$1$3:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.StoriesScreenKt$StoriesScreen$2:
     public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.VirtualAvatarComposableKt$$InternalSyntheticLambda$10$ad23e0e45db18a73d1fcef0718a9eb91f95cbf9f227000023de82993814fec8b$1:
-    public final synthetic int f$2
-com.chatile.ui.VirtualAvatarComposableKt$$InternalSyntheticLambda$9$63034a2e2703cd4fe23fd0f23f547b26993f1bc4e25405ee11d5cb0aa33cc2d8$2:
-    public final synthetic int f$3
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$2:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$3:
     public final void invoke$14()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$3$1$2$1$1:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$4$1$2$1$1:
     public final void invoke()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$2:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$1$4$1$2$2:
+    public final void invoke$14()
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$1
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$2:
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$3:
-    public final synthetic com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$1 $contentType
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$3:
+    public final synthetic com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$1 $contentType
     public final java.lang.Object invoke$12()
-com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$8$lambda$7$lambda$6$$inlined$items$default$4:
+com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1$invoke$lambda$7$lambda$6$lambda$5$$inlined$items$default$4:
     public final void invoke$19()
 com.chatile.ui.VirtualAvatarScreenKt$VirtualAvatarScreen$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.VirtualAvatarScreenKt:
+    public static final float access$VirtualAvatarScreen$lambda$13(androidx.compose.runtime.MutableState)
+    public static final float access$VirtualAvatarScreen$lambda$4(androidx.compose.runtime.MutableState)
 com.chatile.ui.VirtualHouseScreenKt$VirtualHouseScreen$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
@@ -75708,6 +75761,8 @@ com.chatile.ui.VirtualItem:
     public static java.lang.String getName()
     public static int getPrice()
     public static java.lang.String getRarity()
+com.chatile.ui.VirtualItemThumbnailKt$$InternalSyntheticLambda$9$e9a2c9e68cb70e33cb279e6b5c85e2b5c72e593ecc477734806a9dbad7c5d11f$0:
+    public final synthetic int f$3
 com.chatile.ui.VirtualJobScreenKt$VirtualJobScreen$1$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)

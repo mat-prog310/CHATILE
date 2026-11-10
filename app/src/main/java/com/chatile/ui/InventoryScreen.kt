@@ -241,9 +241,8 @@ fun InventoryScreen(
 
         AlertDialog(
             onDismissRequest = { itemToRecycle = null },
-            containerColor = NightSurface,
-            title = { Text("Recycler l'objet", color = TextPrimary, fontWeight = FontWeight.Bold) },
-            text = { Text("Recycler $name ? Tu recevras $valuePieces Pièces. Cette action est irréversible.", color = TextPrimary) },
+            title = { Text("Recycler l'objet") },
+            text = { Text("Recycler $name ? Tu recevras $valuePieces Pièces. Cette action est irréversible.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -262,7 +261,7 @@ fun InventoryScreen(
             },
             dismissButton = {
                 TextButton(onClick = { itemToRecycle = null }) {
-                    Text("Annuler", color = TextPrimary)
+                    Text("Annuler")
                 }
             }
         )

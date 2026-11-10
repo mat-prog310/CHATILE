@@ -3,8 +3,8 @@
 # min_api: 24
 # common_typos_disable
 # {"id":"com.android.tools.r8.mapping","version":"2.2"}
-# pg_map_id: 466cc23
-# pg_map_hash: SHA-256 466cc2303e691c41d6f15cd52463b4157fdd831eb4a9302c6a7f3c28fe3954e6
+# pg_map_id: dbc24a5
+# pg_map_hash: SHA-256 dbc24a5ef913c9af2e06e692404e9db700ea8827c2de69a9a2c67a9a6839c9de
 _COROUTINE.ArtificialStackFrames -> R8$$REMOVED$$CLASS$$0:
 # {"id":"sourceFile","fileName":"CoroutineDebugging.kt"}
 _COROUTINE.CoroutineDebuggingKt -> R8$$REMOVED$$CLASS$$1:
@@ -286237,11 +286237,11 @@ coil.decode.ImageDecoderDecoder$$ExternalSyntheticLambda17 -> coil.decode.b:
     1:1:void <init>(int,java.lang.Object,java.lang.Object):0:0 -> <init>
       # {"id":"com.android.tools.r8.synthesized"}
     14:17:java.lang.String com.chatile.ShopItem.getProductId():195:195 -> invoke
-    14:17:kotlin.Unit com.chatile.ui.ShopScreenKt.ShopProduct$lambda$14$lambda$13$lambda$12(kotlin.jvm.functions.Function1,com.chatile.ShopItem):202 -> invoke
+    14:17:kotlin.Unit com.chatile.ui.ShopScreenKt.ShopProduct$lambda$14$lambda$13$lambda$12(kotlin.jvm.functions.Function1,com.chatile.ShopItem):195 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
     14:17:java.lang.Object invoke():0 -> invoke
       # {"id":"com.android.tools.r8.synthesized"}
-    18:23:kotlin.Unit com.chatile.ui.ShopScreenKt.ShopProduct$lambda$14$lambda$13$lambda$12(kotlin.jvm.functions.Function1,com.chatile.ShopItem):202:202 -> invoke
+    18:23:kotlin.Unit com.chatile.ui.ShopScreenKt.ShopProduct$lambda$14$lambda$13$lambda$12(kotlin.jvm.functions.Function1,com.chatile.ShopItem):195:195 -> invoke
     18:23:java.lang.Object invoke():0 -> invoke
     24:27:long com.chatile.StoryNodeChoice.getId():401:401 -> invoke
     24:27:kotlin.Unit com.chatile.ui.PlayStoryScreenKt$PlayStoryScreen$2.invoke$lambda$9$lambda$8$lambda$7$lambda$6$lambda$5(com.chatile.ChatViewModel,com.chatile.StoryNodeChoice):174 -> invoke
@@ -311830,426 +311830,407 @@ com.chatile.ui.AppNavHostKt -> t2.Y:
     223:225:void androidx.compose.runtime.RecomposeScopeImpl.updateScope(kotlin.jvm.functions.Function2):253:253 -> k
     223:225:void com.chatile.ui.VisualComponentsKt.NightBackdrop(kotlin.jvm.functions.Function3,androidx.compose.runtime.Composer,int):66 -> k
     223:225:void t2.AppNavHostKt.NightBackdrop(Z.ComposableLambdaImpl,R.Composer,int):0 -> k
-    11:92:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):106:106 -> l
-    11:92:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    12:93:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):106:106 -> l
+    12:93:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
       # {"id":"com.android.tools.r8.synthesized"}
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls2/B1;Ljava/lang/String;LI4/c;LR/o;I)V"}
-    93:98:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):220:220 -> l
-    93:98:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    99:100:java.lang.String com.chatile.ShopItem.getType():194:194 -> l
-    99:100:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):107 -> l
+    94:99:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):213:213 -> l
+    94:99:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    100:101:java.lang.String com.chatile.ShopItem.getType():194:194 -> l
+    100:101:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):107 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    99:100:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    101:106:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
-    101:106:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):107 -> l
-    101:106:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    107:108:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):108:108 -> l
-    107:108:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    109:114:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
-    109:114:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):108 -> l
-    109:114:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    115:120:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
-    115:120:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):109 -> l
-    115:120:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    121:132:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):112:112 -> l
-    121:132:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    133:152:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):113:113 -> l
-    133:152:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    153:159:long com.chatile.ui.theme.ColorKt.getNightSurfaceRaised():20:20 -> l
-    153:159:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):118 -> l
-    153:159:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    160:162:long com.chatile.ui.theme.ColorKt.getNightSurface():19:19 -> l
-    160:162:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):119 -> l
-    160:162:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    163:172:long com.chatile.ui.theme.ColorKt.getNightSurface():19:19 -> l
-    163:172:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):120 -> l
-    163:172:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    173:181:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):124:124 -> l
-    173:181:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    182:184:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
-    182:184:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):125 -> l
-    182:184:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    185:187:long com.chatile.ui.theme.ColorKt.getSubtleBorder():21:21 -> l
-    185:187:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):126 -> l
-    185:187:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    188:193:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):130:130 -> l
-    188:193:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    194:202:androidx.compose.ui.Modifier androidx.compose.foundation.layout.SizeKt.fillMaxWidth$default(androidx.compose.ui.Modifier,float,int,java.lang.Object):459:459 -> l
-    194:202:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):131 -> l
-    194:202:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    203:210:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):132:132 -> l
-    203:210:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    211:212:androidx.compose.ui.Modifier androidx.compose.foundation.BackgroundKt.background-bw27NRU$default(androidx.compose.ui.Modifier,long,androidx.compose.ui.graphics.Shape,int,java.lang.Object):50:50 -> l
-    211:212:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):133 -> l
-    211:212:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    213:218:androidx.compose.ui.Modifier androidx.compose.foundation.BackgroundKt.background-bw27NRU$default(androidx.compose.ui.Modifier,long,androidx.compose.ui.graphics.Shape,int,java.lang.Object):48:48 -> l
-    213:218:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):133 -> l
-    213:218:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    219:226:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):134:134 -> l
-    219:226:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    227:230:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):135:135 -> l
-    227:230:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    231:239:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):136:136 -> l
-    231:239:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    240:242:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):233:233 -> l
-    240:242:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    243:246:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):236:236 -> l
-    243:246:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    247:248:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
-    247:248:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
+    100:101:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    102:107:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
+    102:107:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):107 -> l
+    102:107:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    108:109:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):108:108 -> l
+    108:109:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    110:115:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
+    110:115:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):108 -> l
+    110:115:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    116:121:boolean kotlin.jvm.internal.Intrinsics.areEqual(java.lang.Object,java.lang.Object):169:169 -> l
+    116:121:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):109 -> l
+    116:121:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    122:133:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):112:112 -> l
+    122:133:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    134:153:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):113:113 -> l
+    134:153:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    154:158:long com.chatile.ui.theme.ColorKt.getNightSurfaceRaised():20:20 -> l
+    154:158:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):118 -> l
+    154:158:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    159:161:long com.chatile.ui.theme.ColorKt.getNightSurface():19:19 -> l
+    159:161:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):119 -> l
+    159:161:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    162:170:long com.chatile.ui.theme.ColorKt.getNightSurface():19:19 -> l
+    162:170:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):120 -> l
+    162:170:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    171:179:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):124:124 -> l
+    171:179:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    180:182:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
+    180:182:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):125 -> l
+    180:182:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    183:185:long com.chatile.ui.theme.ColorKt.getSubtleBorder():21:21 -> l
+    183:185:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):126 -> l
+    183:185:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    186:191:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):130:130 -> l
+    186:191:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    192:198:androidx.compose.ui.Modifier androidx.compose.foundation.layout.SizeKt.fillMaxWidth$default(androidx.compose.ui.Modifier,float,int,java.lang.Object):459:459 -> l
+    192:198:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):131 -> l
+    192:198:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    199:206:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):132:132 -> l
+    199:206:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    207:208:androidx.compose.ui.Modifier androidx.compose.foundation.BackgroundKt.background-bw27NRU$default(androidx.compose.ui.Modifier,long,androidx.compose.ui.graphics.Shape,int,java.lang.Object):50:50 -> l
+    207:208:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):133 -> l
+    207:208:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    209:213:androidx.compose.ui.Modifier androidx.compose.foundation.BackgroundKt.background-bw27NRU$default(androidx.compose.ui.Modifier,long,androidx.compose.ui.graphics.Shape,int,java.lang.Object):48:48 -> l
+    209:213:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):133 -> l
+    209:213:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    214:221:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):134:134 -> l
+    214:221:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    222:225:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):135:135 -> l
+    222:225:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    226:234:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):136:136 -> l
+    226:234:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    235:237:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):226:226 -> l
+    235:237:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    238:241:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):229:229 -> l
+    238:241:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    242:243:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
+    242:243:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    247:248:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):239 -> l
-    247:248:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    249:252:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
-    249:252:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):240 -> l
-    249:252:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    253:256:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):241:241 -> l
-    253:256:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    257:263:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):243:243 -> l
-    257:263:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    264:265:kotlin.jvm.functions.Function0 androidx.compose.ui.node.ComposeUiNode$Companion.getConstructor():45:45 -> l
-    264:265:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):243 -> l
-    264:265:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    266:268:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):246:246 -> l
-    266:268:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    269:272:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    269:272:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):247 -> l
-    269:272:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    273:276:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):248:248 -> l
-    273:276:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    277:279:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):250:250 -> l
-    277:279:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    280:281:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetMeasurePolicy():51:51 -> l
-    280:281:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):253 -> l
-    280:281:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    282:284:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):253:253 -> l
-    282:284:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    285:286:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetResolvedCompositionLocals():49:49 -> l
-    285:286:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):254 -> l
-    285:286:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    287:289:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):254:254 -> l
-    287:289:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    290:293:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetCompositeKeyHash():60:60 -> l
-    290:293:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):256 -> l
-    290:293:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    294:297:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    294:297:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):258 -> l
-    294:297:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    298:316:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):258:258 -> l
-    298:316:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    317:319:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
-    317:319:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1218,"5":1220,"8":1223,"12":1227},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    320:321:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetModifier():47:47 -> l
-    320:321:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):263 -> l
-    320:321:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    322:324:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):263:263 -> l
-    322:324:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    325:326:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):138:138 -> l
-    325:326:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    327:330:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):269:269 -> l
-    327:330:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    331:334:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):273:273 -> l
-    331:334:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    335:336:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
-    335:336:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
+    242:243:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):232 -> l
+    242:243:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    244:247:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
+    244:247:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):233 -> l
+    244:247:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    248:251:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):234:234 -> l
+    248:251:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    252:256:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):236:236 -> l
+    252:256:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    257:258:kotlin.jvm.functions.Function0 androidx.compose.ui.node.ComposeUiNode$Companion.getConstructor():45:45 -> l
+    257:258:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):236 -> l
+    257:258:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    259:261:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):239:239 -> l
+    259:261:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    262:265:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    262:265:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):240 -> l
+    262:265:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    266:269:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):241:241 -> l
+    266:269:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    270:272:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):243:243 -> l
+    270:272:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    273:274:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetMeasurePolicy():51:51 -> l
+    273:274:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):246 -> l
+    273:274:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    275:277:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):246:246 -> l
+    275:277:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    278:279:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetResolvedCompositionLocals():49:49 -> l
+    278:279:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):247 -> l
+    278:279:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    280:282:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):247:247 -> l
+    280:282:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    283:286:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetCompositeKeyHash():60:60 -> l
+    283:286:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):249 -> l
+    283:286:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    287:290:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    287:290:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):251 -> l
+    287:290:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    291:309:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):251:251 -> l
+    291:309:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    310:312:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
+    310:312:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1149,"5":1151,"8":1154,"12":1158},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
+    313:314:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetModifier():47:47 -> l
+    313:314:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):256 -> l
+    313:314:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    315:317:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):256:256 -> l
+    315:317:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    318:319:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):138:138 -> l
+    318:319:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    320:323:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):262:262 -> l
+    320:323:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    324:327:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):266:266 -> l
+    324:327:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    328:329:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
+    328:329:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    335:336:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):276 -> l
-    335:336:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    337:340:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
-    337:340:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):277 -> l
-    337:340:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    341:344:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):278:278 -> l
-    341:344:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    345:349:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):283:283 -> l
-    345:349:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    350:353:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    350:353:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):284 -> l
-    350:353:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    354:357:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):285:285 -> l
-    354:357:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    358:360:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):287:287 -> l
-    358:360:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    361:363:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):290:290 -> l
-    361:363:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    364:366:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):291:291 -> l
-    364:366:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    367:370:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    367:370:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):295 -> l
-    367:370:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    371:384:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):295:295 -> l
-    371:384:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    385:387:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
-    385:387:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1228,"5":1230,"8":1233,"12":1237},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    388:390:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):300:300 -> l
-    388:390:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    391:394:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):139:139 -> l
-    391:394:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    395:397:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):305:305 -> l
-    395:397:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    398:401:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):309:309 -> l
-    398:401:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    402:403:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
-    402:403:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
+    328:329:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):269 -> l
+    328:329:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    330:335:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
+    330:335:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):270 -> l
+    330:335:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    336:339:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):271:271 -> l
+    336:339:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    340:344:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):276:276 -> l
+    340:344:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    345:348:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    345:348:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):277 -> l
+    345:348:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    349:352:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):278:278 -> l
+    349:352:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    353:355:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):280:280 -> l
+    353:355:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    356:358:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):283:283 -> l
+    356:358:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    359:361:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):284:284 -> l
+    359:361:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    362:365:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    362:365:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):288 -> l
+    362:365:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    366:379:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):288:288 -> l
+    366:379:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    380:382:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
+    380:382:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1159,"5":1161,"8":1164,"12":1168},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
+    383:385:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):293:293 -> l
+    383:385:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    386:389:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):139:139 -> l
+    386:389:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    390:392:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):298:298 -> l
+    390:392:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    393:396:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):302:302 -> l
+    393:396:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    397:398:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
+    397:398:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    402:403:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):312 -> l
-    402:403:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    404:407:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
-    404:407:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):313 -> l
-    404:407:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    408:411:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):314:314 -> l
-    408:411:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    412:414:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):319:319 -> l
-    412:414:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    415:418:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    415:418:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):320 -> l
-    415:418:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    419:422:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):321:321 -> l
-    419:422:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    423:425:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):323:323 -> l
-    423:425:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    426:428:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):326:326 -> l
-    426:428:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    429:431:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):327:327 -> l
-    429:431:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    432:435:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    432:435:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):331 -> l
-    432:435:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    436:449:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):331:331 -> l
-    436:449:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    450:452:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
-    450:452:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1238,"5":1240,"8":1243,"12":1247},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    453:455:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):336:336 -> l
-    453:455:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    456:457:long com.chatile.ui.theme.ColorKt.getTextPrimary():22:22 -> l
-    456:457:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):142 -> l
-    456:457:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    458:459:androidx.compose.runtime.ProvidableCompositionLocal androidx.compose.material3.TypographyKt.getLocalTypography():212:212 -> l
-    458:459:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92 -> l
-    458:459:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
-    458:459:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    460:463:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
-    460:463:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
-    460:463:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    464:465:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
-    464:465:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
-    464:465:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    466:467:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getTitleLarge():89:89 -> l
-    466:467:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
+    397:398:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):305 -> l
+    397:398:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    399:402:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
+    399:402:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):306 -> l
+    399:402:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    403:406:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):307:307 -> l
+    403:406:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    407:409:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):312:312 -> l
+    407:409:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    410:413:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    410:413:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):313 -> l
+    410:413:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    414:417:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):314:314 -> l
+    414:417:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    418:420:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):316:316 -> l
+    418:420:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    421:423:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):319:319 -> l
+    421:423:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    424:426:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):320:320 -> l
+    424:426:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    427:430:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    427:430:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):324 -> l
+    427:430:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    431:444:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):324:324 -> l
+    431:444:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    445:447:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
+    445:447:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1169,"5":1171,"8":1174,"12":1178},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
+    448:450:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):329:329 -> l
+    448:450:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    451:452:long com.chatile.ui.theme.ColorKt.getTextPrimary():22:22 -> l
+    451:452:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):142 -> l
+    451:452:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    453:454:androidx.compose.runtime.ProvidableCompositionLocal androidx.compose.material3.TypographyKt.getLocalTypography():212:212 -> l
+    453:454:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92 -> l
+    453:454:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
+    453:454:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    455:458:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
+    455:458:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
+    455:458:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    459:460:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
+    459:460:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
+    459:460:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    461:462:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getTitleLarge():89:89 -> l
+    461:462:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):143 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    466:467:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    468:469:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight.access$getBold$cp():30:30 -> l
-    468:469:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight$Companion.getBold():84 -> l
-    468:469:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):144 -> l
-    468:469:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    470:563:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):140:140 -> l
-    470:563:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    564:570:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):148:148 -> l
-    564:570:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    571:577:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):149:149 -> l
-    571:577:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    578:580:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
-    578:580:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):149 -> l
-    578:580:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    581:584:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
-    581:584:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
-    581:584:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    585:586:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
-    585:586:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
-    585:586:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    587:633:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getLabelMedium():96:96 -> l
-    587:633:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
+    461:462:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    463:464:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight.access$getBold$cp():30:30 -> l
+    463:464:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight$Companion.getBold():84 -> l
+    463:464:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):144 -> l
+    463:464:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    465:557:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):140:140 -> l
+    465:557:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    558:564:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):148:148 -> l
+    558:564:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    565:571:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):149:149 -> l
+    565:571:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    572:574:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
+    572:574:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):149 -> l
+    572:574:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    575:578:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
+    575:578:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
+    575:578:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    579:580:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
+    579:580:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
+    579:580:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    581:627:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getLabelMedium():96:96 -> l
+    581:627:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):150 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    587:633:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    634:644:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):147:147 -> l
-    634:644:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    645:648:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
-    645:648:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
-    645:648:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):147 -> l
-    645:648:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    649:651:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
-    649:651:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):340 -> l
-    649:651:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    652:664:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):156:156 -> l
-    652:664:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    665:667:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):157:157 -> l
-    665:667:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    668:677:boolean kotlin.text.StringsKt__StringsKt.contains$default(java.lang.CharSequence,java.lang.CharSequence,boolean,int,java.lang.Object):1156:1156 -> l
-    668:677:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):158 -> l
-    668:677:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    678:680:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):158:158 -> l
-    678:680:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    681:688:boolean kotlin.text.StringsKt__StringsKt.contains$default(java.lang.CharSequence,java.lang.CharSequence,boolean,int,java.lang.Object):1156:1156 -> l
-    681:688:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):159 -> l
-    681:688:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    689:691:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):159:159 -> l
-    689:691:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    692:699:boolean kotlin.text.StringsKt__StringsKt.contains$default(java.lang.CharSequence,java.lang.CharSequence,boolean,int,java.lang.Object):1156:1156 -> l
-    692:699:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):160 -> l
-    692:699:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    700:702:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):160:160 -> l
-    700:702:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    703:730:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):161:161 -> l
-    703:730:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    731:737:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):163:163 -> l
-    731:737:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    738:740:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
-    738:740:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):163 -> l
-    738:740:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    741:744:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
-    741:744:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):164 -> l
-    741:744:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    745:746:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
-    745:746:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):164 -> l
-    745:746:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    747:794:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getTitleMedium():90:90 -> l
-    747:794:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):164 -> l
+    581:627:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    628:638:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):147:147 -> l
+    628:638:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    639:642:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
+    639:642:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
+    639:642:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):147 -> l
+    639:642:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    643:645:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
+    643:645:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):333 -> l
+    643:645:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    646:674:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):155:155 -> l
+    646:674:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    675:681:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):156:156 -> l
+    675:681:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    682:684:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
+    682:684:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):156 -> l
+    682:684:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    685:688:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
+    685:688:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):157 -> l
+    685:688:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    689:690:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
+    689:690:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):157 -> l
+    689:690:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    691:734:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getTitleMedium():90:90 -> l
+    691:734:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):157 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    747:794:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    795:800:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):154:154 -> l
-    795:800:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    801:807:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
-    801:807:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):345 -> l
-    801:807:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    808:825:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):177:177 -> l
-    808:825:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    826:833:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):170:170 -> l
-    826:833:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    834:851:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):186:186 -> l
-    834:851:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    852:856:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):179:179 -> l
-    852:856:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    857:889:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):188:188 -> l
-    857:889:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    890:895:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):191:191 -> l
-    890:895:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    896:899:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):356:356 -> l
-    896:899:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    900:901:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
-    900:901:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
+    691:734:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    735:740:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):154:154 -> l
+    735:740:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    741:745:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
+    741:745:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):338 -> l
+    741:745:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    746:763:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):170:170 -> l
+    746:763:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    764:771:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):163:163 -> l
+    764:771:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    772:789:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):179:179 -> l
+    772:789:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    790:794:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):172:172 -> l
+    790:794:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    795:829:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):181:181 -> l
+    795:829:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    830:835:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):184:184 -> l
+    830:835:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    836:839:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):349:349 -> l
+    836:839:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    840:841:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> l
+    840:841:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    900:901:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):359 -> l
-    900:901:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    902:907:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
-    902:907:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):360 -> l
-    902:907:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    908:911:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):361:361 -> l
-    908:911:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    912:914:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):366:366 -> l
-    912:914:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    915:920:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    915:920:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):367 -> l
-    915:920:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    921:926:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):368:368 -> l
-    921:926:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    927:930:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):370:370 -> l
-    927:930:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    931:935:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):373:373 -> l
-    931:935:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    936:938:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):374:374 -> l
-    936:938:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    939:942:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
-    939:942:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):378 -> l
-    939:942:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    943:962:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):378:378 -> l
-    943:962:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    963:966:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
-    963:966:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1248,"5":1250,"8":1253,"12":1257},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    967:972:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):383:383 -> l
-    967:972:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    973:975:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):386:386 -> l
-    973:975:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    976:977:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):192:192 -> l
-    976:977:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    978:993:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):387:387 -> l
-    978:993:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    994:995:long com.chatile.ui.theme.ColorKt.getTextSecondary():23:23 -> l
-    994:995:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):195 -> l
-    994:995:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    996:997:androidx.compose.runtime.ProvidableCompositionLocal androidx.compose.material3.TypographyKt.getLocalTypography():212:212 -> l
-    996:997:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92 -> l
-    996:997:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):196 -> l
-    996:997:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    998:1001:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
-    998:1001:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):196 -> l
-    998:1001:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1002:1003:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
-    1002:1003:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):196 -> l
-    1002:1003:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1004:1050:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getBodySmall():94:94 -> l
-    1004:1050:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):196 -> l
+    840:841:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):352 -> l
+    840:841:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    842:847:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> l
+    842:847:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):353 -> l
+    842:847:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    848:851:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):354:354 -> l
+    848:851:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    852:854:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):359:359 -> l
+    852:854:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    855:858:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    855:858:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):360 -> l
+    855:858:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    859:864:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):361:361 -> l
+    859:864:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    865:868:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):363:363 -> l
+    865:868:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    869:873:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):366:366 -> l
+    869:873:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    874:876:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):367:367 -> l
+    874:876:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    877:880:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> l
+    877:880:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):371 -> l
+    877:880:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    881:900:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):371:371 -> l
+    881:900:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    901:904:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):0:0 -> l
+    901:904:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1179,"5":1181,"8":1184,"12":1188},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
+    905:910:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):376:376 -> l
+    905:910:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    911:913:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):379:379 -> l
+    911:913:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    914:915:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):185:185 -> l
+    914:915:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    916:931:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):380:380 -> l
+    916:931:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    932:933:long com.chatile.ui.theme.ColorKt.getTextSecondary():23:23 -> l
+    932:933:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):188 -> l
+    932:933:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    934:935:androidx.compose.runtime.ProvidableCompositionLocal androidx.compose.material3.TypographyKt.getLocalTypography():212:212 -> l
+    934:935:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92 -> l
+    934:935:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):189 -> l
+    934:935:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    936:939:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):174:174 -> l
+    936:939:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):189 -> l
+    936:939:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    940:941:androidx.compose.material3.Typography androidx.compose.material3.MaterialTheme.getTypography(androidx.compose.runtime.Composer,int):92:92 -> l
+    940:941:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):189 -> l
+    940:941:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    942:985:androidx.compose.ui.text.TextStyle androidx.compose.material3.Typography.getBodySmall():94:94 -> l
+    942:985:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):189 -> l
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    1004:1050:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1051:1063:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):193:193 -> l
-    1051:1063:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1064:1067:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
-    1064:1067:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
-    1064:1067:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):388 -> l
-    1064:1067:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1068:1078:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
-    1068:1078:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):389 -> l
-    1068:1078:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1079:1082:androidx.compose.ui.Modifier androidx.compose.foundation.layout.SizeKt.fillMaxWidth$default(androidx.compose.ui.Modifier,float,int,java.lang.Object):459:459 -> l
-    1079:1082:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):204 -> l
-    1079:1082:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1083:1088:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):205:205 -> l
-    1083:1088:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1089:1093:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):206:206 -> l
-    1089:1093:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1094:1095:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
-    1094:1095:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):206 -> l
-    1094:1095:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1096:1100:long androidx.compose.ui.graphics.Color.access$getBlack$cp():118:118 -> l
-    1096:1100:long androidx.compose.ui.graphics.Color$Companion.getBlack-0d7_KjU():286 -> l
-    1096:1100:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):207 -> l
-    1096:1100:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1101:1141:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):205:205 -> l
-    1101:1141:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1142:1147:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):393:393 -> l
-    1142:1147:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1148:1151:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):394:394 -> l
-    1148:1151:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1152:1158:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):202:202 -> l
-    1152:1158:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1159:1161:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):396:396 -> l
-    1159:1161:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1162:1164:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):202:202 -> l
-    1162:1164:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1165:1167:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
-    1165:1167:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
-    1165:1167:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):202 -> l
-    1165:1167:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1168:1194:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):209:209 -> l
-    1168:1194:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1195:1198:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):201:201 -> l
-    1195:1198:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1199:1201:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
-    1199:1201:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):399 -> l
-    1199:1201:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1202:1214:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):220:220 -> l
-    1202:1214:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1215:1217:void androidx.compose.runtime.RecomposeScopeImpl.updateScope(kotlin.jvm.functions.Function2):253:253 -> l
-    1215:1217:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):220 -> l
-    1215:1217:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
-    1218:1218:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):259:259 -> l
-    1220:1220:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):259:259 -> l
-    1223:1223:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):260:260 -> l
-    1227:1227:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):260:260 -> l
-    1228:1228:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):296:296 -> l
-    1230:1230:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):296:296 -> l
-    1233:1233:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):297:297 -> l
-    1237:1237:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):297:297 -> l
-    1238:1238:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):332:332 -> l
-    1240:1240:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):332:332 -> l
-    1243:1243:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):333:333 -> l
-    1247:1247:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):333:333 -> l
-    1248:1248:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):379:379 -> l
-    1250:1250:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):379:379 -> l
-    1253:1253:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):380:380 -> l
-    1257:1257:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):380:380 -> l
+    942:985:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    986:994:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):186:186 -> l
+    986:994:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    995:998:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
+    995:998:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
+    995:998:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):381 -> l
+    995:998:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    999:1009:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
+    999:1009:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):382 -> l
+    999:1009:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1010:1013:androidx.compose.ui.Modifier androidx.compose.foundation.layout.SizeKt.fillMaxWidth$default(androidx.compose.ui.Modifier,float,int,java.lang.Object):459:459 -> l
+    1010:1013:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):197 -> l
+    1010:1013:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1014:1017:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):198:198 -> l
+    1014:1017:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1018:1022:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):199:199 -> l
+    1018:1022:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1023:1024:long com.chatile.ui.theme.ColorKt.getVioletAccent():24:24 -> l
+    1023:1024:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):199 -> l
+    1023:1024:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1025:1029:long androidx.compose.ui.graphics.Color.access$getBlack$cp():118:118 -> l
+    1025:1029:long androidx.compose.ui.graphics.Color$Companion.getBlack-0d7_KjU():286 -> l
+    1025:1029:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):200 -> l
+    1025:1029:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1030:1070:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):198:198 -> l
+    1030:1070:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1071:1076:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):386:386 -> l
+    1071:1076:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1077:1080:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):387:387 -> l
+    1077:1080:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1081:1087:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):195:195 -> l
+    1081:1087:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1088:1090:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):389:389 -> l
+    1088:1090:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1091:1093:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):195:195 -> l
+    1091:1093:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1094:1096:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> l
+    1094:1096:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> l
+    1094:1096:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):195 -> l
+    1094:1096:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1097:1127:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):202:202 -> l
+    1097:1127:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1128:1131:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):194:194 -> l
+    1128:1131:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1132:1134:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> l
+    1132:1134:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):392 -> l
+    1132:1134:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1135:1145:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):213:213 -> l
+    1135:1145:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1146:1148:void androidx.compose.runtime.RecomposeScopeImpl.updateScope(kotlin.jvm.functions.Function2):253:253 -> l
+    1146:1148:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):213 -> l
+    1146:1148:void t2.AppNavHostKt.ShopProduct(s2.ShopItem,java.lang.String,I4.Function1,R.Composer,int):0 -> l
+    1149:1149:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):252:252 -> l
+    1151:1151:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):252:252 -> l
+    1154:1154:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):253:253 -> l
+    1158:1158:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):253:253 -> l
+    1159:1159:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):289:289 -> l
+    1161:1161:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):289:289 -> l
+    1164:1164:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):290:290 -> l
+    1168:1168:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):290:290 -> l
+    1169:1169:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):325:325 -> l
+    1171:1171:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):325:325 -> l
+    1174:1174:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):326:326 -> l
+    1178:1178:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):326:326 -> l
+    1179:1179:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):372:372 -> l
+    1181:1181:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):372:372 -> l
+    1184:1184:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):373:373 -> l
+    1188:1188:void com.chatile.ui.ShopScreenKt.ShopProduct(com.chatile.ShopItem,java.lang.String,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):373:373 -> l
     6:68:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):45:45 -> m
       # {"id":"com.android.tools.r8.residualsignature","signature":"(Ls2/e1;LI4/c;LR/o;I)V"}
     69:72:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):103:103 -> m
@@ -312258,10 +312239,10 @@ com.chatile.ui.AppNavHostKt -> t2.Y:
     85:90:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):48:48 -> m
     91:96:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):49:49 -> m
     97:123:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):50:50 -> m
-    124:129:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):222:222 -> m
-    130:133:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):223:223 -> m
+    124:129:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):215:215 -> m
+    130:133:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):216:216 -> m
     134:139:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):50:50 -> m
-    140:142:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):225:225 -> m
+    140:142:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):218:218 -> m
     143:144:void com.chatile.ui.ShopScreenKt.ShopScreen(com.chatile.ChatViewModel,kotlin.jvm.functions.Function1,androidx.compose.runtime.Composer,int):50:50 -> m
     145:147:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> m
     145:147:void androidx.compose.runtime.ComposerImpl.endReplaceGroup():1541 -> m
@@ -361800,35 +361781,60 @@ com.chatile.ui.ShopScreenKt$ShopProduct$1$4 -> t2.n5:
     boolean $isSubscription -> b
     com.chatile.ShopItem $item -> c
       # {"id":"com.android.tools.r8.residualsignature","signature":"Ls2/B1;"}
-    boolean $isPremiumPlusProduct -> d
-    1:12:void <init>(boolean,boolean,com.chatile.ShopItem,boolean):0:0 -> <init>
-      # {"id":"com.android.tools.r8.residualsignature","signature":"(ZZLs2/B1;Z)V"}
-    3:18:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209:209 -> invoke
+    1:10:void <init>(boolean,boolean,com.chatile.ShopItem):0:0 -> <init>
+      # {"id":"com.android.tools.r8.residualsignature","signature":"(ZZLs2/B1;)V"}
+    3:18:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202:202 -> invoke
+    3:18:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+      # {"id":"com.android.tools.r8.synthesized"}
     19:29:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):0:0 -> invoke
-    19:29:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    30:40:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):210:210 -> invoke
-    30:40:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    41:44:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):217:217 -> invoke
-    41:44:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    45:52:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):212:212 -> invoke
-    45:52:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    53:56:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):213:213 -> invoke
-    53:56:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
+    19:29:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    19:29:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    30:40:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):203:203 -> invoke
+    30:40:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    30:40:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    41:44:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):210:210 -> invoke
+    41:44:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    41:44:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    45:52:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):205:205 -> invoke
+    45:52:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    45:52:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    53:56:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    53:56:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    53:56:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     57:60:java.lang.String com.chatile.ShopItem.getPriceLabel():193:193 -> invoke
-    57:60:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):213 -> invoke
+    57:60:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    57:60:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    61:95:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):213:213 -> invoke
-    61:95:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    96:98:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):214:214 -> invoke
-    96:98:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    99:132:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight.access$getBold$cp():30:30 -> invoke
-    99:132:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight$Companion.getBold():84 -> invoke
-    99:132:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):216 -> invoke
-    99:132:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    133:135:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):210:210 -> invoke
-    133:135:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209 -> invoke
-    136:138:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):209:209 -> invoke
+    57:60:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    57:60:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    61:64:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    61:64:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    61:64:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    65:69:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):0:0 -> invoke
+    65:69:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+      # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":113,"3":115,"6":118,"9":122,"12":127},"outline":"LO1/a;g(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"}
+    70:72:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):207:207 -> invoke
+    70:72:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    70:72:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    73:106:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight.access$getBold$cp():30:30 -> invoke
+    73:106:androidx.compose.ui.text.font.FontWeight androidx.compose.ui.text.font.FontWeight$Companion.getBold():84 -> invoke
+    73:106:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):209 -> invoke
+    73:106:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    73:106:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    107:109:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):203:203 -> invoke
+    107:109:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    107:109:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    110:112:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202:202 -> invoke
+    110:112:java.lang.Object t2.ShopScreenKt$ShopProduct$1$4.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
+    113:113:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    113:113:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    115:115:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    115:115:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    118:118:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    118:118:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    122:122:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    122:122:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
+    127:127:void invoke(androidx.compose.foundation.layout.RowScope,androidx.compose.runtime.Composer,int):206:206 -> invoke
+    127:127:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):202 -> invoke
 com.chatile.ui.ShopScreenKt$ShopScreen$1$1 -> t2.o5:
 # {"id":"sourceFile","fileName":"ShopScreen.kt"}
     com.chatile.ChatViewModel $vm -> a
@@ -361889,83 +361895,83 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     71:77:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):58:58 -> invoke
     71:77:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     71:77:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    78:80:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):225:225 -> invoke
+    78:80:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):218:218 -> invoke
     78:80:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     78:80:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    81:84:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):228:228 -> invoke
+    81:84:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):221:221 -> invoke
     81:84:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     81:84:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     85:87:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229:229 -> invoke
-    85:87:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):231 -> invoke
+    85:87:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):224 -> invoke
     85:87:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     85:87:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     88:89:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> invoke
     88:89:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    88:89:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):231 -> invoke
+    88:89:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):224 -> invoke
     88:89:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     88:89:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     90:93:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> invoke
-    90:93:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):232 -> invoke
+    90:93:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):225 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
     90:93:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     90:93:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    94:97:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):233:233 -> invoke
+    94:97:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):226:226 -> invoke
     94:97:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     94:97:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    98:102:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):235:235 -> invoke
+    98:102:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):228:228 -> invoke
     98:102:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     98:102:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     103:104:kotlin.jvm.functions.Function0 androidx.compose.ui.node.ComposeUiNode$Companion.getConstructor():45:45 -> invoke
-    103:104:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):235 -> invoke
+    103:104:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):228 -> invoke
     103:104:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     103:104:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    105:107:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):238:238 -> invoke
+    105:107:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):231:231 -> invoke
     105:107:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     105:107:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     108:111:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    108:111:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):239 -> invoke
+    108:111:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):232 -> invoke
     108:111:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     108:111:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    112:115:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):240:240 -> invoke
+    112:115:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):233:233 -> invoke
     112:115:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     112:115:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    116:118:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):242:242 -> invoke
+    116:118:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):235:235 -> invoke
     116:118:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     116:118:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     119:120:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetMeasurePolicy():51:51 -> invoke
-    119:120:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):245 -> invoke
+    119:120:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):238 -> invoke
     119:120:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     119:120:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    121:123:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):245:245 -> invoke
+    121:123:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):238:238 -> invoke
     121:123:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     121:123:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     124:125:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetResolvedCompositionLocals():49:49 -> invoke
-    124:125:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):246 -> invoke
+    124:125:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):239 -> invoke
     124:125:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     124:125:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    126:128:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):246:246 -> invoke
+    126:128:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):239:239 -> invoke
     126:128:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     126:128:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     129:130:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetCompositeKeyHash():60:60 -> invoke
-    129:130:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):248 -> invoke
+    129:130:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):241 -> invoke
     129:130:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     129:130:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     131:134:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    131:134:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):250 -> invoke
+    131:134:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):243 -> invoke
     131:134:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     131:134:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    135:148:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):250:250 -> invoke
+    135:148:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):243:243 -> invoke
     135:148:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     135:148:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     149:151:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):0:0 -> invoke
     149:151:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
       # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1016,"5":1018,"8":1021,"12":1025},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
     152:153:kotlin.jvm.functions.Function2 androidx.compose.ui.node.ComposeUiNode$Companion.getSetModifier():47:47 -> invoke
-    152:153:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):255 -> invoke
+    152:153:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):248 -> invoke
     152:153:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     152:153:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    154:158:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):255:255 -> invoke
+    154:158:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):248:248 -> invoke
     154:158:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     154:158:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     159:162:androidx.compose.ui.Modifier androidx.compose.foundation.layout.SizeKt.fillMaxWidth$default(androidx.compose.ui.Modifier,float,int,java.lang.Object):459:459 -> invoke
@@ -361978,52 +361984,52 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     170:177:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):63:63 -> invoke
     170:177:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     170:177:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    178:181:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):261:261 -> invoke
+    178:181:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):254:254 -> invoke
     178:181:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     178:181:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     182:183:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> invoke
     182:183:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    182:183:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):264 -> invoke
+    182:183:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):257 -> invoke
     182:183:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     182:183:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     184:187:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> invoke
-    184:187:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):265 -> invoke
+    184:187:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):258 -> invoke
     184:187:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     184:187:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    188:191:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):266:266 -> invoke
+    188:191:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):259:259 -> invoke
     188:191:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     188:191:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    192:194:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):271:271 -> invoke
+    192:194:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):264:264 -> invoke
     192:194:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     192:194:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     195:198:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    195:198:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):272 -> invoke
+    195:198:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):265 -> invoke
     195:198:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     195:198:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    199:202:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):273:273 -> invoke
+    199:202:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):266:266 -> invoke
     199:202:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     199:202:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    203:205:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):275:275 -> invoke
+    203:205:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):268:268 -> invoke
     203:205:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     203:205:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    206:208:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):278:278 -> invoke
+    206:208:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):271:271 -> invoke
     206:208:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     206:208:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    209:211:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):279:279 -> invoke
+    209:211:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):272:272 -> invoke
     209:211:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     209:211:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     212:215:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    212:215:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):283 -> invoke
+    212:215:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):276 -> invoke
     212:215:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     212:215:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    216:229:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):283:283 -> invoke
+    216:229:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):276:276 -> invoke
     216:229:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     216:229:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     230:232:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):0:0 -> invoke
     230:232:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
       # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1026,"5":1028,"8":1031,"12":1035},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    233:239:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):288:288 -> invoke
+    233:239:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):281:281 -> invoke
     233:239:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     233:239:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     240:243:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):66:66 -> invoke
@@ -362066,7 +362072,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     313:372:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     313:372:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     373:375:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> invoke
-    373:375:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):293 -> invoke
+    373:375:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):286 -> invoke
     373:375:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     373:375:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     376:381:long com.chatile.ui.theme.ColorKt.getTextSecondary():23:23 -> invoke
@@ -362089,7 +362095,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     395:438:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):77:77 -> invoke
     395:438:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     395:438:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    439:450:boolean com.chatile.ui.ShopScreenKt.ShopScreen$lambda$2(androidx.compose.runtime.State):405:405 -> invoke
+    439:450:boolean com.chatile.ui.ShopScreenKt.ShopScreen$lambda$2(androidx.compose.runtime.State):398:398 -> invoke
     439:450:boolean com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$2(androidx.compose.runtime.State):1 -> invoke
     439:450:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):80 -> invoke
     439:450:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362097,7 +362103,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     451:454:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):80:80 -> invoke
     451:454:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     451:454:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    455:460:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):403:403 -> invoke
+    455:460:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):396:396 -> invoke
     455:460:java.util.List com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$0(androidx.compose.runtime.State):1 -> invoke
     455:460:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):80 -> invoke
     455:460:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362118,52 +362124,52 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     497:504:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):84:84 -> invoke
     497:504:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     497:504:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    505:508:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):300:300 -> invoke
+    505:508:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):293:293 -> invoke
     505:508:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     505:508:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     509:510:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> invoke
     509:510:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    509:510:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):303 -> invoke
+    509:510:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):296 -> invoke
     509:510:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     509:510:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     511:514:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> invoke
-    511:514:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):304 -> invoke
+    511:514:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):297 -> invoke
     511:514:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     511:514:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    515:518:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):305:305 -> invoke
+    515:518:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):298:298 -> invoke
     515:518:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     515:518:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    519:521:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):310:310 -> invoke
+    519:521:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):303:303 -> invoke
     519:521:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     519:521:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     522:527:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    522:527:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):311 -> invoke
+    522:527:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):304 -> invoke
     522:527:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     522:527:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    528:533:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):312:312 -> invoke
+    528:533:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):305:305 -> invoke
     528:533:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     528:533:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    534:537:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):314:314 -> invoke
+    534:537:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):307:307 -> invoke
     534:537:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     534:537:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    538:542:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):317:317 -> invoke
+    538:542:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):310:310 -> invoke
     538:542:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     538:542:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    543:545:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):318:318 -> invoke
+    543:545:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):311:311 -> invoke
     543:545:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     543:545:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     546:549:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    546:549:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):322 -> invoke
+    546:549:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):315 -> invoke
     546:549:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     546:549:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    550:569:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):322:322 -> invoke
+    550:569:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):315:315 -> invoke
     550:569:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     550:569:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     570:573:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):0:0 -> invoke
     570:573:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
       # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1036,"5":1038,"8":1041,"12":1045},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    574:587:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):327:327 -> invoke
+    574:587:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):320:320 -> invoke
     574:587:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     574:587:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     588:595:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):86:86 -> invoke
@@ -362173,7 +362179,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     596:642:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     596:642:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     643:646:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> invoke
-    643:646:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):331 -> invoke
+    643:646:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):324 -> invoke
     643:646:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     643:646:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     647:676:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> invoke
@@ -362181,12 +362187,12 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     647:676:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):80 -> invoke
     647:676:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     647:676:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    677:686:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$3(androidx.compose.runtime.State):406:406 -> invoke
+    677:686:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$3(androidx.compose.runtime.State):399:399 -> invoke
     677:686:java.lang.String com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$3(androidx.compose.runtime.State):1 -> invoke
     677:686:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):90 -> invoke
     677:686:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     677:686:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    687:692:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):403:403 -> invoke
+    687:692:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):396:396 -> invoke
     687:692:java.util.List com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$0(androidx.compose.runtime.State):1 -> invoke
     687:692:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):90 -> invoke
     687:692:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362197,55 +362203,55 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     708:716:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):91:91 -> invoke
     708:716:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     708:716:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    717:720:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):342:342 -> invoke
+    717:720:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):335:335 -> invoke
     717:720:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     717:720:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     721:722:int androidx.compose.runtime.ComposerImpl.getCompoundKeyHash():1737:1737 -> invoke
     721:722:int androidx.compose.runtime.ComposablesKt.getCurrentCompositeKeyHash(androidx.compose.runtime.Composer,int):229 -> invoke
       # {"id":"com.android.tools.r8.rewriteFrame","conditions":["throws(Ljava/lang/NullPointerException;)"],"actions":["removeInnerFrames(1)"]}
-    721:722:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):345 -> invoke
+    721:722:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):338 -> invoke
     721:722:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     721:722:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     723:726:androidx.compose.runtime.CompositionLocalMap androidx.compose.runtime.ComposerImpl.getCurrentCompositionLocalMap():2212:2212 -> invoke
-    723:726:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):346 -> invoke
+    723:726:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):339 -> invoke
     723:726:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     723:726:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    727:730:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):347:347 -> invoke
+    727:730:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):340:340 -> invoke
     727:730:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     727:730:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    731:733:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):352:352 -> invoke
+    731:733:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):345:345 -> invoke
     731:733:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     731:733:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     734:737:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    734:737:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):353 -> invoke
+    734:737:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):346 -> invoke
     734:737:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     734:737:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    738:741:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):354:354 -> invoke
+    738:741:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):347:347 -> invoke
     738:741:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     738:741:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    742:744:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):356:356 -> invoke
+    742:744:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):349:349 -> invoke
     742:744:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     742:744:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    745:747:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):359:359 -> invoke
+    745:747:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):352:352 -> invoke
     745:747:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     745:747:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    748:750:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):360:360 -> invoke
+    748:750:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):353:353 -> invoke
     748:750:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     748:750:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     751:754:boolean androidx.compose.runtime.ComposerImpl.getInserting():1717:1717 -> invoke
-    751:754:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):364 -> invoke
+    751:754:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):357 -> invoke
     751:754:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     751:754:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    755:768:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):364:364 -> invoke
+    755:768:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):357:357 -> invoke
     755:768:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     755:768:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     769:771:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):0:0 -> invoke
     769:771:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
       # {"id":"com.android.tools.r8.outlineCallsite","positions":{"1":1046,"5":1048,"8":1051,"12":1055},"outline":"Landroidx/fragment/app/X;t(ILR/s;ILB0/i;)V"}
-    772:774:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):369:369 -> invoke
+    772:774:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):362:362 -> invoke
     772:774:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     772:774:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    775:782:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$3(androidx.compose.runtime.State):406:406 -> invoke
+    775:782:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$3(androidx.compose.runtime.State):399:399 -> invoke
     775:782:java.lang.String com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$3(androidx.compose.runtime.State):1 -> invoke
     775:782:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):92 -> invoke
     775:782:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362274,10 +362280,10 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     845:861:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):92:92 -> invoke
     845:861:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     845:861:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    862:867:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):373:373 -> invoke
+    862:867:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):366:366 -> invoke
     862:867:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     862:867:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    868:871:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):374:374 -> invoke
+    868:871:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):367:367 -> invoke
     868:871:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     868:871:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     872:873:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):93:93 -> invoke
@@ -362288,7 +362294,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     874:887:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):93 -> invoke
     874:887:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     874:887:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    888:891:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):376:376 -> invoke
+    888:891:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):369:369 -> invoke
     888:891:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     888:891:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     892:894:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):93:93 -> invoke
@@ -362303,7 +362309,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     898:925:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     898:925:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     926:928:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> invoke
-    926:928:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):379 -> invoke
+    926:928:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):372 -> invoke
     926:928:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     926:928:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     929:949:void androidx.compose.runtime.ComposerImpl.endGroup():1797:1797 -> invoke
@@ -362314,7 +362320,7 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     950:952:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):96:96 -> invoke
     950:952:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     950:952:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    953:958:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):403:403 -> invoke
+    953:958:java.util.List com.chatile.ui.ShopScreenKt.ShopScreen$lambda$0(androidx.compose.runtime.State):396:396 -> invoke
     953:958:java.util.List com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$0(androidx.compose.runtime.State):1 -> invoke
     953:958:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):97 -> invoke
     953:958:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362322,10 +362328,10 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     959:960:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):97:97 -> invoke
     959:960:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     959:960:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    961:976:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):383:383 -> invoke
+    961:976:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):376:376 -> invoke
     961:976:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     961:976:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    977:984:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$1(androidx.compose.runtime.State):404:404 -> invoke
+    977:984:java.lang.String com.chatile.ui.ShopScreenKt.ShopScreen$lambda$1(androidx.compose.runtime.State):397:397 -> invoke
     977:984:java.lang.String com.chatile.ui.ShopScreenKt.access$ShopScreen$lambda$1(androidx.compose.runtime.State):1 -> invoke
     977:984:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):97 -> invoke
     977:984:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
@@ -362343,42 +362349,42 @@ com.chatile.ui.ShopScreenKt$ShopScreen$2 -> t2.p5:
     1003:1009:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     1003:1009:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     1010:1012:void androidx.compose.runtime.ComposerImpl.endNode():1853:1853 -> invoke
-    1010:1012:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):386 -> invoke
+    1010:1012:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):379 -> invoke
     1010:1012:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
     1010:1012:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
     1013:1015:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52:52 -> invoke
     1013:1015:java.lang.Object t2.ShopScreenKt$ShopScreen$2.invoke(java.lang.Object,java.lang.Object,java.lang.Object):0 -> invoke
-    1016:1016:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):251:251 -> invoke
+    1016:1016:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):244:244 -> invoke
     1016:1016:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1018:1018:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):251:251 -> invoke
+    1018:1018:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):244:244 -> invoke
     1018:1018:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1021:1021:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):252:252 -> invoke
+    1021:1021:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):245:245 -> invoke
     1021:1021:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1025:1025:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):252:252 -> invoke
+    1025:1025:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):245:245 -> invoke
     1025:1025:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1026:1026:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):284:284 -> invoke
+    1026:1026:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):277:277 -> invoke
     1026:1026:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1028:1028:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):284:284 -> invoke
+    1028:1028:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):277:277 -> invoke
     1028:1028:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1031:1031:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):285:285 -> invoke
+    1031:1031:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):278:278 -> invoke
     1031:1031:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1035:1035:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):285:285 -> invoke
+    1035:1035:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):278:278 -> invoke
     1035:1035:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1036:1036:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):323:323 -> invoke
+    1036:1036:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):316:316 -> invoke
     1036:1036:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1038:1038:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):323:323 -> invoke
+    1038:1038:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):316:316 -> invoke
     1038:1038:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1041:1041:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):324:324 -> invoke
+    1041:1041:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):317:317 -> invoke
     1041:1041:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1045:1045:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):324:324 -> invoke
+    1045:1045:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):317:317 -> invoke
     1045:1045:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1046:1046:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):365:365 -> invoke
+    1046:1046:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):358:358 -> invoke
     1046:1046:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1048:1048:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):365:365 -> invoke
+    1048:1048:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):358:358 -> invoke
     1048:1048:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1051:1051:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):366:366 -> invoke
+    1051:1051:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):359:359 -> invoke
     1051:1051:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
-    1055:1055:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):366:366 -> invoke
+    1055:1055:void invoke(androidx.compose.foundation.layout.BoxScope,androidx.compose.runtime.Composer,int):359:359 -> invoke
     1055:1055:java.lang.Object invoke(java.lang.Object,java.lang.Object,java.lang.Object):52 -> invoke
 com.chatile.ui.SplashScreenKt$SplashScreen$1 -> t2.q5:
 # {"id":"sourceFile","fileName":"SplashScreen.kt"}

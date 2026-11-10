@@ -152,14 +152,7 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
                 }
             }
             Text(
-                text = when {
-                    isPremiumPlusProduct -> "19,99 €/mois"
-                    isPremiumProduct -> "9,99 €/mois"
-                    item.productId.contains("100") -> "1,00 €"
-                    item.productId.contains("500") -> "5,00 €"
-                    item.productId.contains("1000") -> "10,00 €"
-                    else -> item.priceLabel.ifBlank { "${item.price} Pièces" }
-                },
+                text = item.priceLabel.ifBlank { "${item.price} Pièces" },
                 color = if (isPremiumPlusProduct) Color(0xFFFFD700) else VioletAccent,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
@@ -210,7 +203,7 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
             Text(
                 text = when {
                     isCurrentTier -> "Abonnement actif"
-                    isSubscription -> "S'abonner (${item.priceLabel.ifBlank { if (isPremiumPlusProduct) "19,99 €" else "9,99 €" }})"
+                    isSubscription -> "S'abonner (${item.priceLabel})"
                     else -> "Acheter"
                 },
                 fontWeight = FontWeight.Bold

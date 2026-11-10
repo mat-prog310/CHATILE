@@ -106,6 +106,14 @@ fun ProfileScreen(
             vm.clearError()
         }
     }
+    // Auto-save debounce on name & bio changes
+    LaunchedEffect(name, bio) {
+        if (name != profile?.displayName.orEmpty() || bio != profile?.bio.orEmpty()) {
+            kotlinx.coroutines.delay(1000)
+            vm.updateProfile(name, bio)
+        }
+    }
+
     NightBackdrop {
         Column(
             modifier = Modifier.fillMaxHeight().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
@@ -163,7 +171,6 @@ fun ProfileScreen(
                 colors = profileFieldColors(),
                 minLines = 3,
             )
-            Button(onClick = { vm.updateProfile(name, bio) }, modifier = Modifier.fillMaxWidth()) { Text("Enregistrer le profil") }
 
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurfaceRaised).padding(18.dp),

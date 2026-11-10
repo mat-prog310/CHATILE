@@ -679,6 +679,9 @@ for (const quest of [
   ['Créateur prolifique', 'Créer 3 personnages.', 3, 250, 'characters'],
   ['Explorateur', 'Découvrir 5 personnages.', 5, 200, 'characters'],
   ['Collectionneur', 'Garder une série de 7 jours.', 7, 150, 'streak'],
+  ['Publicitaire débutant', 'Regarder 10 publicités.', 10, 100, 'watch_ad'],
+  ['Publicitaire expert', 'Regarder 50 publicités.', 50, 600, 'watch_ad'],
+  ['Publicitaire prodige', 'Regarder 100 publicités.', 100, 1500, 'watch_ad'],
 ]) seedQuest.run(...quest);
 
 const seedLootItems = [
@@ -1607,6 +1610,7 @@ app.post('/api/watch-ad', (req, res) => {
     const awardedAt = new Date().toISOString().replace('T', ' ').slice(0, 19);
     db.prepare('UPDATE users SET pieces = pieces + 5, last_watch_ad = ? WHERE id = ?').run(awardedAt, req.user.id);
     recordPieceTransaction(req.user.id, 5, 'watch_ad', 'Publicité récompensée (+5 Pièces)');
+    updateQuestProgress(req.user.id, 'watch_ad', 1);
     return { success: true };
   })();
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
@@ -4965,6 +4969,7 @@ app.post('/api/virtual/watch-ad', (req, res) => {
     db.prepare('UPDATE users SET pieces = pieces + 50 WHERE id = ?').run(req.user.id);
     recordPieceTransaction(req.user.id, 50, 'virtual_watch_ad', 'Publicité Vie Virtuelle (+50 Pièces)');
     db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'virtual_ad', 'Visionnage d’une publicité (+50 Pièces)')").run(req.user.id);
+    updateQuestProgress(req.user.id, 'watch_ad', 1);
   });
   adTrans();
 
@@ -4993,6 +4998,7 @@ app.post('/api/virtual/watch-ad-reward', (req, res) => {
   const rewardTrans = db.transaction(() => {
     db.prepare('INSERT INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, selected.id);
     db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'exclusive_ad_reward', ?)").run(req.user.id, `Objet exclusif débloqué par pub : ${selected.name}`);
+    updateQuestProgress(req.user.id, 'watch_ad', 1);
   });
   rewardTrans();
 

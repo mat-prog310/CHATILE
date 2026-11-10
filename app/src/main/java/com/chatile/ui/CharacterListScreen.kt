@@ -78,7 +78,7 @@ fun CharacterListScreen(
     val pieces by vm.pieces.collectAsState()
     val characterOfTheDay by vm.characterOfTheDay.collectAsState()
     val error by vm.error.collectAsState()
-    val recentBots = remember(characters) { characters.filter { !it.isSystem && it.name != "Assistant IA" } }
+    val recentBots = remember(characters) { characters.filter { it.name != "Assistant IA" && (!it.lastMessageAt.isNullOrBlank() || it.messageCount > 0) } }
     val systemCharacters = remember(characters) { characters.filter { it.isSystem && it.name != "Assistant IA" } }
     val motionEnabled = rememberMotionEnabled()
 

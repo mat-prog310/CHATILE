@@ -65,6 +65,7 @@ fun ProfileScreen(
     onOpenLootBoxes: () -> Unit = {},
     onOpenInventory: () -> Unit = {},
     onOpenPublicProfile: (Long) -> Unit = {},
+    onOpenFriends: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -297,6 +298,11 @@ fun ProfileScreen(
                 onClick = onOpenLootBoxes,
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Coffres Mystères (50 Pièces)") }
+
+            OutlinedButton(
+                onClick = onOpenFriends,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Mes Amis & Affinité") }
 
             OutlinedButton(
                 onClick = onOpenInventory,

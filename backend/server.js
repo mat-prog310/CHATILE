@@ -324,6 +324,21 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL, target_id INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS friends (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'accepted',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, friend_id)
+  );
+  CREATE TABLE IF NOT EXISTS friend_affinities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    affinity_points INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(user_id, friend_id)
+  );
   CREATE TABLE IF NOT EXISTS character_likes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
@@ -1490,12 +1505,16 @@ app.post('/api/daily-claim', (req, res) => {
 
 app.get('/api/shop', (req, res) => {
   res.json({ items: [
-    { id: 'pack_500', name: 'Pack 500 Pièces', pieces: 500, price: '2,00 €', productId: 'pack_500', type: 'consumable' },
-    { id: 'pack_1500', name: 'Pack 1 500 Pièces', pieces: 1500, price: '5,00 €', productId: 'pack_1500', type: 'consumable' },
-    { id: 'pack_5000', name: 'Pack 5 000 Pièces', pieces: 5000, price: '15,00 €', productId: 'pack_5000', type: 'consumable' },
-    { id: 'pack_15000', name: 'Pack 15 000 Pièces', pieces: 15000, price: '40,00 €', productId: 'pack_15000', type: 'consumable' },
-    { id: 'sub_premium_monthly', name: 'Premium', pieces: 4000, price: '7,99 €/mois', productId: 'sub_premium_monthly', type: 'subscription' },
-    { id: 'sub_premium_plus_monthly', name: 'Premium+', pieces: 7000, price: '14,99 €/mois', productId: 'sub_premium_plus_monthly', type: 'subscription' },
+    { id: 'pack_starter', name: '🔥 Pack Starter (Promo)', pieces: 600, price: '4,99 €', productId: 'pack_starter', type: 'consumable', isPopular: true, description: '600 Pièces (Bonus +20%) pour bien débuter.' },
+    { id: 'pack_500', name: 'Pack 500 Pièces', pieces: 500, price: '5,00 €', productId: 'pack_500', type: 'consumable', description: '500 Pièces créditées immédiatement.' },
+    { id: 'pack_pro_gamer', name: '⚡ Pack Pro Gamer (Meilleure Valeur)', pieces: 1800, price: '12,99 €', productId: 'pack_pro_gamer', type: 'consumable', isPopular: true, description: '1 800 Pièces (Super bonus inclus).' },
+    { id: 'pack_1500', name: 'Pack 1 500 Pièces', pieces: 1500, price: '15,00 €', productId: 'pack_1500', type: 'consumable', description: '1 500 Pièces créditées immédiatement.' },
+    { id: 'pack_legendary', name: '👑 Pack Légendaire', pieces: 6500, price: '39,99 €', productId: 'pack_legendary', type: 'consumable', description: '6 500 Pièces pour les joueurs passionnés.' },
+    { id: 'pack_5000', name: 'Pack 5 000 Pièces', pieces: 5000, price: '50,00 €', productId: 'pack_5000', type: 'consumable', description: '5 000 Pièces créditées immédiatement.' },
+    { id: 'pack_ultimate', name: '🚀 Pack Mégapolis Ultime', pieces: 20000, price: '119,99 €', productId: 'pack_ultimate', type: 'consumable', description: '20 000 Pièces + Avantages exclusifs.' },
+    { id: 'pack_15000', name: 'Pack 15 000 Pièces', pieces: 15000, price: '150,00 €', productId: 'pack_15000', type: 'consumable', description: '15 000 Pièces créditées immédiatement.' },
+    { id: 'sub_premium_monthly', name: 'Premium (30 min vocales)', pieces: 1000, price: '9,99 €/mois', productId: 'sub_premium_monthly', type: 'subscription', description: '30 min d’appels vocaux/jour, 1 000 Pièces/mois, zéro pub.' },
+    { id: 'sub_premium_plus_monthly', name: 'Premium+ (60 min vocales)', pieces: 2000, price: '19,99 €/mois', productId: 'sub_premium_plus_monthly', type: 'subscription', description: '60 min d’appels vocaux/jour, 2 000 Pièces/mois, mémoire illimitée.' },
   ] });
 });
 
@@ -1503,13 +1522,16 @@ app.post('/api/verify-purchase', async (req, res) => {
   const purchaseToken = typeof req.body?.purchaseToken === 'string' ? req.body.purchaseToken.trim() : '';
   const productId = typeof req.body?.productId === 'string' ? req.body.productId.trim() : '';
   const product = {
+    pack_starter: { pieces: 600, type: 'product' },
     pack_500: { pieces: 500, type: 'product' },
+    pack_pro_gamer: { pieces: 1800, type: 'product' },
     pack_1500: { pieces: 1500, type: 'product' },
+    pack_legendary: { pieces: 6500, type: 'product' },
     pack_5000: { pieces: 5000, type: 'product' },
+    pack_ultimate: { pieces: 20000, type: 'product' },
     pack_15000: { pieces: 15000, type: 'product' },
-    pack_500_pieces: { pieces: 500, type: 'product' },
-    sub_premium_monthly: { pieces: 4000, type: 'subscription', tier: 'premium' },
-    sub_premium_plus_monthly: { pieces: 7000, type: 'subscription', tier: 'premium_plus' },
+    sub_premium_monthly: { pieces: 1000, type: 'subscription', tier: 'premium' },
+    sub_premium_plus_monthly: { pieces: 2000, type: 'subscription', tier: 'premium_plus' },
   }[productId];
   if (!purchaseToken || purchaseToken.length > 4096 || !product) {
     return res.status(400).json({ error: 'purchaseToken invalide.' });
@@ -4675,6 +4697,11 @@ app.get('/api/virtual/summary', (req, res) => {
   const jobObj = avatar.job ? db.prepare('SELECT salary_pieces FROM virtual_jobs WHERE title = ?').get(avatar.job) : null;
   const xpToNextLevel = avatar.level * 100;
 
+  const lastVirtualAd = db.prepare("SELECT created_at FROM virtual_events WHERE user_id = ? AND event_type = 'virtual_ad' ORDER BY id DESC LIMIT 1").get(req.user.id);
+  const lastVirtualAdTime = lastVirtualAd ? Date.parse(`${lastVirtualAd.created_at.replace(' ', 'T')}Z`) : 0;
+  const canWatchVirtualAd = !lastVirtualAdTime || Date.now() - lastVirtualAdTime >= 2 * 60 * 60 * 1000;
+  const nextVirtualAdAt = canWatchVirtualAd ? null : new Date(lastVirtualAdTime + 2 * 60 * 60 * 1000).toISOString();
+
   res.json({
     hasAvatar: true,
     avatarName: avatar.name,
@@ -4686,7 +4713,37 @@ app.get('/api/virtual/summary', (req, res) => {
     money: req.user.pieces,
     houseName: house?.name || 'Sans domicile',
     petsCount,
-    salaryPerHour: jobObj?.salary_pieces || 0
+    salaryPerHour: jobObj?.salary_pieces || 0,
+    canWatchVirtualAd,
+    nextVirtualAdAt
+  });
+});
+
+app.get('/api/virtual/profile/me', (req, res) => {
+  const userId = req.user.id;
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(userId);
+  if (!avatar) {
+    return res.status(404).json({ error: 'Avatar virtuel introuvable.' });
+  }
+
+  const inventoryItems = db.prepare(`
+    SELECT vi.id, vi.name, vi.category
+    FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ?
+  `).all(userId);
+
+  const houses = inventoryItems.filter(i => i.category === 'house').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+  const vehicles = inventoryItems.filter(i => i.category === 'vehicle').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+  const pets = inventoryItems.filter(i => i.category === 'pet').map(i => ({ id: i.id, name: i.name, imageName: i.name.toLowerCase() }));
+
+  res.json({
+    avatarName: avatar.name,
+    job: avatar.job || 'Sans emploi',
+    totalWorkEarnings: avatar.total_work_earnings || 0,
+    houses,
+    vehicles,
+    pets
   });
 });
 
@@ -5021,8 +5078,9 @@ app.post('/api/virtual/watch-ad', (req, res) => {
   const lastAd = db.prepare("SELECT created_at FROM virtual_events WHERE user_id = ? AND event_type = 'virtual_ad' ORDER BY id DESC LIMIT 1").get(req.user.id);
   if (lastAd) {
     const lastTime = Date.parse(`${lastAd.created_at.replace(' ', 'T')}Z`);
-    if (Date.now() - lastTime < 60 * 60 * 1000) {
-      return res.status(429).json({ error: 'Vous devez patienter 1 heure avant de regarder une autre publicité virtuelle.' });
+    if (Date.now() - lastTime < 2 * 60 * 60 * 1000) {
+      const minutesLeft = Math.ceil((2 * 60 * 60 * 1000 - (Date.now() - lastTime)) / (60 * 1000));
+      return res.status(429).json({ error: `Vous devez patienter encore ${minutesLeft} minutes avant de regarder une autre publicité virtuelle.` });
     }
   }
 
@@ -5122,6 +5180,123 @@ app.post('/api/relationships/:id/claim-milestone', (req, res) => {
   claimTrans();
 
   res.json({ success: true, bonusPieces: 150 });
+});
+
+// --- FRIENDS & AFFINITY ROUTES ---
+
+app.get('/api/users/search', (req, res) => {
+  const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  if (!query) return res.json({ users: [] });
+
+  const users = db.prepare(`
+    SELECT u.id, u.username, u.display_name as displayName, u.avatar_url as avatarUrl, u.badge_type as badgeType
+    FROM users u
+    WHERE (u.username LIKE ? OR u.display_name LIKE ?) AND u.id != ?
+    LIMIT 20
+  `).all(`%${query}%`, `%${query}%`, req.user.id);
+  res.json({ users });
+});
+
+app.get('/api/friends', (req, res) => {
+  const friends = db.prepare(`
+    SELECT u.id, u.username, u.display_name as displayName, u.avatar_url as avatarUrl, u.badge_type as badgeType,
+           COALESCE(fa.affinity_points, 0) as affinityPoints
+    FROM friends f
+    JOIN users u ON f.friend_id = u.id
+    LEFT JOIN friend_affinities fa ON fa.user_id = f.user_id AND fa.friend_id = f.friend_id
+    WHERE f.user_id = ? AND f.status = 'accepted'
+  `).all(req.user.id);
+  res.json({ friends });
+});
+
+app.post('/api/friends/add', (req, res) => {
+  const { friendId } = req.body ?? {};
+  const targetId = Number(friendId);
+  if (!targetId || targetId === req.user.id) return res.status(400).json({ error: 'Utilisateur invalide.' });
+
+  const targetUser = db.prepare('SELECT id FROM users WHERE id = ?').get(targetId);
+  if (!targetUser) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+
+  const addTrans = db.transaction(() => {
+    db.prepare('INSERT OR IGNORE INTO friends (user_id, friend_id, status) VALUES (?, ?, ?), (?, ?, ?)').run(req.user.id, targetId, 'accepted', targetId, req.user.id, 'accepted');
+    db.prepare('INSERT OR IGNORE INTO friend_affinities (user_id, friend_id, affinity_points) VALUES (?, ?, 10), (?, ?, 10)').run(req.user.id, targetId, targetId, req.user.id);
+  });
+  addTrans();
+  res.json({ success: true });
+});
+
+app.post('/api/friends/:id/gift', (req, res) => {
+  const friendId = Number(req.params.id);
+  const amount = Number(req.body?.amount ?? 50);
+  if (amount <= 0 || amount > 10000) return res.status(400).json({ error: 'Montant de cadeau invalide.' });
+
+  const sender = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  if (!sender || sender.pieces < amount) return res.status(402).json({ error: 'Pas assez de Pièces.' });
+
+  const giftTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ?').run(amount, req.user.id);
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(amount, friendId);
+    recordPieceTransaction(req.user.id, -amount, 'gift_sent', `Cadeau envoyé à un ami`);
+    recordPieceTransaction(friendId, amount, 'gift_received', `Cadeau reçu d'un ami`);
+
+    const pts = Math.max(1, Math.floor(amount / 10));
+    db.prepare(`
+      INSERT INTO friend_affinities (user_id, friend_id, affinity_points) VALUES (?, ?, ?)
+      ON CONFLICT(user_id, friend_id) DO UPDATE SET affinity_points = affinity_points + ?
+    `).run(req.user.id, friendId, pts, pts);
+  });
+  giftTrans();
+
+  const updatedSender = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updatedSender.pieces });
+});
+
+app.get('/api/users/:id/full-profile', (req, res) => {
+  const userId = Number(req.params.id);
+  const user = db.prepare(`
+    SELECT u.id, u.display_name as displayName, u.username, u.bio, u.avatar_url as avatarUrl, u.badge_type as badgeType, u.role, u.created_at, u.pieces
+    FROM users u WHERE u.id = ?
+  `).get(userId);
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+
+  const equippedItems = db.prepare(`
+    SELECT li.type, li.name, li.description, li.rarity, li.image_url as imageUrl
+    FROM user_inventory ui
+    JOIN loot_items li ON ui.item_id = li.id
+    WHERE ui.user_id = ? AND ui.is_equipped = 1
+  `).all(userId);
+
+  const characters = db.prepare('SELECT * FROM characters WHERE user_id = ? AND is_public = 1 AND is_system = 0').all(userId);
+  const stories = db.prepare('SELECT * FROM stories WHERE user_id = ? AND is_public = 1 AND status = \'published\'').all(userId);
+
+  const virtualAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(userId);
+  const virtualWorld = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(userId);
+  const house = virtualWorld?.house_id ? db.prepare('SELECT name, image_url as imageUrl FROM virtual_items WHERE id = ?').get(virtualWorld.house_id) : null;
+  const inventoryVirtual = db.prepare(`
+    SELECT vi.id, vi.name, vi.category, vi.image_url as imageUrl, vi.rarity
+    FROM user_inventory_virtual ui
+    JOIN virtual_items vi ON ui.item_id = vi.id
+    WHERE ui.user_id = ?
+  `).all(userId);
+
+  res.json({
+    user,
+    equippedItems,
+    characters: characters.map(c => formatCharacter(c, req)),
+    stories: stories.map(s => formatStory(s, req)),
+    virtualProfile: {
+      avatarName: virtualAvatar?.name || null,
+      job: virtualAvatar?.job || 'Sans emploi',
+      level: virtualAvatar?.level || 1,
+      xp: virtualAvatar?.xp || 0,
+      totalWorkEarnings: virtualAvatar?.total_work_earnings || 0,
+      houseName: house?.name || 'Sans domicile',
+      houses: inventoryVirtual.filter(i => i.category === 'house'),
+      vehicles: inventoryVirtual.filter(i => i.category === 'vehicle'),
+      pets: inventoryVirtual.filter(i => i.category === 'pet'),
+      furniture: inventoryVirtual.filter(i => i.category === 'furniture')
+    }
+  });
 });
 
 app.use((error, req, res, next) => {

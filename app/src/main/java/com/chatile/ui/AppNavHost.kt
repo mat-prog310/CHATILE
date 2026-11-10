@@ -293,7 +293,16 @@ fun NavGraph(
                 onOpenLootBoxes = { navController.navigate("loot_boxes") },
                 onOpenInventory = { navController.navigate("inventory") },
                 onOpenPublicProfile = { userId -> navController.navigate("public_profile/$userId") },
+                onOpenFriends = { navController.navigate("friends") },
                 onLogout = onLogout
+            )
+        }
+
+        composable("friends") {
+            FriendsScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onOpenProfile = { userId -> navController.navigate("public_virtual_profile/$userId") }
             )
         }
 

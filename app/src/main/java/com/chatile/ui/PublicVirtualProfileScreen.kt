@@ -45,9 +45,11 @@ fun PublicVirtualProfileScreen(
     val tabs = listOf("🏠 Maisons", "🚗 Véhicules", "🐾 Animaux")
     val categoryKeys = listOf("houses", "vehicles", "pets")
 
-    LaunchedEffect(userId) {
-        runCatching { ApiClient.getVirtualProfile(userId) }
-            .onSuccess { profileData = it }
+    LaunchedEffect(Unit) {
+        runCatching {
+            if (userId == 0L || userId == 1L) ApiClient.getMyVirtualProfile()
+            else ApiClient.getVirtualProfile(userId)
+        }.onSuccess { profileData = it }
     }
 
     val avatarName = profileData?.optString("avatarName") ?: "Avatar"

@@ -248,6 +248,8 @@ fun VirtualLifeScreen(
                     }
                 }
 
+                val canWatchAd = summary?.optBoolean("canWatchVirtualAd", true) ?: true
+
                 Card(
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = NightSurface),
@@ -259,13 +261,26 @@ fun VirtualLifeScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Pub Vie Virtuelle", color = TextPrimary, fontWeight = FontWeight.Bold)
-                            Text("+50 Pièces (1 fois par heure)", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                if (canWatchAd) "+50 Pièces (Toutes les 2 heures)" else "Déjà regardé (Disponible dans 2h)",
+                                color = TextSecondary,
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
-                        Button(onClick = {
-                            onWatchAd()
-                            vm.watchVirtualAd { }
-                        }) {
-                            Text("Regarder (+50)")
+                        Button(
+                            onClick = {
+                                if (canWatchAd) {
+                                    onWatchAd()
+                                    vm.watchVirtualAd { }
+                                }
+                            },
+                            enabled = canWatchAd,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (canWatchAd) VioletAccent else Color.Gray,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(if (canWatchAd) "Regarder (+50)" else "Bloqué")
                         }
                     }
                 }

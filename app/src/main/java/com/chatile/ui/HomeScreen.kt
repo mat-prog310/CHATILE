@@ -145,6 +145,44 @@ fun HomeScreen(
                 }
             }
 
+            // Carte Défis & Quêtes
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("profile") }
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("🎯 Défis & Quêtes Publicitaires", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Regarde des pubs (10, 25, 50... jusqu'à 1000) et gagne des Pièces !", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = VioletAccent)
+                }
+            }
+
+            // Carte Récompenses & Coffre
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("loot_boxes") }
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("🎁 Récompenses & Coffres Mystères", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Récompense quotidienne, coffre mystère et objets exclusifs !", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Icon(Icons.Default.ArrowForward, contentDescription = null, tint = VioletAccent)
+                }
+            }
+
             // Header: CHATILE logo 24dp + "CHATILE" text
             Row(
                 verticalAlignment = Alignment.CenterVertically,

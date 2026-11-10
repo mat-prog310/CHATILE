@@ -30,9 +30,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.chatile.ui.BannerAdView
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,8 +78,8 @@ fun CharacterListScreen(
     val pieces by vm.pieces.collectAsState()
     val characterOfTheDay by vm.characterOfTheDay.collectAsState()
     val error by vm.error.collectAsState()
-    val recentBots = remember(characters) { characters.filter { !it.lastMessageAt.isNullOrBlank() || it.messageCount > 0 || !it.isSystem } }
-    val systemCharacters = remember(characters) { characters.filter { it.isSystem } }
+    val recentBots = remember(characters) { characters.filter { !it.isSystem && it.name != "Assistant IA" } }
+    val systemCharacters = remember(characters) { characters.filter { it.isSystem && it.name != "Assistant IA" } }
     val motionEnabled = rememberMotionEnabled()
 
     LaunchedEffect(Unit) { vm.loadCharacters() }
@@ -84,7 +87,20 @@ fun CharacterListScreen(
     NightBackdrop {
         Column(
             modifier = Modifier.fillMaxSize().padding(top = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Cadre de pub bannière
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)
+            ) {
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                    Spacer(Modifier.height(4.dp))
+                    BannerAdView()
+                }
+            }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,

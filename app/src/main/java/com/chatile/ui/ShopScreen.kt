@@ -153,8 +153,11 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
             }
             Text(
                 text = when {
-                    isPremiumPlusProduct -> "14,99 €/mois"
-                    isPremiumProduct -> "7,99 €/mois"
+                    isPremiumPlusProduct -> "19,99 €/mois"
+                    isPremiumProduct -> "9,99 €/mois"
+                    item.productId.contains("100") -> "1,00 €"
+                    item.productId.contains("500") -> "5,00 €"
+                    item.productId.contains("1000") -> "10,00 €"
                     else -> item.priceLabel.ifBlank { "${item.price} Pièces" }
                 },
                 color = if (isPremiumPlusProduct) Color(0xFFFFD700) else VioletAccent,
@@ -165,7 +168,7 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
 
         val perks = when {
             isPremiumPlusProduct -> listOf(
-                "✦ 7 000 Pièces/mois créditées automatiquement",
+                "✦ 2 000 Pièces/mois créditées automatiquement",
                 "✦ Tout Premium inclus",
                 "✦ Mémoire structurée illimitée (Identité, Émotions)",
                 "✦ Appels vocaux (60 min/jour)",
@@ -174,15 +177,15 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
                 "✦ Export .html interactif + 3 boosts/semaine"
             )
             isPremiumProduct -> listOf(
-                "✦ 4 000 Pièces/mois créditées automatiquement",
+                "✦ 1 000 Pièces/mois créditées automatiquement",
                 "✦ Message premium à 1 Pièce (au lieu de 3)",
                 "✦ Création de personnages illimitée",
                 "✦ Zéro publicité (interstitielle & récompensée)",
+                "✦ Appels vocaux (30 min/jour)",
                 "✦ Badge Diamant Violet (premium)",
-                "✦ 3 thèmes exclusifs (or, émeraude, améthyste)",
-                "✦ Export .json et .pdf"
+                "✦ 3 thèmes exclusifs (or, émeraude, améthyste)"
             )
-            else -> listOf(item.description.ifBlank { "${item.price} Pièces créditées immédiatement sur votre compte." })
+            else -> listOf(item.description.ifBlank { "${item.price} Pièces (100 Pièces = 1 €) créditées immédiatement sur votre compte." })
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -207,7 +210,7 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
             Text(
                 text = when {
                     isCurrentTier -> "Abonnement actif"
-                    isSubscription -> "S'abonner (${item.priceLabel.ifBlank { if (isPremiumPlusProduct) "14,99 €" else "7,99 €" }})"
+                    isSubscription -> "S'abonner (${item.priceLabel.ifBlank { if (isPremiumPlusProduct) "19,99 €" else "9,99 €" }})"
                     else -> "Acheter"
                 },
                 fontWeight = FontWeight.Bold

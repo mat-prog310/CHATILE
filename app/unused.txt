@@ -37020,8 +37020,10 @@ com.chatile.Character:
     public final java.lang.String getBoundaries()
     public final java.lang.String getCreatedAt()
     public final java.lang.String getExpiresAt()
+    public final java.lang.String getLastMessageAt()
     public final java.lang.String getLastProactiveMessage()
     public final int getLikesCount()
+    public final int getMessageCount()
     public final boolean getProactiveEnabled()
     public final java.lang.String getScenarioGoal()
     public final java.lang.String getScenarioSteps()
@@ -74116,9 +74118,7 @@ com.chatile.Character:
     public static java.lang.String getAvatarUrl()
     public static java.lang.String getGreeting()
     public static java.lang.Long getId()
-    public static java.lang.String getLastMessageAt()
     public static java.lang.String getLastMood()
-    public static int getMessageCount()
     public final java.lang.String getName()
     public static int getRelationshipLevel()
     public static boolean isNsfw()
@@ -74901,13 +74901,16 @@ com.chatile.ui.ComposableSingletons$CharacterDetailScreenKt:
     public static kotlin.jvm.functions.Function2 getLambda-7$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
 com.chatile.ui.ComposableSingletons$CharacterListScreenKt$lambda-1$1:
-    public final void invoke(androidx.compose.runtime.Composer,int)
+    public final void invoke$14()
 com.chatile.ui.ComposableSingletons$CharacterListScreenKt$lambda-2$1:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$CharacterListScreenKt$lambda-3$1:
     public final void invoke$100()
 com.chatile.ui.ComposableSingletons$CharacterListScreenKt:
     public static final com.chatile.ui.ComposableSingletons$CharacterListScreenKt INSTANCE
-    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-3$app_release()
 com.chatile.ui.ComposableSingletons$ChatScreenKt$lambda-1$1:
     public final void invoke$14()
 com.chatile.ui.ComposableSingletons$ChatScreenKt$lambda-2$1:
@@ -75088,9 +75091,9 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-12$1:
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-13$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-14$1:
-    public final void invoke$98()
-com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-15$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-15$1:
+    public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-16$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-17$1:
@@ -75104,16 +75107,14 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-2$1:
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-20$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-21$1:
-    public final void invoke$98()
+    public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-22$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-23$1:
-    public final void invoke(androidx.compose.runtime.Composer,int)
+    public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-24$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-25$1:
-    public final void invoke$98()
-com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-26$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$ProfileScreenKt$lambda-3$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
@@ -75136,20 +75137,19 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt:
     public static kotlin.jvm.functions.Function3 getLambda-11$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-12$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-13$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-14$app_release()
-    public static kotlin.jvm.functions.Function2 getLambda-15$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-14$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-15$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-16$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-17$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-18$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-19$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-20$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-21$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-21$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-22$app_release()
-    public static kotlin.jvm.functions.Function2 getLambda-23$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-23$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-24$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-25$app_release()
-    public static kotlin.jvm.functions.Function2 getLambda-26$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-25$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
@@ -75512,13 +75512,31 @@ com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$6$4985d7807496f48703b7c2
 com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$6$4985d7807496f48703b7c2927a2b8815009bf04376395afc6b813d27dd78b0d8$5
 com.chatile.ui.ProfileScreenKt$$InternalSyntheticLambda$6$4985d7807496f48703b7c2927a2b8815009bf04376395afc6b813d27dd78b0d8$9:
     public final synthetic int f$9
-com.chatile.ui.ProfileScreenKt$ProfileScreen$11:
-    public final void invoke(androidx.compose.runtime.Composer,int)
-com.chatile.ui.ProfileScreenKt$ProfileScreen$13:
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$11$1$2:
+    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$14:
+    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$15$1$2$1:
+    public final void invoke$32()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$15$2$1:
+    public final void invoke()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$15$5:
+    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$6$2$1:
+    public final void invoke()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$6$3:
+    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$7$2$1:
+    public final void invoke()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$10$1$7$3:
+    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$12:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ProfileScreenKt$ProfileScreen$14:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ProfileScreenKt$ProfileScreen$15:
+    public final void invoke(androidx.compose.runtime.Composer,int)
+com.chatile.ui.ProfileScreenKt$ProfileScreen$16:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ProfileScreenKt$ProfileScreen$7$1:
     public int label
@@ -75526,24 +75544,8 @@ com.chatile.ui.ProfileScreenKt$ProfileScreen$7$1:
 com.chatile.ui.ProfileScreenKt$ProfileScreen$8$1:
     public int label
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$12$1$2:
-    public final void invoke$98()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$15:
-    public final void invoke$98()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$16$1$2$1:
-    public final void invoke$32()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$16$2$1:
-    public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$16$5:
-    public final void invoke$98()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$7$2$1:
-    public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$7$3:
-    public final void invoke$98()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$8$2$1:
-    public final void invoke()
-com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1$8$3:
-    public final void invoke$98()
+com.chatile.ui.ProfileScreenKt$ProfileScreen$9$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ui.ProfileScreenKt:
     public static synthetic kotlin.Unit $r8$lambda$6NuEtrIhvLszQ4XpKCJ2coVzZz0()
     public static synthetic kotlin.Unit $r8$lambda$Cw1KdjwlvEJkeP6yXBTpKq7E1eQ()

@@ -36898,7 +36898,6 @@ com.chatile.ApiClient$sharePost$1
 com.chatile.ApiClient$toggleCommentLike$1
 com.chatile.ApiClient$toggleFollow$1
 com.chatile.ApiClient$togglePostLike$1
-com.chatile.ApiClient$watchAd$1
 com.chatile.ApiClient:
     private static final java.lang.String DEVICE_ID_KEY
     private static final java.lang.String FIREBASE_TOKEN_KEY
@@ -36984,7 +36983,6 @@ com.chatile.ApiClient:
     public final java.lang.Object updateVirtualAvatar(java.lang.String,org.json.JSONObject,kotlin.coroutines.Continuation)
     public final java.lang.Object votePoll(long,int,kotlin.coroutines.Continuation)
     public final java.lang.Object warnUser(long,java.lang.String,kotlin.coroutines.Continuation)
-    public final java.lang.Object watchAd(kotlin.coroutines.Continuation)
 com.chatile.AuthManager:
     public final com.google.firebase.auth.FirebaseUser getCurrentUser()
 com.chatile.Character:
@@ -37094,7 +37092,6 @@ com.chatile.ChatViewModel$toggleFollow$2
 com.chatile.ChatViewModel$togglePostLike$2
 com.chatile.ChatViewModel$travelVirtual$1
 com.chatile.ChatViewModel$unpublishCharacter$2
-com.chatile.ChatViewModel$watchAd$1
 com.chatile.ChatViewModel:
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_comments$p(com.chatile.ChatViewModel)
     public static final synthetic kotlinx.coroutines.flow.MutableStateFlow access$get_notifications$p(com.chatile.ChatViewModel)
@@ -37217,7 +37214,6 @@ com.chatile.ChatViewModel:
     public final void unpublishCharacter(long,kotlin.jvm.functions.Function0)
     public static synthetic void unpublishCharacter$default(com.chatile.ChatViewModel,long,kotlin.jvm.functions.Function0,int,java.lang.Object)
     private static final kotlin.Unit unpublishCharacter$lambda$14()
-    public final void watchAd()
 com.chatile.Comment
 com.chatile.DailyClaimResult:
     public static final int $stable
@@ -74256,6 +74252,8 @@ com.chatile.ChatViewModel$updateProfile$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$uploadProfileAvatar$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
+com.chatile.ChatViewModel$watchAd$1:
+    public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$watchVirtualAd$1:
     public final java.lang.Object invoke(kotlinx.coroutines.CoroutineScope,kotlin.coroutines.Continuation)
 com.chatile.ChatViewModel$workVirtual$1:
@@ -74426,6 +74424,7 @@ com.chatile.ChatViewModel:
     public static final kotlin.Unit unpinPostGlobal$lambda$19()
     public static void updateProfile()
     public static void uploadProfileAvatar()
+    public static void watchAd()
     public static void watchVirtualAd()
     public static void workVirtual()
 com.chatile.DailyClaimResult:
@@ -74451,7 +74450,7 @@ com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6
     public final void onAuthStateChanged(com.google.firebase.auth.FirebaseAuth)
 com.chatile.MainActivity$$InternalSyntheticLambda$1$08402ee1b66d7edb5e039b518ad6d956efbff765acdeed0def8b3a17dbe14660$3:
     public final void onInitializationComplete(com.google.android.gms.ads.initialization.InitializationStatus)
-com.chatile.MainActivity$$InternalSyntheticLambda$1$a261c2db5ee4a430ec78f74d43949c1b4d9fd15d195231cd5b409edd83c5718c$0:
+com.chatile.MainActivity$$InternalSyntheticLambda$1$a261c2db5ee4a430ec78f74d43949c1b4d9fd15d195231cd5b409edd83c5718c$1:
     public final void onUserEarnedReward()
 com.chatile.MainActivity$loadInterstitialAd$1:
     public static void onAdLoaded()

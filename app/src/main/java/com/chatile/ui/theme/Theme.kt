@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.sp
 
 private val ChatileColorScheme = darkColorScheme(
     primary = Color.White,
-    onPrimary = Color.Black,
+    onPrimary = Color.White,
     primaryContainer = ChatileSurface,
     onPrimaryContainer = ChatileTextPrimary,
     secondary = Color.White,
-    onSecondary = Color.Black,
+    onSecondary = Color.White,
     secondaryContainer = ChatileSurfaceVariant,
     onSecondaryContainer = ChatileTextPrimary,
     background = ChatileBackground,
@@ -106,12 +106,12 @@ fun BadgeIcon(
                 modifier = modifier
                     .size(iconSize)
                     .clip(CircleShape)
-                    .background(Color.White, CircleShape),
+                    .background(ChatileAccent, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "✓",
-                    color = Color.Black,
+                    color = Color.White,
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold

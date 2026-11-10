@@ -73,7 +73,7 @@ fun CharacterDetailScreen(
             onDismissRequest = { showReportDialog = false },
             containerColor = NightSurface,
             title = { Text("Signaler ce personnage ?", color = TextPrimary, fontWeight = FontWeight.Bold) },
-            text = { Text("Le signalement sera transmis à la modération.", color = TextSecondary) },
+            text = { Text("Le signalement sera transmis à la modération.", color = TextPrimary) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.reportContent("character", characterId, "Contenu inapproprié") {
@@ -81,7 +81,7 @@ fun CharacterDetailScreen(
                     }
                 }) { Text("Signaler", color = Color.Red) }
             },
-            dismissButton = { TextButton(onClick = { showReportDialog = false }) { Text("Annuler", color = TextSecondary) } },
+            dismissButton = { TextButton(onClick = { showReportDialog = false }) { Text("Annuler", color = TextPrimary) } },
         )
     }
 

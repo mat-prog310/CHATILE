@@ -204,7 +204,7 @@ private fun ShopProduct(item: ShopItem, currentTier: String, onPurchase: (String
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isPremiumPlusProduct) Color(0xFFFFD700) else VioletAccent,
-                contentColor = Color.Black
+                contentColor = Color.White
             )
         ) {
             Text(

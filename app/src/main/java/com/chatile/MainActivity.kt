@@ -269,7 +269,7 @@ class MainActivity : ComponentActivity() {
     private var pendingInterstitialCallback: (() -> Unit)? = null
 
     private fun showRewardedAd(onRewarded: (() -> Unit)? = null) {
-        pendingRewardCallback = onRewarded
+        pendingRewardCallback = onRewarded ?: { vm.watchAd() }
         val ad = rewardedAd
         if (ad == null) {
             Toast.makeText(this, "Publicité en cours de chargement. Réessayez dans un instant.", Toast.LENGTH_SHORT).show()

@@ -105,6 +105,25 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // Header CHATILE logo + name at the very top
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = painterResource(id = R.drawable.logo_chatile),
+                    contentDescription = "CHATILE Logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = "CHATILE",
+                    color = TextPrimary,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             // Carré de pub léger sur l'accueil
             Card(
                 shape = RoundedCornerShape(16.dp),
@@ -181,25 +200,6 @@ fun HomeScreen(
                     }
                     Icon(Icons.Default.ArrowForward, contentDescription = null, tint = VioletAccent)
                 }
-            }
-
-            // Header: CHATILE logo 24dp + "CHATILE" text
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                androidx.compose.foundation.Image(
-                    painter = painterResource(id = R.drawable.logo_chatile),
-                    contentDescription = "CHATILE Logo",
-                    modifier = Modifier.size(24.dp)
-                )
-                Text(
-                    text = "CHATILE",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
             }
 
             // Section 1: CONTINUER (Large Card)

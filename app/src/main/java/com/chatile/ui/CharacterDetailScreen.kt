@@ -32,6 +32,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.chatile.ui.theme.NightSurface
+import com.chatile.ui.theme.TextPrimary
+import com.chatile.ui.theme.TextSecondary
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -67,16 +71,17 @@ fun CharacterDetailScreen(
     if (showReportDialog) {
         AlertDialog(
             onDismissRequest = { showReportDialog = false },
-            title = { Text("Signaler ce personnage ?") },
-            text = { Text("Le signalement sera transmis à la modération.") },
+            containerColor = NightSurface,
+            title = { Text("Signaler ce personnage ?", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("Le signalement sera transmis à la modération.", color = TextSecondary) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.reportContent("character", characterId, "Contenu inapproprié") {
                         showReportDialog = false
                     }
-                }) { Text("Signaler") }
+                }) { Text("Signaler", color = Color.Red) }
             },
-            dismissButton = { TextButton(onClick = { showReportDialog = false }) { Text("Annuler") } },
+            dismissButton = { TextButton(onClick = { showReportDialog = false }) { Text("Annuler", color = TextSecondary) } },
         )
     }
 

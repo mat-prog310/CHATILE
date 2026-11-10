@@ -4790,6 +4790,31 @@ app.get('/api/virtual/shop', (req, res) => {
   res.json({ items, jobs });
 });
 
+app.post('/api/virtual/buy', (req, res) => {
+  const { itemId } = req.body ?? {};
+  const item = db.prepare('SELECT * FROM virtual_items WHERE id = ?').get(itemId);
+  if (!item) return res.status(404).json({ error: 'Article introuvable.' });
+
+  const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  if (!user || user.pieces < item.price_pieces) {
+    return res.status(402).json({ error: 'Pas assez de Pièces.', needPieces: item.price_pieces });
+  }
+
+  const buyTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(item.price_pieces, req.user.id, item.price_pieces);
+    recordPieceTransaction(req.user.id, -item.price_pieces, 'virtual_purchase', `Achat virtuel : ${item.name}`);
+    db.prepare('INSERT INTO user_inventory_virtual (user_id, item_id) VALUES (?, ?)').run(req.user.id, item.id);
+
+    if (item.category === 'house') {
+      db.prepare('UPDATE virtual_worlds SET house_id = ? WHERE user_id = ?').run(item.id, req.user.id);
+    }
+  });
+  buyTrans();
+
+  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updated.pieces });
+});
+
 app.get('/api/virtual/avatar', (req, res) => {
   const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
   if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });

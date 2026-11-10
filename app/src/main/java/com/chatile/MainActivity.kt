@@ -272,8 +272,7 @@ class MainActivity : ComponentActivity() {
         pendingRewardCallback = onRewarded
         val ad = rewardedAd
         if (ad == null) {
-            Toast.makeText(this, "La publicité n’est pas encore disponible. Récompense accordée !", Toast.LENGTH_SHORT).show()
-            pendingRewardCallback?.invoke()
+            Toast.makeText(this, "Publicité en cours de chargement. Réessayez dans un instant.", Toast.LENGTH_SHORT).show()
             pendingRewardCallback = null
             loadRewardedAd()
             return

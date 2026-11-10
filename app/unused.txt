@@ -75158,31 +75158,34 @@ com.chatile.ui.ComposableSingletons$ProfileScreenKt:
     public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-9$app_release()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-1$1:
-    public final void invoke(androidx.compose.runtime.Composer,int)
+    public final void invoke$14()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-2$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-3$1:
-    public final void invoke$21()
+    public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-4$1:
-    public final void invoke$100()
+    public final void invoke$21()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-5$1:
     public final void invoke$100()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-6$1:
-    public final void invoke$21()
+    public final void invoke$100()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-7$1:
-    public final void invoke$98()
+    public final void invoke$21()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-8$1:
+    public final void invoke$98()
+com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt$lambda-9$1:
     public final void invoke$98()
 com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt:
     public static final com.chatile.ui.ComposableSingletons$PublicCharactersScreenKt INSTANCE
-    public static kotlin.jvm.functions.Function2 getLambda-1$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-1$app_release()
     public static kotlin.jvm.functions.Function2 getLambda-2$app_release()
-    public static kotlin.jvm.functions.Function4 getLambda-3$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-4$app_release()
+    public static kotlin.jvm.functions.Function2 getLambda-3$app_release()
+    public static kotlin.jvm.functions.Function4 getLambda-4$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-5$app_release()
-    public static kotlin.jvm.functions.Function4 getLambda-6$app_release()
-    public static kotlin.jvm.functions.Function3 getLambda-7$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-6$app_release()
+    public static kotlin.jvm.functions.Function4 getLambda-7$app_release()
     public static kotlin.jvm.functions.Function3 getLambda-8$app_release()
+    public static kotlin.jvm.functions.Function3 getLambda-9$app_release()
 com.chatile.ui.ComposableSingletons$PublicProfileScreenKt$lambda-1$1:
     public final void invoke(androidx.compose.runtime.Composer,int)
 com.chatile.ui.ComposableSingletons$PublicProfileScreenKt:

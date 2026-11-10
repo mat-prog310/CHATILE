@@ -1,61 +1,48 @@
 package com.chatile.ui
 
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.ui.graphics.Color
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import com.chatile.ChatViewModel
-import com.chatile.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import com.chatile.ui.theme.NightSurface
-import com.chatile.ui.theme.NightSurfaceRaised
-import com.chatile.ui.theme.SubtleBorder
-import com.chatile.ui.theme.TextPrimary
-import com.chatile.ui.theme.TextSecondary
-import com.chatile.ui.theme.VioletAccent
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.chatile.AuthManager
+import com.chatile.ChatViewModel
+import com.chatile.R
+import com.chatile.ui.theme.*
+import kotlinx.coroutines.delay
+import org.json.JSONArray
+import org.json.JSONObject
 
+@Composable
+private fun profileFieldColors() = TextFieldDefaults.colors(
+    focusedContainerColor = NightSurfaceRaised,
+    unfocusedContainerColor = NightSurfaceRaised,
+    focusedIndicatorColor = VioletAccent,
+    unfocusedIndicatorColor = SubtleBorder,
+    focusedTextColor = TextPrimary,
+    unfocusedTextColor = TextPrimary,
+    focusedLabelColor = VioletAccent,
+    unfocusedLabelColor = TextSecondary
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     vm: ChatViewModel,
@@ -71,46 +58,32 @@ fun ProfileScreen(
     val context = LocalContext.current
     val profile by vm.profile.collectAsState()
     val pieces by vm.pieces.collectAsState()
-    val dailyCanClaim by vm.dailyCanClaim.collectAsState()
-    val todayReward by vm.todayReward.collectAsState()
-    val streakDays by vm.streakDays.collectAsState()
-    val canOpenMysteryBox by vm.canOpenMysteryBox.collectAsState()
-    val mysteryBox by vm.mysteryBox.collectAsState()
+    val subscriptionTier by vm.subscriptionTier.collectAsState()
+    val subscriptionExpiresAt by vm.subscriptionExpiresAt.collectAsState()
+
     var showSettings by remember { mutableStateOf(false) }
     var showLegalDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCreatorEarnings by remember { mutableStateOf(false) }
     var deleteConfirmText by remember { mutableStateOf("") }
     val nsfw by vm.nsfwEnabled.collectAsState()
-    val tier by vm.subscriptionTier.collectAsState()
-    val expiresAt by vm.subscriptionExpiresAt.collectAsState()
-    val rewards by vm.rewards.collectAsState()
-    val quests by vm.quests.collectAsState()
     val referralCode by vm.referralCode.collectAsState()
     val creatorEarnings by vm.creatorEarnings.collectAsState()
     val error by vm.error.collectAsState()
-    var showRewards by remember { mutableStateOf(false) }
-    var showQuests by remember { mutableStateOf(false) }
-    var showCreatorEarnings by remember { mutableStateOf(false) }
     var referralInput by remember { mutableStateOf("") }
     var name by remember(profile) { mutableStateOf(profile?.displayName.orEmpty()) }
     var bio by remember(profile) { mutableStateOf(profile?.bio.orEmpty()) }
+
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) vm.uploadProfileAvatar(context, uri)
     }
 
     LaunchedEffect(Unit) { vm.loadProfile(); vm.loadDailyStatus() }
     
-    // Show error as toast
-    LaunchedEffect(error) {
-        error?.let { message ->
-            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
-            vm.clearError()
-        }
-    }
     // Auto-save debounce on name & bio changes
     LaunchedEffect(name, bio) {
         if (name != profile?.displayName.orEmpty() || bio != profile?.bio.orEmpty()) {
-            kotlinx.coroutines.delay(1000)
+            delay(1000)
             vm.updateProfile(name, bio)
         }
     }
@@ -173,6 +146,12 @@ fun ProfileScreen(
                 minLines = 3,
             )
 
+            // "Voir mon profil public" right below bio
+            OutlinedButton(
+                onClick = { onOpenPublicProfile(profile?.id ?: profile?.userId ?: 1L) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Voir mon profil public") }
+
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(NightSurfaceRaised).padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -184,35 +163,8 @@ fun ProfileScreen(
                 Text("✦", color = VioletAccent, style = MaterialTheme.typography.headlineMedium)
             }
             Button(onClick = onOpenShop, modifier = Modifier.fillMaxWidth()) { Text("Boutique") }
+
             Text("Gains gratuits", color = TextPrimary, style = MaterialTheme.typography.titleLarge)
-            Row(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Récompense quotidienne", color = TextPrimary, style = MaterialTheme.typography.titleSmall)
-                    Text("Série $streakDays jours · +$todayReward Pièces", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
-                }
-                OutlinedButton(onClick = vm::claimDailyReward, enabled = dailyCanClaim) {
-                    Text(if (dailyCanClaim) "Récupérer" else "Récupérée")
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Coffre mystère", color = TextPrimary, style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        mysteryBox?.let { "${it.optString("rarity")} · +${it.optInt("amount")} Pièces" } ?: "10 à 50 Pièces · une fois par semaine",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-                OutlinedButton(onClick = vm::claimMysteryBox, enabled = canOpenMysteryBox) {
-                    Text(if (canOpenMysteryBox) "Ouvrir" else "Déjà ouvert")
-                }
-            }
             Row(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -228,71 +180,6 @@ fun ProfileScreen(
                     Text("Regarder (+5)")
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { showRewards = !showRewards; if (!showRewards) vm.loadRewards() }, modifier = Modifier.weight(1f)) { Text("Récompenses") }
-                OutlinedButton(onClick = { showQuests = !showQuests; if (!showQuests) vm.loadQuests() }, modifier = Modifier.weight(1f)) { Text("Quêtes") }
-            }
-            if (showRewards) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Récompenses uniques", color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
-                    for (index in 0 until rewards.length()) {
-                        val reward = rewards.optJSONObject(index) ?: continue
-                        val action = reward.optString("action").replace("_", " ")
-                        val amount = reward.optInt("reward")
-                        val status = reward.optString("status", "locked")
-                        val conditionMet = reward.optBoolean("condition_met", false)
-                        
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("$action · $amount Pièces", color = TextPrimary, style = MaterialTheme.typography.bodyMedium)
-                                Text(
-                                    text = when (status) {
-                                        "claimed" -> "✅ Réclamé"
-                                        "available" -> "🎯 À faire"
-                                        "locked" -> "🔒 Verrouillé"
-                                        else -> ""
-                                    },
-                                    color = when (status) {
-                                        "claimed" -> Color.Green
-                                        "available" -> Color(0xFFFFC107) // Yellow
-                                        else -> TextSecondary
-                                    },
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                            if (status == "available") {
-                                OutlinedButton(
-                                    onClick = { vm.claimReward(reward.optString("action")) },
-                                    enabled = conditionMet
-                                ) { Text("Récupérer") }
-                            } else if (status == "claimed") {
-                                Text("✓", color = Color.Green, style = MaterialTheme.typography.bodyLarge)
-                            }
-                        }
-                    }
-                }
-            }
-            if (showQuests) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    for (index in 0 until quests.length()) {
-                        val quest = quests.optJSONObject(index) ?: continue
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("${quest.optString("title")} · ${quest.optInt("progress")}/${quest.optInt("target")}", color = TextSecondary, modifier = Modifier.weight(1f))
-                            if (quest.optInt("claimed") == 0) OutlinedButton(
-                                onClick = { vm.claimQuest(quest.optLong("id")) },
-                                enabled = quest.optInt("progress") >= quest.optInt("target"),
-                            ) { Text("+${quest.optInt("reward")}") }
-                        }
-                    }
-                }
-            }
-            OutlinedButton(
-                onClick = { onOpenPublicProfile(profile?.id ?: profile?.userId ?: 1L) },
-                modifier = Modifier.fillMaxWidth(),
-            ) { Text("Voir mon profil public") }
 
             OutlinedButton(
                 onClick = onOpenLootBoxes,
@@ -309,12 +196,6 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Mon Inventaire & Équipement") }
 
-            if (tier != "free") {
-                Text("${if (tier == "premium_plus") "Premium+" else "Premium"} · expire le ${expiresAt ?: "date inconnue"}", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
-            } else {
-                OutlinedButton(onClick = onOpenShop, modifier = Modifier.fillMaxWidth()) { Text("Passer Premium") }
-            }
-
             // Bouton Paramètres
             OutlinedButton(
                 onClick = { showSettings = !showSettings },
@@ -330,7 +211,6 @@ fun ProfileScreen(
                 ) {
                     Text("Paramètres", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-                    // Switch NSFW
                     Row(
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -342,7 +222,6 @@ fun ProfileScreen(
                         Switch(checked = nsfw, onCheckedChange = vm::setNsfw)
                     }
 
-                    // Parrainage
                     OutlinedButton(onClick = vm::loadReferralCode, modifier = Modifier.fillMaxWidth()) { Text("Parrainage") }
                     referralCode?.let { code ->
                         Text("Ton code : $code", color = VioletAccent, style = MaterialTheme.typography.titleMedium)
@@ -350,7 +229,6 @@ fun ProfileScreen(
                         OutlinedButton(onClick = { vm.applyReferral(referralInput) }, enabled = referralInput.isNotBlank()) { Text("Utiliser un code") }
                     }
 
-                    // Revenus créateurs
                     OutlinedButton(
                         onClick = {
                             if (!showCreatorEarnings) {
@@ -367,7 +245,7 @@ fun ProfileScreen(
                         val totalEarnings = creatorEarnings?.optInt("totalEarnings", 0) ?: 0
                         val characterEarnings = creatorEarnings?.optInt("characterEarnings", 0) ?: 0
                         val storyEarnings = creatorEarnings?.optInt("storyEarnings", 0) ?: 0
-                        val transactions = creatorEarnings?.optJSONArray("recentTransactions") ?: org.json.JSONArray()
+                        val transactions = creatorEarnings?.optJSONArray("recentTransactions") ?: JSONArray()
 
                         Column(
                             modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(NightSurfaceRaised).padding(12.dp),
@@ -419,16 +297,29 @@ fun ProfileScreen(
                     ) {
                         Text("Suppression du profil")
                     }
+
+                    // Bouton Déconnexion dans les paramètres
+                    Button(
+                        onClick = onLogout,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) {
+                        Text("Se déconnecter", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 
-            // Bouton Déconnexion
-            Button(
-                onClick = onLogout,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            // Cadre de pub bannière tout en bas du profil
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = NightSurface),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Se déconnecter", color = Color.White, fontWeight = FontWeight.Bold)
+                Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                    Spacer(Modifier.height(4.dp))
+                    BannerAdView()
+                }
             }
 
             if (!error.isNullOrBlank()) Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
@@ -439,10 +330,11 @@ fun ProfileScreen(
     if (showLegalDialog) {
         AlertDialog(
             onDismissRequest = { showLegalDialog = false },
-            title = { Text("Mentions Légales") },
-            text = { Text("CHATILE est une application de discussion avec des personnages IA et d'histoires interactives.\n\nTous droits réservés © 2025 CHATILE.\n\nLes données personnelles sont traitées conformément aux règles de confidentialité.") },
+            containerColor = NightSurface,
+            title = { Text("Mentions Légales", color = TextPrimary, fontWeight = FontWeight.Bold) },
+            text = { Text("CHATILE est une application de discussion avec des personnages IA et d'histoires interactives.\n\nTous droits réservés © 2025 CHATILE.\n\nLes données personnelles sont traitées conformément aux règles de confidentialité.", color = TextPrimary) },
             confirmButton = {
-                TextButton(onClick = { showLegalDialog = false }) { Text("Fermer") }
+                TextButton(onClick = { showLegalDialog = false }) { Text("Fermer", color = VioletAccent) }
             }
         )
     }
@@ -450,10 +342,11 @@ fun ProfileScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Supprimer le compte") },
+            containerColor = NightSurface,
+            title = { Text("Supprimer le compte", color = TextPrimary, fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Attention : cette action est irréversible. Toutes vos données, pièces et personnages seront supprimés.")
+                    Text("Attention : cette action est irréversible. Toutes vos données, pièces et personnages seront supprimés.", color = TextPrimary)
                     Text("Tapez CONFIRMER ci-dessous :", color = Color.Red, style = MaterialTheme.typography.bodySmall)
                     TextField(
                         value = deleteConfirmText,
@@ -478,21 +371,9 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annuler")
+                    Text("Annuler", color = TextPrimary)
                 }
             }
         )
     }
 }
-
-@Composable
-private fun profileFieldColors() = TextFieldDefaults.colors(
-    focusedContainerColor = NightSurface,
-    unfocusedContainerColor = NightSurface,
-    focusedTextColor = TextPrimary,
-    unfocusedTextColor = TextPrimary,
-    focusedIndicatorColor = VioletAccent,
-    unfocusedIndicatorColor = SubtleBorder,
-    focusedLabelColor = VioletAccent,
-    unfocusedLabelColor = TextSecondary,
-)

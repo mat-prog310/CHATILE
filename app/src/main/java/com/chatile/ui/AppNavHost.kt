@@ -334,6 +334,13 @@ fun NavGraph(
             )
         }
 
+        composable("quests_rewards") {
+            QuestsAndRewardsScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         // Virtual Life
         composable("virtual_life") {
             VirtualLifeScreen(

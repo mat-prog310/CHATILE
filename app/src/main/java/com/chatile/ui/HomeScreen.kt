@@ -149,7 +149,7 @@ fun HomeScreen(
             Card(
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(containerColor = NightSurface),
-                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("profile") }
+                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("quests_rewards") }
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -168,7 +168,7 @@ fun HomeScreen(
             Card(
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(containerColor = NightSurface),
-                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("loot_boxes") }
+                modifier = Modifier.fillMaxWidth().clickable { navController.navigate("quests_rewards") }
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),

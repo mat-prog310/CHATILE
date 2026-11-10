@@ -420,6 +420,8 @@ object ApiClient {
     suspend fun addFriend(friendId: Long): JSONObject = request("POST", "/api/friends/add", JSONObject().put("friendId", friendId))
     suspend fun giftFriend(friendId: Long, amount: Int): JSONObject = request("POST", "/api/friends/$friendId/gift", JSONObject().put("amount", amount))
     suspend fun getFullProfile(userId: Long): JSONObject = request("GET", "/api/users/$userId/full-profile")
+    suspend fun getAdChallenges(): JSONObject = request("GET", "/api/challenges/ads")
+    suspend fun claimAdChallenge(target: Int): JSONObject = request("POST", "/api/challenges/ads/$target/claim")
 
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))

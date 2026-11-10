@@ -179,13 +179,6 @@ fun CharacterListScreen(
                         Text("+", color = TextPrimary, style = MaterialTheme.typography.titleMedium)
                     },
                 )
-                ActionPill(
-                    label = "Chat général",
-                    onClick = {
-                        vm.selectCharacter(null)
-                        onOpenChat(null)
-                    },
-                )
             }
 
             if (!error.isNullOrBlank()) {

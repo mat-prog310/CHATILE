@@ -41,8 +41,11 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import com.chatile.ui.theme.ChatileScreenBackground
+import com.chatile.ui.theme.NightSurface
+import com.chatile.ui.theme.TextSecondary
 import com.chatile.R
 import androidx.compose.ui.res.painterResource
+import com.chatile.ui.BannerAdView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -149,6 +152,21 @@ fun PublicCharactersScreen(
                         color = androidx.compose.ui.graphics.Color.White
                     )
                 }
+
+                // Cadre de pub bannière
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = NightSurface),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 6.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Publicité", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+                        Spacer(Modifier.height(4.dp))
+                        BannerAdView()
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+
                 androidx.compose.material3.TextField(
                     value = searchText,
                     onValueChange = { searchText = it },

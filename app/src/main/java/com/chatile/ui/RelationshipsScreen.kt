@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -33,6 +34,7 @@ fun RelationshipsScreen(
     onBack: () -> Unit,
     onOpenPartnerChat: (Long) -> Unit
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var relationships by remember { mutableStateOf<List<JSONObject>>(emptyList()) }
 
@@ -44,6 +46,9 @@ fun RelationshipsScreen(
                     val list = mutableListOf<JSONObject>()
                     for (i in 0 until arr.length()) list.add(arr.getJSONObject(i))
                     relationships = list
+                }
+                .onFailure {
+                    android.widget.Toast.makeText(context, it.message ?: "Impossible de charger les relations", android.widget.Toast.LENGTH_LONG).show()
                 }
         }
     }
@@ -76,6 +81,9 @@ fun RelationshipsScreen(
                     scope.launch {
                         runCatching { ApiClient.generatePartner() }
                             .onSuccess { loadRelationships() }
+                            .onFailure {
+                                android.widget.Toast.makeText(context, it.message ?: "Erreur de génération", android.widget.Toast.LENGTH_LONG).show()
+                            }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

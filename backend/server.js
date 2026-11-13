@@ -5331,127 +5331,157 @@ app.get('/api/users/:id/full-profile', (req, res) => {
 // --- RELATIONSHIPS ROUTES ---
 
 app.get('/api/relationships', (req, res) => {
-  const rels = db.prepare(`
-    SELECT r.id, r.status, r.intimacy_level as intimacyLevel,
-           vp.name as partnerName, vp.job as partnerJob, vp.avatar_url as partnerAvatarUrl
-    FROM relationships r
-    JOIN virtual_partners vp ON r.partner_id = vp.id
-    WHERE r.user_id = ? AND r.partner_type = 'virtual' AND r.status != 'broken_up'
-  `).all(req.user.id);
-  res.json({ relationships: rels });
+  try {
+    const rels = db.prepare(`
+      SELECT r.id, r.status, r.intimacy_level as intimacyLevel,
+             vp.name as partnerName, vp.job as partnerJob, vp.avatar_url as partnerAvatarUrl
+      FROM relationships r
+      JOIN virtual_partners vp ON r.partner_id = vp.id
+      WHERE r.user_id = ? AND r.partner_type = 'virtual' AND r.status != 'broken_up'
+    `).all(req.user.id);
+    res.json({ relationships: rels });
+  } catch (err) {
+    console.error('Error fetching relationships:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/relationships/generate-partner', async (req, res) => {
-  const names = ['Lucas', 'Emma', 'Nathan', 'Chloé', 'Thomas', 'Léa', 'Gabriel', 'Manon', 'Arthur', 'Camille'];
-  const jobs = ['Développeur', 'Designer', 'Architecte', 'Médecin', 'Photographe', 'Musicien', 'Entrepreneur', 'Avocat'];
-  const personalities = [
-    'Attentionné(e) et passionné(e) par l’art et les voyages.',
-    'Souriant(e), dynamique et toujours à l’écoute.',
-    'Mystérieux(se), romantique et grand lecteur/grande lectrice.',
-    'Sportif(ve), aventurier(e) et très chaleureux(se).'
-  ];
+  try {
+    const names = ['Lucas', 'Emma', 'Nathan', 'Chloé', 'Thomas', 'Léa', 'Gabriel', 'Manon', 'Arthur', 'Camille'];
+    const jobs = ['Développeur', 'Designer', 'Architecte', 'Médecin', 'Photographe', 'Musicien', 'Entrepreneur', 'Avocat'];
+    const personalities = [
+      'Attentionné(e) et passionné(e) par l’art et les voyages.',
+      'Souriant(e), dynamique et toujours à l’écoute.',
+      'Mystérieux(se), romantique et grand lecteur/grande lectrice.',
+      'Sportif(ve), aventurier(e) et très chaleureux(se).'
+    ];
 
-  const name = names[Math.floor(Math.random() * names.length)];
-  const age = 22 + Math.floor(Math.random() * 10);
-  const job = jobs[Math.floor(Math.random() * jobs.length)];
-  const personality = personalities[Math.floor(Math.random() * personalities.length)];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const age = 22 + Math.floor(Math.random() * 10);
+    const job = jobs[Math.floor(Math.random() * jobs.length)];
+    const personality = personalities[Math.floor(Math.random() * personalities.length)];
 
-  const partnerRes = db.prepare(`
-    INSERT INTO virtual_partners (name, age, gender, job, personality, love_language, daily_activity, avatar_url)
-    VALUES (?, ?, 'femme', ?, ?, 'words', 'Se balade au parc et écrit de la poésie', 'https://api.dicebear.com/7.x/avataaars/png?seed=' || ?)
-  `).run(name, age, job, personality, name);
+    const partnerRes = db.prepare(`
+      INSERT INTO virtual_partners (name, age, gender, job, personality, love_language, daily_activity, avatar_url)
+      VALUES (?, ?, 'femme', ?, ?, 'words', 'Se balade au parc et écrit de la poésie', 'https://api.dicebear.com/7.x/avataaars/png?seed=' || ?)
+    `).run(name, age, job, personality, name);
 
-  const partnerId = partnerRes.lastInsertRowid;
+    const partnerId = partnerRes.lastInsertRowid;
 
-  const relRes = db.prepare(`
-    INSERT INTO relationships (user_id, partner_type, partner_id, status, intimacy_level)
-    VALUES (?, 'virtual', ?, 'dating', 3)
-  `).run(req.user.id, partnerId);
+    const relRes = db.prepare(`
+      INSERT INTO relationships (user_id, partner_type, partner_id, status, intimacy_level)
+      VALUES (?, 'virtual', ?, 'dating', 3)
+    `).run(req.user.id, partnerId);
 
-  res.json({ success: true, relationshipId: relRes.lastInsertRowid, partnerName: name });
+    res.json({ success: true, relationshipId: relRes.lastInsertRowid, partnerName: name });
+  } catch (err) {
+    console.error('Error generating partner:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/relationships/:id/chat', (req, res) => {
-  const relId = Number(req.params.id);
-  const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
-  if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
+  try {
+    const relId = Number(req.params.id);
+    const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
+    if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-  const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
+    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-  let messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
-  if (messages.length === 0) {
-    const greeting = `Salut mon cœur ! Je suis tellement content(e) qu'on se soit rencontré(e). Comment se passe ta journée ? 💕`;
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
-    messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+    let messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+    if (messages.length === 0) {
+      const greeting = `Salut mon cœur ! Je suis tellement content(e) qu'on se soit rencontré(e). Comment se passe ta journée ? 💕`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
+      messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+    }
+
+    res.json({
+      partner: {
+        name: partner.name,
+        job: partner.job,
+        intimacyLevel: rel.intimacy_level,
+        personality: partner.personality
+      },
+      messages: messages.map(m => ({ id: m.id, text: m.text, isUser: Boolean(m.is_user) }))
+    });
+  } catch (err) {
+    console.error('Error fetching partner chat:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  res.json({
-    partner: {
-      name: partner.name,
-      job: partner.job,
-      intimacyLevel: rel.intimacy_level,
-      personality: partner.personality
-    },
-    messages: messages.map(m => ({ id: m.id, text: m.text, isUser: Boolean(m.is_user) }))
-  });
 });
 
 app.post('/api/relationships/:id/interact', async (req, res) => {
-  const relId = Number(req.params.id);
-  const { message } = req.body ?? {};
-  if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message requis.' });
-
-  const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
-  if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
-
-  const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
-
-  db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 1)').run(req.user.id, -relId, message);
-
-  let botReply = `Oh, c'est tellement mignon ce que tu dis ! Je t'adore mon amour. 🥰`;
   try {
-    const prompt = `Tu es ${partner.name}, un(e) partenaire romantique virtuel(le). Ta personnalité : ${partner.personality}. Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
-    botReply = await callMistral([{ role: 'user', content: prompt }], false);
-  } catch (_e) {}
+    const relId = Number(req.params.id);
+    const { message } = req.body ?? {};
+    if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message requis.' });
 
-  db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+    const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
+    if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-  let newIntimacy = Math.min(10, rel.intimacy_level + 1);
-  db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-  res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy });
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 1)').run(req.user.id, -relId, message);
+
+    let botReply = `Oh, c'est tellement mignon ce que tu dis ! Je t'adore mon amour. 🥰`;
+    try {
+      const prompt = `Tu es ${partner.name}, un(e) partenaire romantique virtuel(le). Ta personnalité : ${partner.personality}. Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
+      botReply = await callMistral([{ role: 'user', content: prompt }], false);
+    } catch (_e) {}
+
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+
+    let newIntimacy = Math.min(10, rel.intimacy_level + 1);
+    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+
+    res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy });
+  } catch (err) {
+    console.error('Error interacting with partner:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/relationships/:id/gift', (req, res) => {
-  const relId = Number(req.params.id);
-  const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
-  if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
+  try {
+    const relId = Number(req.params.id);
+    const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
+    if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-  const giftTrans = db.transaction(() => {
-    let newIntimacy = Math.min(10, rel.intimacy_level + 2);
-    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    const greeting = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
-  });
-  giftTrans();
+    const giftTrans = db.transaction(() => {
+      let newIntimacy = Math.min(10, rel.intimacy_level + 2);
+      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+      const greeting = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
+    });
+    giftTrans();
 
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error gifting partner:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/relationships/:id/date', (req, res) => {
-  const relId = Number(req.params.id);
-  const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
-  if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
+  try {
+    const relId = Number(req.params.id);
+    const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
+    if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-  const dateTrans = db.transaction(() => {
-    let newIntimacy = Math.min(10, rel.intimacy_level + 3);
-    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    const dateMsg = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂`;
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, dateMsg);
-  });
-  dateTrans();
+    const dateTrans = db.transaction(() => {
+      let newIntimacy = Math.min(10, rel.intimacy_level + 3);
+      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+      const dateMsg = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, dateMsg);
+    });
+    dateTrans();
 
-  res.json({ success: true });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error dating partner:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use((error, req, res, next) => {

@@ -1,6 +1,7 @@
 package com.chatile.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -8,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +33,7 @@ fun VirtualLifeScreen(
     onOpenJob: () -> Unit,
     onOpenAvatar: () -> Unit,
     onOpenPublicProfile: () -> Unit,
+    onOpenRelationships: () -> Unit,
     onWatchAd: () -> Unit = {},
     onShowInterstitial: () -> Unit = {}
 ) {
@@ -208,6 +211,29 @@ fun VirtualLifeScreen(
                         Icon(Icons.Outlined.Badge, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text("Carrière & Métiers")
+                    }
+                }
+
+                // Trouve l'Amour Card
+                Card(
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = NightSurface),
+                    modifier = Modifier.fillMaxWidth().clickable(onClick = onOpenRelationships)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("💖 Trouve l'Amour", color = TextPrimary, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(4.dp))
+                            Text("Rencontre l'âme sœur, discute et vis une romance virtuelle.", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = VioletAccent
+                        )
                     }
                 }
 

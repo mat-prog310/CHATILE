@@ -423,6 +423,14 @@ object ApiClient {
     suspend fun getAdChallenges(): JSONObject = request("GET", "/api/challenges/ads")
     suspend fun claimAdChallenge(target: Int): JSONObject = request("POST", "/api/challenges/ads/$target/claim")
 
+    // ========== Relationships & Love ==========
+    suspend fun getRelationships(): JSONObject = request("GET", "/api/relationships")
+    suspend fun generatePartner(): JSONObject = request("POST", "/api/relationships/generate-partner", JSONObject())
+    suspend fun getPartnerChat(relationshipId: Long): JSONObject = request("GET", "/api/relationships/$relationshipId/chat")
+    suspend fun interactPartner(relationshipId: Long, message: String): JSONObject = request("POST", "/api/relationships/$relationshipId/interact", JSONObject().put("message", message))
+    suspend fun giftPartner(relationshipId: Long, giftId: Long): JSONObject = request("POST", "/api/relationships/$relationshipId/gift", JSONObject().put("giftId", giftId))
+    suspend fun datePartner(relationshipId: Long): JSONObject = request("POST", "/api/relationships/$relationshipId/date", JSONObject())
+
     suspend fun tutorialStep(step: Int): JSONObject =
         request("POST", "/api/tutorial/step", JSONObject().put("step", step))
 

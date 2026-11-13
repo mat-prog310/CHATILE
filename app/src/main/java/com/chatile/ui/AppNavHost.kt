@@ -351,6 +351,7 @@ fun NavGraph(
                 onOpenJob = { navController.navigate("virtual_job") },
                 onOpenAvatar = { navController.navigate("virtual_avatar") },
                 onOpenPublicProfile = { navController.navigate("public_virtual_profile/1") },
+                onOpenRelationships = { navController.navigate("relationships") },
                 onWatchAd = onWatchAd,
                 onShowInterstitial = onShowInterstitial
             )
@@ -359,6 +360,21 @@ fun NavGraph(
             val userId = backStackEntry.arguments?.getString("userId")?.toLongOrNull() ?: 1L
             PublicVirtualProfileScreen(
                 userId = userId,
+                vm = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("relationships") {
+            RelationshipsScreen(
+                vm = viewModel,
+                onBack = { navController.popBackStack() },
+                onOpenPartnerChat = { relId -> navController.navigate("partner_chat/$relId") }
+            )
+        }
+        composable("partner_chat/{relationshipId}") { backStackEntry ->
+            val relId = backStackEntry.arguments?.getString("relationshipId")?.toLongOrNull() ?: 1L
+            PartnerChatScreen(
+                relationshipId = relId,
                 vm = viewModel,
                 onBack = { navController.popBackStack() }
             )

@@ -643,6 +643,7 @@ for (const [column, declaration] of [
 ]) ensureColumn('users', column, declaration);
 db.prepare("UPDATE users SET created_at = CURRENT_TIMESTAMP WHERE created_at = '1970-01-01 00:00:00'").run();
 ensureColumn('users', 'is_adult', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('users', 'deleted_at', 'TEXT');
 
 // Ensure username has unique constraint
 const usernameIndex = db.prepare('PRAGMA index_list(users)').all().some(idx => idx.name === 'users_username_unique');
@@ -4545,12 +4546,12 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   try {
     const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get()?.count || 0;
-    const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get()?.count || 0;
+    const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date(\'now\', \'-7 days\')').get()?.count || 0;
     const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
     const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
     const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
     const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get()?.count || 0;
-    const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get()?.count || 0;
+    const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date(\'now\')').get()?.count || 0;
 
     const piecesDistributed = db.prepare(`
       SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')

@@ -4550,7 +4550,7 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
     const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
     const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
-    const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get()?.count || 0;
+    const premiumUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ('premium', 'premium_plus')").get()?.count || 0;
     const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date(\'now\')').get()?.count || 0;
 
     const piecesDistributed = db.prepare(`

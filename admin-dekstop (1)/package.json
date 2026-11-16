@@ -1,0 +1,39 @@
+{
+  "name": "chatile-admin-desktop",
+  "version": "1.0.0",
+  "description": "Panneau d'administration desktop Windows pour PiecesIA",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "sql.js": "^1.10.3"
+  },
+  "devDependencies": {
+    "electron": "^45.3.3",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.chatile.admin",
+    "productName": "PiecesIA Admin Panel",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "package.json",
+      ".env",
+      "node_modules/**/*"
+    ]
+  }
+}

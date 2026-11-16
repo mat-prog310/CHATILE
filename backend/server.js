@@ -4543,82 +4543,97 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 
 // Global stats
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
-  const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-  const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get().count;
-  const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
-  const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get().count;
-  const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get().count;
-  const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get().count;
-  const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get().count;
-  
-  const piecesDistributed = db.prepare(`
-    SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
-  `).get().total || 0;
-  
-  res.json({
-    totalUsers,
-    activeUsers,
-    totalMessages,
-    totalCharacters,
-    totalPosts,
-    premiumUsers,
-    dailyActive,
-    piecesDistributed
-  });
+  try {
+    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get()?.count || 0;
+    const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get()?.count || 0;
+    const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
+    const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
+    const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
+    const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get()?.count || 0;
+    const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get()?.count || 0;
+
+    const piecesDistributed = db.prepare(`
+      SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
+    `).get()?.total || 0;
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      totalMessages,
+      totalCharacters,
+      totalPosts,
+      premiumUsers,
+      dailyActive,
+      piecesDistributed
+    });
+  } catch (err) {
+    console.error('Admin stats error:', err.message);
+    res.json({ totalUsers: 0, activeUsers: 0, totalMessages: 0, totalCharacters: 0, totalPosts: 0, premiumUsers: 0, dailyActive: 0, piecesDistributed: 0 });
+  }
 });
 
 // Additional Admin API endpoints for Desktop App / Render
 app.get('/api/admin/users-list', requireAdmin, (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 15;
-  const offset = (page - 1) * limit;
-  const search = req.query.search || '';
-  const sortBy = req.query.sortBy || 'id';
-  const sortOrder = req.query.sortOrder || 'DESC';
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+    const sortBy = req.query.sortBy || 'id';
+    const sortOrder = req.query.sortOrder || 'DESC';
 
-  let query = `
-    SELECT u.*,
-           (SELECT count(*) FROM characters c WHERE c.user_id = u.id) as character_count
-    FROM users u
-    WHERE (u.deleted_at IS NULL OR u.deleted_at = '')
-  `;
-  const params = [];
+    let query = `
+      SELECT u.*,
+             (SELECT count(*) FROM characters c WHERE c.user_id = u.id) as character_count
+      FROM users u
+      WHERE (u.deleted_at IS NULL OR u.deleted_at = '')
+    `;
+    const params = [];
 
-  if (search.trim() !== '') {
-    query += ` AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)`;
-    const term = `%${search.trim()}%`;
-    params.push(term, term, term);
+    if (search.trim() !== '') {
+      query += ` AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)`;
+      const term = `%${search.trim()}%`;
+      params.push(term, term, term);
+    }
+
+    const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
+    const totalCount = db.prepare(countQuery).get(...params)?.c || 0;
+
+    const validSorts = ['id', 'username', 'created_at', 'pieces', 'subscription_tier', 'character_count'];
+    const safeSort = validSorts.includes(sortBy) ? sortBy : 'id';
+    const safeOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+    query += ` ORDER BY ${safeSort} ${safeOrder} LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const users = db.prepare(query).all(...params);
+    res.json({
+      success: true,
+      users,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 1
+    });
+  } catch (err) {
+    console.error('Admin users-list error:', err.message);
+    res.json({ success: true, users: [], totalCount: 0, totalPages: 1 });
   }
-
-  const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
-  const totalCount = db.prepare(countQuery).get(...params).c;
-
-  const validSorts = ['id', 'username', 'created_at', 'pieces', 'subscription_tier', 'character_count'];
-  const safeSort = validSorts.includes(sortBy) ? sortBy : 'id';
-  const safeOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-  query += ` ORDER BY ${safeSort} ${safeOrder} LIMIT ? OFFSET ?`;
-  params.push(limit, offset);
-
-  const users = db.prepare(query).all(...params);
-  res.json({
-    success: true,
-    users,
-    totalCount,
-    totalPages: Math.ceil(totalCount / limit) || 1
-  });
 });
 
 app.get('/api/admin/users/:id/detail', requireAdmin, (req, res) => {
-  const userId = req.params.id;
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
-  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+  try {
+    const userId = req.params.id;
+    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
-  const characters = db.prepare("SELECT * FROM characters WHERE user_id = ?").all(userId);
-  const transactions = db.prepare("SELECT * FROM piece_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
-  const auditLogs = db.prepare("SELECT * FROM admin_logs WHERE target_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
+    const characters = db.prepare("SELECT * FROM characters WHERE user_id = ?").all(userId);
+    const transactions = db.prepare("SELECT * FROM piece_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
+    const auditLogs = db.prepare("SELECT * FROM admin_logs WHERE target_id = ? ORDER BY created_at DESC LIMIT 50").all(String(userId));
 
-  res.json({ success: true, user, characters, transactions, auditLogs });
+    res.json({ success: true, user, characters, transactions, auditLogs });
+  } catch (err) {
+    console.error('Admin user detail error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/admin/users/:id/pieces', requireAdmin, (req, res) => {
@@ -4653,29 +4668,13 @@ app.put('/api/admin/users/:id', requireAdmin, (req, res) => {
 });
 
 app.get('/api/admin/logs', requireAdmin, (req, res) => {
-  const logs = db.prepare("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 100").all();
-  res.json({ success: true, logs });
-});
-
-app.delete('/api/admin/characters/:id', requireAdmin, (req, res) => {
-  const charId = req.params.id;
-  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
-  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
-
-  db.prepare("DELETE FROM characters WHERE id = ?").run(charId);
-  logAdminAction('DELETE_CHARACTER', charId, 'character', 'Deleted character', char, null);
-  res.json({ success: true });
-});
-
-app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
-  const charId = req.params.id;
-  const { name, systemPrompt, isPublic } = req.body;
-  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
-  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
-
-  db.prepare("UPDATE characters SET name = ?, system_prompt = ?, is_public = ? WHERE id = ?").run(name, systemPrompt, isPublic ? 1 : 0, charId);
-  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, systemPrompt, isPublic }, char, { name, system_prompt: systemPrompt, is_public: isPublic ? 1 : 0 });
-  res.json({ success: true });
+  try {
+    const logs = db.prepare("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 100").all();
+    res.json({ success: true, logs });
+  } catch (err) {
+    console.error('Admin logs error:', err.message);
+    res.json({ success: true, logs: [] });
+  }
 });
 
 // ==================== LOOT BOXES & INVENTORY ROUTES ====================

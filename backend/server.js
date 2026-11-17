@@ -3407,7 +3407,7 @@ app.post('/api/chat', async (req, res) => {
     const reply = await callMistral(
       mistralMessages,
       Boolean(req.user.nsfw_enabled),
-      usePremiumModel ? 'mistral-large-latest' : 'mistral-small-latest',
+      usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini',
     );
     const saveAndCharge = db.transaction(() => {
       const debit = db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?')
@@ -3418,7 +3418,7 @@ app.post('/api/chat', async (req, res) => {
       );
       const userMessage = insert.run(req.user.id, characterId, 'user', message);
       const assistantMessage = insert.run(req.user.id, characterId, 'assistant', reply);
-      recordPieceTransaction(req.user.id, -cost, 'chat', usePremiumModel ? 'Message Mistral Large 3' : 'Message Mistral Small 4');
+      recordPieceTransaction(req.user.id, -cost, 'chat', usePremiumModel ? 'Message GPT-4o' : 'Message GPT-4o-mini');
       db.prepare(`UPDATE users SET messages_since_last_ad = CASE WHEN ? THEN 0 ELSE messages_since_last_ad + 1 END
         WHERE id = ?`).run(Number(showInterstitial), req.user.id);
       db.prepare(`INSERT INTO stats (user_id, character_id, messages_count, last_interaction)

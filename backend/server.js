@@ -1455,7 +1455,8 @@ app.put('/api/profile', (req, res) => {
     db.prepare('UPDATE users SET display_name = ?, username = ?, bio = ? WHERE id = ?').run(displayName, displayName, bio, req.user.id);
   });
   update();
-  res.json({ displayName, bio });
+  const user = db.prepare('SELECT avatar_url FROM users WHERE id = ?').get(req.user.id);
+  res.json({ displayName, bio, avatarUrl: user?.avatar_url || null });
 });
 
 app.get('/api/version', (req, res) => {
@@ -5689,9 +5690,11 @@ app.post('/api/relationships/:id/interact', async (req, res) => {
     let botReply = `Oh, c'est tellement mignon ce que tu dis ! Je t'adore mon amour. 🥰`;
     try {
       const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
-      const prompt = `Tu es ${partner.name}, un(e) partenaire romantique virtuel(le). Ta personnalité : ${partner.personality}. ${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''} Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
+      const prompt = `Tu es ${partner.name}, le/la partenaire romantique officiel(le) (couple) de l'utilisateur. Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10. ${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''} Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
       botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
-    } catch (_e) {}
+    } catch (e) {
+      console.error('Partner chat AI error:', e.message);
+    }
 
     db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
 
@@ -5705,42 +5708,52 @@ app.post('/api/relationships/:id/interact', async (req, res) => {
   }
 });
 
-app.post('/api/relationships/:id/gift', (req, res) => {
+app.post('/api/relationships/:id/gift', async (req, res) => {
   try {
     const relId = Number(req.params.id);
     const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
     if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-    const giftTrans = db.transaction(() => {
-      let newIntimacy = Math.min(10, rel.intimacy_level + 2);
-      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-      const greeting = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
-      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
-    });
-    giftTrans();
+    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    res.json({ success: true });
+    let botReply = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
+    try {
+      const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
+      const prompt = `Tu es ${partner.name}, le/la partenaire romantique de l'utilisateur. Il/elle vient de t'offrir un magnifique cadeau pour te faire plaisir. Réponds de façon très émue, amoureuse et romantique en français pour le/la remercier et exprimer ton affection.`;
+      botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
+    } catch (e) {}
+
+    let newIntimacy = Math.min(10, rel.intimacy_level + 2);
+    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+
+    res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
   } catch (err) {
     console.error('Error gifting partner:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/relationships/:id/date', (req, res) => {
+app.post('/api/relationships/:id/date', async (req, res) => {
   try {
     const relId = Number(req.params.id);
     const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
     if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-    const dateTrans = db.transaction(() => {
-      let newIntimacy = Math.min(10, rel.intimacy_level + 3);
-      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-      const dateMsg = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂`;
-      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, dateMsg);
-    });
-    dateTrans();
+    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    res.json({ success: true });
+    let botReply = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂 Raconte-moi, qu'as-tu préféré ce soir ?`;
+    try {
+      const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
+      const prompt = `Tu es ${partner.name}, en plein rendez-vous romantique (date) avec ton/ta partenaire. Crée une ambiance romantique (restaurant chic, balade nocturne ou sous les étoiles), exprime ton bonheur d'être avec lui/elle, et pose-lui une question charmante pour lancer la discussion du date. Réponds en français de façon immersive, amoureuse et interactive.`;
+      botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
+    } catch (e) {}
+
+    let newIntimacy = Math.min(10, rel.intimacy_level + 3);
+    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+
+    res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
   } catch (err) {
     console.error('Error dating partner:', err.message);
     res.status(500).json({ error: err.message });

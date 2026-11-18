@@ -124,8 +124,12 @@ ipcMain.handle('admin:update-user', async (event, { userId, username, subscripti
   return await apiCall(`/api/admin/users/${userId}`, 'PUT', { username, subscriptionTier });
 });
 
-ipcMain.handle('admin:modify-character', async (event, { charId, name, systemPrompt, isPublic }) => {
-  return await apiCall(`/api/admin/characters/${charId}`, 'PUT', { name, systemPrompt, isPublic });
+ipcMain.handle('admin:get-characters', async () => {
+  return await apiCall('/api/admin/characters');
+});
+
+ipcMain.handle('admin:modify-character', async (event, { charId, name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem }) => {
+  return await apiCall(`/api/admin/characters/${charId}`, 'PUT', { name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem });
 });
 
 ipcMain.handle('admin:delete-character', async (event, charId) => {

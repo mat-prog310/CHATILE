@@ -60,6 +60,9 @@
                 <button onclick="switchTab('users')" id="nav-users" class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition">
                     <i class="fa-solid fa-users mr-2"></i> Utilisateurs
                 </button>
+                <button onclick="switchTab('characters')" id="nav-characters" class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                    <i class="fa-solid fa-robot mr-2"></i> Personnages
+                </button>
                 <button onclick="switchTab('logs')" id="nav-logs" class="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition">
                     <i class="fa-solid fa-file-lines mr-2"></i> Journal d'audit
                 </button>
@@ -129,6 +132,45 @@
                 </div>
             </div>
 
+            <!-- TAB: CHARACTERS -->
+            <div id="tab-characters" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h3 class="text-xl font-bold text-white">Gestion des Personnages Créés</h3>
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <div class="relative flex-grow md:w-80">
+                            <i class="fa-solid fa-search absolute left-3.5 top-3.5 text-gray-400"></i>
+                            <input type="text" id="character-search" placeholder="Rechercher par nom ou créateur..."
+                                class="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                oninput="filterCharacters()">
+                        </div>
+                        <button onclick="loadAdminCharacters()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium shadow transition">
+                            <i class="fa-solid fa-rotate mr-1"></i> Rafraîchir
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-900/50 border-b border-gray-700 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                    <th class="py-3 px-4">ID</th>
+                                    <th class="py-3 px-4">Avatar</th>
+                                    <th class="py-3 px-4">Nom du Personnage</th>
+                                    <th class="py-3 px-4">Créateur / Auteur</th>
+                                    <th class="py-3 px-4">Accroche (Greeting)</th>
+                                    <th class="py-3 px-4">Statut</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="characters-table-body" class="divide-y divide-gray-700 text-sm">
+                                <!-- Characters rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB: AUDIT LOGS -->
             <div id="tab-logs" class="hidden space-y-6">
                 <div class="flex justify-between items-center">
@@ -160,7 +202,53 @@
         </main>
     </div>
 
-    <!-- USER DETAIL MODAL -->
+    <!-- CHARACTER EDIT MODAL -->
+    <div id="character-edit-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
+                <h3 id="edit-char-title" class="text-lg font-bold text-white">Modifier le personnage</h3>
+                <button onclick="closeCharModal()" class="text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="edit-char-id">
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Nom du personnage</label>
+                    <input type="text" id="edit-char-name" class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded-xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">URL de l'Avatar / Image</label>
+                    <input type="text" id="edit-char-avatar" class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded-xl text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Message d'accroche (Greeting)</label>
+                    <textarea id="edit-char-greeting" rows="2" class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded-xl text-sm text-white"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-300 mb-1">Prompt Système (Bio / Personnalité IA)</label>
+                    <textarea id="edit-char-prompt" rows="3" class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded-xl text-sm text-white"></textarea>
+                </div>
+                <div class="flex space-x-4 pt-2">
+                    <label class="flex items-center space-x-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" id="edit-char-public" class="rounded bg-gray-900 border-gray-700 text-indigo-600">
+                        <span>Public</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" id="edit-char-nsfw" class="rounded bg-gray-900 border-gray-700 text-indigo-600">
+                        <span>NSFW</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm text-gray-300 cursor-pointer">
+                        <input type="checkbox" id="edit-char-system" class="rounded bg-gray-900 border-gray-700 text-indigo-600">
+                        <span>Officiel (Système)</span>
+                    </label>
+                </div>
+                <button onclick="saveCharacterEdit()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow transition mt-4">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="user-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="px-6 py-4 bg-gray-900 border-b border-gray-700 flex justify-between items-center">
@@ -184,6 +272,7 @@
         let currentSortBy = 'id';
         let currentSortOrder = 'DESC';
         let activeUserId = null;
+        let allAdminCharacters = [];
 
         async function handleLogin(e) {
             e.preventDefault();
@@ -202,7 +291,7 @@
         }
 
         function switchTab(tabName) {
-            ['dashboard', 'users', 'logs'].forEach(t => {
+            ['dashboard', 'users', 'characters', 'logs'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
                 document.getElementById(`nav-${t}`).className = "px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition";
             });
@@ -211,6 +300,7 @@
 
             if (tabName === 'dashboard') loadDashboardStats();
             if (tabName === 'users') loadUsers(1);
+            if (tabName === 'characters') loadAdminCharacters();
             if (tabName === 'logs') loadAuditLogs();
         }
 
@@ -556,23 +646,107 @@
             }
         }
 
-        async function loadAuditLogs() {
-            const res = await ipcRenderer.invoke('admin:get-audit-logs');
-            if (!res.success) return;
-            const tbody = document.getElementById('audit-logs-body');
-            tbody.innerHTML = res.logs.length === 0 ? `<tr><td colspan="5" class="text-center py-6 text-gray-500">Aucun log d'audit enregistré</td></tr>` : '';
+        async function loadAdminCharacters() {
+            const res = await ipcRenderer.invoke('admin:get-characters');
+            if (!res.success) return alert(res.error || 'Erreur lors du chargement des personnages.');
+            allAdminCharacters = res.characters || [];
+            renderCharactersTable(allAdminCharacters);
+        }
 
-            res.logs.forEach(l => {
+        function filterCharacters() {
+            const query = document.getElementById('character-search').value.toLowerCase();
+            const filtered = allAdminCharacters.filter(c =>
+                (c.name && c.name.toLowerCase().includes(query)) ||
+                (c.creatorName && c.creatorName.toLowerCase().includes(query))
+            );
+            renderCharactersTable(filtered);
+        }
+
+        function renderCharactersTable(list) {
+            const tbody = document.getElementById('characters-table-body');
+            tbody.innerHTML = list.length === 0 ? `<tr><td colspan="7" class="text-center py-6 text-gray-500">Aucun personnage trouvé</td></tr>` : '';
+
+            list.forEach(c => {
+                const avatarImg = c.avatarUrl ? `<img src="${c.avatarUrl}" class="w-10 h-10 rounded-full object-cover border border-gray-700">` : `<div class="w-10 h-10 rounded-full bg-indigo-900 text-indigo-300 flex items-center justify-center font-bold">${c.name.slice(0, 1).toUpperCase()}</div>`;
+                const creatorText = c.creatorName + (c.userId ? ` <span class="text-xs text-gray-500">(ID: #${c.userId})</span>` : '');
+                const badges = [
+                    c.isSystem ? '<span class="px-2 py-0.5 bg-amber-950 text-amber-400 border border-amber-800 rounded text-xs font-semibold">Officiel</span>' : '',
+                    c.isPublic ? '<span class="px-2 py-0.5 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded text-xs font-semibold">Public</span>' : '',
+                    c.isNsfw ? '<span class="px-2 py-0.5 bg-red-950 text-red-400 border border-red-800 rounded text-xs font-semibold">NSFW</span>' : ''
+                ].filter(Boolean).join(' ');
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-700/50 transition">
-                        <td class="py-3 px-4 font-mono text-gray-400">#${l.id}</td>
-                        <td class="py-3 px-4 font-semibold text-indigo-300">${l.admin_action}</td>
-                        <td class="py-3 px-4 font-mono text-xs text-gray-400">${l.target_type} #${l.target_id || '-'}</td>
-                        <td class="py-3 px-4 text-xs text-gray-300 truncate max-w-xs">${l.details}</td>
-                        <td class="py-3 px-4 text-xs text-gray-500">${l.created_at}</td>
+                        <td class="py-3 px-4 font-mono text-gray-400">#${c.id}</td>
+                        <td class="py-3 px-4">${avatarImg}</td>
+                        <td class="py-3 px-4 font-bold text-white">${c.name}</td>
+                        <td class="py-3 px-4 text-xs text-indigo-300">${creatorText}</td>
+                        <td class="py-3 px-4 text-xs text-gray-300 truncate max-w-xs">${c.greeting || '-'}</td>
+                        <td class="py-3 px-4">${badges}</td>
+                        <td class="py-3 px-4 text-right space-x-2">
+                            <button onclick="openCharEditModal(${c.id})" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition">
+                                <i class="fa-solid fa-pen mr-1"></i> Modifier
+                            </button>
+                            <button onclick="deleteAdminChar(${c.id})" class="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-medium transition">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
+        }
+
+        function openCharEditModal(charId) {
+            const c = allAdminCharacters.find(item => item.id == charId);
+            if (!c) return;
+            document.getElementById('edit-char-id').value = c.id;
+            document.getElementById('edit-char-name').value = c.name || '';
+            document.getElementById('edit-char-avatar').value = c.avatarUrl || '';
+            document.getElementById('edit-char-greeting').value = c.greeting || '';
+            document.getElementById('edit-char-prompt').value = c.systemPrompt || '';
+            document.getElementById('edit-char-public').checked = Boolean(c.isPublic);
+            document.getElementById('edit-char-nsfw').checked = Boolean(c.isNsfw);
+            document.getElementById('edit-char-system').checked = Boolean(c.isSystem);
+            document.getElementById('edit-char-title').textContent = `Modifier le personnage #${c.id} (${c.name})`;
+            document.getElementById('character-edit-modal').classList.remove('hidden');
+        }
+
+        function closeCharModal() {
+            document.getElementById('character-edit-modal').classList.add('hidden');
+        }
+
+        async function saveCharacterEdit() {
+            const charId = document.getElementById('edit-char-id').value;
+            const name = document.getElementById('edit-char-name').value;
+            const avatarUrl = document.getElementById('edit-char-avatar').value;
+            const greeting = document.getElementById('edit-char-greeting').value;
+            const systemPrompt = document.getElementById('edit-char-prompt').value;
+            const isPublic = document.getElementById('edit-char-public').checked;
+            const isNsfw = document.getElementById('edit-char-nsfw').checked;
+            const isSystem = document.getElementById('edit-char-system').checked;
+
+            const res = await ipcRenderer.invoke('admin:modify-character', {
+                charId, name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem
+            });
+
+            if (res.success) {
+                alert('Personnage modifié avec succès !');
+                closeCharModal();
+                loadAdminCharacters();
+            } else {
+                alert('Erreur : ' + res.error);
+            }
+        }
+
+        async function deleteAdminChar(charId) {
+            if (!confirm('Confirmez-vous la suppression définitive de ce personnage ?')) return;
+            const res = await ipcRenderer.invoke('admin:delete-character', charId);
+            if (res.success) {
+                alert('Personnage supprimé.');
+                loadAdminCharacters();
+            } else {
+                alert('Erreur : ' + res.error);
+            }
         }
     </script>
 </body>

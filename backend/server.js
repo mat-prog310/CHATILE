@@ -659,6 +659,15 @@ if (!usernameIndex) {
   }
 }
 
+// Clean up any legacy email usernames or display names in database
+try {
+  db.prepare("UPDATE users SET display_name = SUBSTR(display_name, 1, INSTR(display_name, '@') - 1) WHERE display_name LIKE '%@%' AND INSTR(display_name, '@') > 1").run();
+  db.prepare("UPDATE users SET username = SUBSTR(username, 1, INSTR(username, '@') - 1) WHERE username LIKE '%@%' AND INSTR(username, '@') > 1").run();
+  db.prepare("UPDATE profiles SET display_name = SUBSTR(display_name, 1, INSTR(display_name, '@') - 1) WHERE display_name LIKE '%@%' AND INSTR(display_name, '@') > 1").run();
+} catch (e) {
+  console.log('[Migration] Email username cleanup note:', e.message);
+}
+
 ensureColumn('messages', 'is_favorite', 'INTEGER NOT NULL DEFAULT 0');
 ensureColumn('character_state', 'thought_text', 'TEXT');
 ensureColumn('character_state', 'thought_generated_at', 'TEXT');
@@ -886,12 +895,23 @@ if (admin.apps.length === 0 && process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 }
 
+function sanitizeUsername(input) {
+  if (!input || typeof input !== 'string') return 'Utilisateur';
+  let str = input.trim();
+  if (str.includes('@')) {
+    const prefix = str.split('@')[0].trim();
+    str = prefix.length > 0 ? prefix : 'Utilisateur';
+  }
+  if (str.length > 30) str = str.slice(0, 30);
+  return str.length > 0 ? str : 'Utilisateur';
+}
+
 function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null) {
   let user = db.prepare('SELECT * FROM users WHERE firebase_uid = ?').get(decoded.uid);
   const targetAdminEmail = process.env.ADMIN_EMAIL || 'matthias.duprey1@gmail.com';
   const isAdmin = decoded.email && decoded.email.toLowerCase() === targetAdminEmail.toLowerCase();
   const role = isAdmin ? 'admin' : 'user';
-  const effectiveName = customUsername || decoded.name || 'Utilisateur CHATILE';
+  const effectiveName = sanitizeUsername(customUsername || decoded.name || 'Utilisateur CHATILE');
 
   if (!user && deviceId) {
     const guestUser = db.prepare('SELECT * FROM users WHERE device_id = ? AND firebase_uid IS NULL').get(deviceId);
@@ -1486,11 +1506,12 @@ app.get('/api/profile', (req, res) => {
 });
 
 app.put('/api/profile', (req, res) => {
-  const displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : null;
+  let displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : null;
   const bio = typeof req.body?.bio === 'string' ? req.body.bio.trim() : null;
   if (displayName === null || bio === null || displayName === '' || displayName.length > 80 || bio.length > 500) {
     return res.status(400).json({ error: 'Le pseudo (nom affiché) est obligatoire et ne peut pas être vide.' });
   }
+  displayName = sanitizeUsername(displayName);
   const update = db.transaction(() => {
     db.prepare(`INSERT OR IGNORE INTO profiles (user_id) VALUES (?)`).run(req.user.id);
     db.prepare('UPDATE profiles SET display_name = ?, bio = ? WHERE user_id = ?').run(displayName, bio, req.user.id);
@@ -4544,6 +4565,29 @@ app.post('/api/admin/users/:id/unban', requireAdmin, (req, res) => {
     WHERE id = ?
   `).run(req.params.id);
   
+  res.json({ success: true });
+});
+
+app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+  const userId = Number(req.params.id);
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+
+  const deleteTrans = db.transaction(() => {
+    db.prepare('DELETE FROM profiles WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM characters WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM messages WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM posts WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM post_comments WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM user_inventory WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM virtual_avatars WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM virtual_worlds WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM relationships WHERE user_id = ?').run(userId);
+    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+  });
+  deleteTrans();
+
+  logAdminAction('DELETE_USER_PERMANENT', userId, 'user', `Compte #${userId} (${user.username || user.display_name}) supprimé définitivement par admin.`, user, null);
   res.json({ success: true });
 });
 

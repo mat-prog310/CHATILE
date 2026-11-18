@@ -390,10 +390,13 @@
                                     isBanned ? '<span class="px-2 py-1 bg-amber-950 text-amber-400 border border-amber-800 rounded-lg text-xs font-semibold">Banni</span>' :
                                     '<span class="px-2 py-1 bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-lg text-xs font-semibold">Actif</span>';
 
+                const rawPseudo = u.username || u.display_name || 'Sans pseudo';
+                const cleanPseudo = rawPseudo.includes('@') ? rawPseudo.split('@')[0] : rawPseudo;
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-700/50 transition">
                         <td class="py-3 px-4 font-mono text-gray-400">#${u.id}</td>
-                        <td class="py-3 px-4 font-semibold text-white">${u.username || 'Sans pseudo'}</td>
+                        <td class="py-3 px-4 font-semibold text-white">${cleanPseudo}</td>
                         <td class="py-3 px-4 text-xs font-mono text-gray-400 truncate max-w-[150px]">${u.firebase_uid || '-'}</td>
                         <td class="py-3 px-4 text-xs text-gray-400">${u.created_at || '-'}</td>
                         <td class="py-3 px-4 text-amber-400 font-bold"><i class="fa-solid fa-coins mr-1"></i>${u.pieces || 0}</td>
@@ -525,6 +528,13 @@
                             </div>
                             <input type="text" id="ban-reason" placeholder="Motif du bannissement" class="w-full bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-xl text-xs text-white">
                         </div>
+
+                        <!-- Permanent Delete Account -->
+                        <div class="space-y-2 pt-2 border-t border-gray-700">
+                            <button onclick="deleteUserPermanent(${u.id})" class="w-full py-2 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl text-xs shadow transition">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Supprimer définitivement le compte
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -613,6 +623,18 @@
             if (res.success) {
                 alert('Utilisateur débanni avec succès.');
                 openUserDetail(userId);
+            } else {
+                alert('Erreur : ' + res.error);
+            }
+        }
+
+        async function deleteUserPermanent(userId) {
+            if (!confirm(`ATTENTION : Confirmez-vous la SUPPRESSION DÉFINITIVE du compte #${userId} et de TOUTES ses données ? Cette action est IRRÉVERSIBLE.`)) return;
+            const res = await ipcRenderer.invoke('admin:delete-user-permanent', userId);
+            if (res.success) {
+                alert('Compte utilisateur supprimé définitivement.');
+                closeUserModal();
+                loadUsers(currentPage);
             } else {
                 alert('Erreur : ' + res.error);
             }

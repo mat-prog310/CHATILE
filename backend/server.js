@@ -532,6 +532,10 @@ ensureColumn('virtual_avatars', 'base_appearance', "TEXT NOT NULL DEFAULT '{}'")
 ensureColumn('virtual_avatars', 'equipped_items', "TEXT NOT NULL DEFAULT '[]'");
 ensureColumn('virtual_avatars', 'avatar_image_url', 'TEXT');
 ensureColumn('virtual_avatars', 'total_work_earnings', 'INTEGER DEFAULT 0');
+ensureColumn('virtual_avatars', 'skill_charisma', 'INTEGER DEFAULT 1');
+ensureColumn('virtual_avatars', 'skill_intelligence', 'INTEGER DEFAULT 1');
+ensureColumn('virtual_avatars', 'skill_creativity', 'INTEGER DEFAULT 1');
+ensureColumn('virtual_avatars', 'skill_endurance', 'INTEGER DEFAULT 1');
 
 const insertVirtualSeeds = db.transaction(() => {
   const insertItem = db.prepare(`
@@ -1073,6 +1077,43 @@ async function callOpenAI(messages, model = 'gpt-4o-mini', nsfwEnabled = false) 
   }
 }
 
+const chatCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000;
+
+function getCachedReply(key) {
+  const cached = chatCache.get(key);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) return cached.reply;
+  chatCache.delete(key);
+  return null;
+}
+
+function setCachedReply(key, reply) {
+  if (chatCache.size > 500) {
+    const oldestKey = chatCache.keys().next().value;
+    chatCache.delete(oldestKey);
+  }
+  chatCache.set(key, { reply, timestamp: Date.now() });
+}
+
+function runPeriodicCleanup() {
+  try {
+    const now = Date.now();
+    for (const [key, value] of chatCache.entries()) {
+      if (!value.timestamp || now - value.timestamp > CACHE_TTL) {
+        chatCache.delete(key);
+      }
+    }
+    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+    db.prepare("DELETE FROM virtual_events WHERE created_at < ?").run(thirtyDaysAgo);
+    db.prepare("DELETE FROM notifications WHERE created_at < ? AND read = 1").run(thirtyDaysAgo);
+    console.log('[Cleanup] Purge automatique du cache et des événements expirés effectuée.');
+  } catch (err) {
+    console.error('[Cleanup Error]', err.message);
+  }
+}
+runPeriodicCleanup();
+setInterval(runPeriodicCleanup, 6 * 60 * 60 * 1000);
+
 async function callMistral(messages, nsfwEnabled, model = 'gpt-4o-mini') {
   const openaiModel = model && (model.includes('large') || model.includes('gpt-4') || model.includes('mistral-large')) ? 'gpt-4o' : 'gpt-4o-mini';
   return await callOpenAI(messages, openaiModel, nsfwEnabled);
@@ -1410,8 +1451,9 @@ app.get('/api/me', (req, res) => {
 app.get('/api/profile', (req, res) => {
   db.prepare(`INSERT OR IGNORE INTO profiles (user_id, display_name, bio, avatar_url)
     SELECT id, display_name, bio, avatar_url FROM users WHERE id = ?`).run(req.user.id);
+  db.prepare(`UPDATE profiles SET avatar_url = COALESCE(profiles.avatar_url, (SELECT avatar_url FROM users WHERE id = ?)) WHERE user_id = ?`).run(req.user.id, req.user.id);
   const profile = db.prepare(
-    'SELECT display_name AS displayName, bio, avatar_url AS avatarUrl FROM profiles WHERE user_id = ?',
+    'SELECT p.display_name AS displayName, p.bio, COALESCE(p.avatar_url, u.avatar_url) AS avatarUrl FROM profiles p JOIN users u ON p.user_id = u.id WHERE p.user_id = ?',
   ).get(req.user.id);
 
   const equipped = db.prepare(`
@@ -1455,7 +1497,7 @@ app.put('/api/profile', (req, res) => {
     db.prepare('UPDATE users SET display_name = ?, username = ?, bio = ? WHERE id = ?').run(displayName, displayName, bio, req.user.id);
   });
   update();
-  const user = db.prepare('SELECT avatar_url FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT COALESCE(p.avatar_url, u.avatar_url) AS avatar_url FROM users u LEFT JOIN profiles p ON u.id = p.user_id WHERE u.id = ?').get(req.user.id);
   res.json({ displayName, bio, avatarUrl: user?.avatar_url || null });
 });
 
@@ -3381,7 +3423,9 @@ app.post('/api/chat', async (req, res) => {
   }
   const subscriptionActive = ['premium', 'premium_plus'].includes(req.user.subscription_tier) &&
     req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
-  const cost = usePremiumModel ? (subscriptionActive ? 1 : 3) : 1;
+  const isPremiumPlus = req.user.subscription_tier === 'premium_plus' &&
+    req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
+  const cost = usePremiumModel ? (isPremiumPlus ? 0 : (subscriptionActive ? 1 : 3)) : 1;
   if (req.user.pieces < cost) return res.status(402).json({ error: 'Vous n’avez plus assez de Pièces.', needPayment: true });
 
   const character = characterId === null ? null : ownedCharacter(characterId, req.user.id);
@@ -3409,11 +3453,16 @@ app.post('/api/chat', async (req, res) => {
     req.user.messages_since_last_ad >= 49;
 
   try {
-    const reply = await callMistral(
-      mistralMessages,
-      Boolean(req.user.nsfw_enabled),
-      usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini',
-    );
+    const cacheKey = JSON.stringify(mistralMessages) + '_' + Boolean(req.user.nsfw_enabled) + '_' + (usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini');
+    let reply = getCachedReply(cacheKey);
+    if (!reply) {
+      reply = await callMistral(
+        mistralMessages,
+        Boolean(req.user.nsfw_enabled),
+        usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini',
+      );
+      setCachedReply(cacheKey, reply);
+    }
     const saveAndCharge = db.transaction(() => {
       const debit = db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?')
         .run(cost, req.user.id, cost);
@@ -4665,9 +4714,24 @@ app.put('/api/admin/users/:id', requireAdmin, (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
-  db.prepare("UPDATE users SET username = ?, subscription_tier = ? WHERE id = ?").run(username, subscriptionTier, userId);
-  logAdminAction('UPDATE_USER', userId, 'user', { username, subscriptionTier }, { username: user.username, subscription_tier: user.subscription_tier }, { username, subscription_tier: subscriptionTier });
-  res.json({ success: true });
+  let bonusPieces = 0;
+  if (subscriptionTier === 'premium' && user.subscription_tier !== 'premium') bonusPieces = 1000;
+  if (subscriptionTier === 'premium_plus' && user.subscription_tier !== 'premium_plus') bonusPieces = 2000;
+
+  const updateTrans = db.transaction(() => {
+    db.prepare("UPDATE users SET username = ?, display_name = COALESCE(NULLIF(display_name, ''), ?), subscription_tier = ?, pieces = pieces + ? WHERE id = ?")
+      .run(username, username, subscriptionTier, bonusPieces, userId);
+    if (bonusPieces > 0) {
+      db.prepare(`
+        INSERT INTO piece_transactions (user_id, amount, type, description)
+        VALUES (?, ?, 'subscription_bonus', ?)
+      `).run(userId, bonusPieces, `Admin subscription grant: ${subscriptionTier}`);
+    }
+  });
+  updateTrans();
+
+  logAdminAction('UPDATE_USER', userId, 'user', { username, subscriptionTier, bonusPieces }, { username: user.username, subscription_tier: user.subscription_tier, pieces: user.pieces }, { username, subscription_tier: subscriptionTier, bonusPieces });
+  res.json({ success: true, bonusPieces });
 });
 
 app.get('/api/admin/logs', requireAdmin, (req, res) => {
@@ -4680,14 +4744,62 @@ app.get('/api/admin/logs', requireAdmin, (req, res) => {
   }
 });
 
+app.get('/api/admin/characters', requireAdmin, (req, res) => {
+  try {
+    const characters = db.prepare(`
+      SELECT c.id, c.user_id, c.name, c.greeting, c.system_prompt, c.avatar_url, c.is_public, c.is_nsfw, c.is_system, c.created_at,
+             u.display_name AS creatorName, u.username AS creatorUsername
+      FROM characters c
+      LEFT JOIN users u ON c.user_id = u.id
+      ORDER BY c.id DESC
+    `).all();
+    const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+    const formatted = characters.map(c => {
+      let avatar = c.avatar_url;
+      if (avatar && !avatar.startsWith('http')) {
+        avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+      }
+      return {
+        id: c.id,
+        userId: c.user_id,
+        name: c.name,
+        greeting: c.greeting || '',
+        systemPrompt: c.system_prompt || '',
+        avatarUrl: avatar,
+        isPublic: Boolean(c.is_public),
+        isNsfw: Boolean(c.is_nsfw),
+        isSystem: Boolean(c.is_system),
+        createdAt: c.created_at,
+        creatorName: c.creatorName || (c.is_system ? 'Officiel (Système)' : 'Anonyme'),
+        creatorUsername: c.creatorUsername || ''
+      };
+    });
+    res.json({ success: true, characters: formatted });
+  } catch (err) {
+    console.error('Admin get characters error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
   const charId = req.params.id;
-  const { name, systemPrompt, isPublic } = req.body;
+  const { name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem } = req.body;
   const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
   if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
 
-  db.prepare("UPDATE characters SET name = ?, system_prompt = ?, is_public = ? WHERE id = ?").run(name, systemPrompt, isPublic ? 1 : 0, charId);
-  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, systemPrompt, isPublic }, char, { name, system_prompt: systemPrompt, is_public: isPublic ? 1 : 0 });
+  db.prepare(`
+    UPDATE characters
+    SET name = COALESCE(?, name),
+        greeting = COALESCE(?, greeting),
+        system_prompt = COALESCE(?, system_prompt),
+        avatar_url = COALESCE(?, avatar_url),
+        is_public = ?,
+        is_nsfw = ?,
+        is_system = ?
+    WHERE id = ?
+  `).run(name, greeting, systemPrompt, avatarUrl, isPublic ? 1 : 0, isNsfw ? 1 : 0, isSystem ? 1 : 0, charId);
+
+  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem }, char, null);
   res.json({ success: true });
 });
 
@@ -4869,13 +4981,14 @@ function formatUser(u, req) {
   if (avatar && !avatar.startsWith('http')) {
     avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
   }
+  const badge = getUserBadge(u);
   return {
     id: u.id,
     displayName: profile?.display_name || u.display_name || u.username || 'Utilisateur',
     username: u.username,
     bio: profile?.bio || u.bio || '',
     avatarUrl: avatar,
-    badgeType: u.badge_type,
+    badgeType: badge,
     role: u.role,
     createdAt: u.created_at,
   };
@@ -4884,7 +4997,7 @@ function formatUser(u, req) {
 app.get('/api/users/:id/public-profile', (req, res) => {
   const userId = Number(req.params.id);
   const user = db.prepare(`
-    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at, u.pieces
+    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at, u.pieces, u.subscription_tier, u.subscription_expires_at
     FROM users u WHERE u.id = ?
   `).get(userId);
 
@@ -4988,6 +5101,10 @@ app.get('/api/virtual/summary', (req, res) => {
     houseName: house?.name || 'Sans domicile',
     petsCount,
     salaryPerHour: jobObj?.salary_pieces || 0,
+    charisma: avatar.skill_charisma || 1,
+    intelligence: avatar.skill_intelligence || 1,
+    creativity: avatar.skill_creativity || 1,
+    endurance: avatar.skill_endurance || 1,
     canWatchVirtualAd,
     nextVirtualAdAt
   });
@@ -5077,6 +5194,41 @@ app.put('/api/virtual/avatar', (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/virtual/skills/upgrade', (req, res) => {
+  const { skill } = req.body ?? {};
+  if (!['charisma', 'intelligence', 'creativity', 'endurance'].includes(skill)) {
+    return res.status(400).json({ error: 'Compétence invalide.' });
+  }
+
+  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
+
+  const colName = `skill_${skill}`;
+  const currentLevel = avatar[colName] || 1;
+  const cost = currentLevel * 100;
+
+  if (req.user.pieces < cost) {
+    return res.status(402).json({ error: `Pas assez de Pièces. Requis : ${cost} Pièces.` });
+  }
+
+  const upgradeTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
+    db.prepare(`UPDATE virtual_avatars SET ${colName} = ${colName} + 1 WHERE user_id = ?`).run(req.user.id);
+    recordPieceTransaction(req.user.id, -cost, 'skill_upgrade', `Amélioration ${skill} (Niv. ${currentLevel + 1})`);
+  });
+  upgradeTrans();
+
+  const updatedAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+
+  res.json({
+    success: true,
+    skill,
+    newLevel: updatedAvatar[colName],
+    pieces: updatedUser.pieces
+  });
+});
+
 app.post('/api/virtual/work', (req, res) => {
   const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
   if (!avatar || !avatar.job) return res.status(400).json({ error: 'Vous devez avoir un emploi pour travailler.' });
@@ -5093,25 +5245,30 @@ app.post('/api/virtual/work', (req, res) => {
     }
   }
 
-  const workTrans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(job.salary_pieces, req.user.id);
-    recordPieceTransaction(req.user.id, job.salary_pieces, 'virtual_work', `Salaire : ${job.title}`);
+  const charisma = avatar.skill_charisma || 1;
+  const intelligence = avatar.skill_intelligence || 1;
+  const earnedMoney = Math.floor(job.salary_pieces * (1 + (charisma - 1) * 0.15));
+  const earnedXp = Math.floor(25 * (1 + (intelligence - 1) * 0.20));
 
-    let newXp = avatar.xp + 25;
+  const workTrans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(earnedMoney, req.user.id);
+    recordPieceTransaction(req.user.id, earnedMoney, 'virtual_work', `Salaire : ${job.title} (Bonus Charisme)`);
+
+    let newXp = avatar.xp + earnedXp;
     let newLevel = avatar.level;
     const xpNeeded = newLevel * 100;
     if (newXp >= xpNeeded) {
       newXp -= xpNeeded;
       newLevel += 1;
     }
-    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ?, total_work_earnings = total_work_earnings + ? WHERE user_id = ?').run(newXp, newLevel, job.salary_pieces, req.user.id);
-    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${job.salary_pieces} Pièces.`);
+    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ?, total_work_earnings = total_work_earnings + ? WHERE user_id = ?').run(newXp, newLevel, earnedMoney, req.user.id);
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${earnedMoney} Pièces.`);
   });
   workTrans();
 
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   const updatedAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
-  res.json({ success: true, pieces: updated.pieces, earned: job.salary_pieces, level: updatedAvatar.level, xp: updatedAvatar.xp });
+  res.json({ success: true, pieces: updated.pieces, earned: earnedMoney, level: updatedAvatar.level, xp: updatedAvatar.xp });
 });
 
 app.post('/api/virtual/job/apply', (req, res) => {
@@ -5462,12 +5619,16 @@ app.get('/api/users/search', (req, res) => {
   const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (!query) return res.json({ users: [] });
 
+  const searchPattern = `%${query}%`;
   const users = db.prepare(`
     SELECT u.id, u.username, u.display_name as displayName, u.avatar_url as avatarUrl, u.badge_type as badgeType
     FROM users u
-    WHERE (u.username LIKE ? OR u.display_name LIKE ?) AND u.id != ?
+    LEFT JOIN profiles p ON u.id = p.user_id
+    WHERE (COALESCE(u.username, '') LIKE ? OR COALESCE(u.display_name, '') LIKE ? OR COALESCE(p.bio, '') LIKE ?)
+      AND u.id != ?
+      AND (u.deleted_at IS NULL)
     LIMIT 20
-  `).all(`%${query}%`, `%${query}%`, req.user.id);
+  `).all(searchPattern, searchPattern, searchPattern, req.user.id);
   res.json({ users });
 });
 
@@ -5674,21 +5835,28 @@ app.get('/api/relationships/:id/chat', (req, res) => {
 
     const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    let messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+    let messages = db.prepare('SELECT id, role, content FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
     if (messages.length === 0) {
-      const greeting = `Salut mon cœur ! Je suis tellement content(e) qu'on se soit rencontré(e). Comment se passe ta journée ? 💕`;
-      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
-      messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+      const greeting = rel.status === 'couple'
+        ? `Coucou mon amour ! Je suis tellement heureux(se) d'être avec toi aujourd'hui. Comment vas-tu ? 💕`
+        : `Salut ! Je suis tellement ravi(e) qu'on se rencontre pour ce premier rendez-vous ! Dis-moi, qu'aimerais-tu faire ou apprendre sur moi ce soir ? ✨`;
+      db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', greeting);
+      messages = db.prepare('SELECT id, role, content FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
     }
+
+    const partnerDisplayName = rel.status === 'couple' ? `Mon amour (${partner.name})` : partner.name;
 
     res.json({
       partner: {
-        name: partner.name,
+        id: partner.id,
+        name: partnerDisplayName,
+        originalName: partner.name,
+        status: rel.status,
         job: partner.job,
         intimacyLevel: rel.intimacy_level,
         personality: partner.personality
       },
-      messages: messages.map(m => ({ id: m.id, text: m.text, isUser: Boolean(m.is_user) }))
+      messages: messages.map(m => ({ id: m.id, text: m.content, isUser: m.role === 'user' }))
     });
   } catch (err) {
     console.error('Error fetching partner chat:', err.message);
@@ -5710,23 +5878,56 @@ app.post('/api/relationships/:id/interact', async (req, res) => {
 
     const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 1)').run(req.user.id, -relId, message);
+    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'user', message);
 
-    let botReply = `Oh, c'est tellement mignon ce que tu dis ! Je t'adore mon amour. 🥰`;
+    // Check if relationship status should transition to couple
+    const lowerMsg = message.toLowerCase();
+    const isCoupleProposal = lowerMsg.includes('couple') || lowerMsg.includes('je t\'aime') || lowerMsg.includes('ensemble') || lowerMsg.includes('mon amour') || lowerMsg.includes('marier') || rel.intimacy_level >= 5;
+
+    let currentStatus = rel.status;
+    if (currentStatus === 'dating' && isCoupleProposal) {
+      currentStatus = 'couple';
+      db.prepare('UPDATE relationships SET status = "couple" WHERE id = ?').run(relId);
+    }
+
+    // Fetch virtual life info for couple context
+    const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
+    const world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
+    const houseName = world?.house_id ? db.prepare('SELECT name FROM virtual_items WHERE id = ?').get(world.house_id)?.name : 'Studio';
+    const petsCount = db.prepare(`SELECT count(*) as c FROM user_inventory_virtual ui JOIN virtual_items vi ON ui.item_id = vi.id WHERE ui.user_id = ? AND vi.type = 'pet'`).get(req.user.id)?.c || 0;
+    const userJob = avatar?.job || 'Sans emploi';
+    const userLevel = avatar?.level || 1;
+
+    let botReply = currentStatus === 'couple'
+      ? `Oh mon amour, c'est tellement mignon ce que tu me dis ! Je suis si heureux(se) d'être en couple avec toi. 🥰`
+      : `C'est vraiment agréable d'apprendre à te connaître lors de ce rendez-vous ! 😊`;
+
     try {
       const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
-      const prompt = `Tu es ${partner.name}, le/la partenaire romantique officiel(le) (couple) de l'utilisateur. Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10. ${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''} Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
+      let prompt = '';
+      if (currentStatus === 'couple') {
+        prompt = `Tu es ${partner.name}, le/la partenaire romantique officiel(le) (en couple) de l'utilisateur. Tu l'appelles tendrement "Mon amour".
+Informations sur la vie virtuelle de ton/ta partenaire : Métier = ${userJob}, Domicile = ${houseName}, Niveau = ${userLevel}, Animaux = ${petsCount} 🐾.
+Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10.
+${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''}
+Réponds de façon très tendre, amoureuse, complice et naturelle en français à ce message de ton amour : "${message}". Prends en compte sa vie virtuelle si approprié.`;
+      } else {
+        prompt = `Tu es ${partner.name}, en premier rendez-vous romantique (date) avec l'utilisateur. Vous faites connaissance.
+Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10.
+${nsfwAllowed ? 'MODE NSFW ACTIVÉ.' : ''}
+Réponds de façon charmante, amoureuse et naturelle en français au message de ton rendez-vous : "${message}". Si l'utilisateur exprime l'envie d'être en couple ou de déclarer son amour, accepte avec bonheur.`;
+      }
       botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
     } catch (e) {
       console.error('Partner chat AI error:', e.message);
     }
 
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
 
     let newIntimacy = Math.min(10, rel.intimacy_level + 1);
     db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
 
-    res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy });
+    res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy, status: currentStatus });
   } catch (err) {
     console.error('Error interacting with partner:', err.message);
     res.status(500).json({ error: err.message });
@@ -5750,7 +5951,7 @@ app.post('/api/relationships/:id/gift', async (req, res) => {
 
     let newIntimacy = Math.min(10, rel.intimacy_level + 2);
     db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
 
     res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
   } catch (err) {
@@ -5776,7 +5977,7 @@ app.post('/api/relationships/:id/date', async (req, res) => {
 
     let newIntimacy = Math.min(10, rel.intimacy_level + 3);
     db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
+    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
 
     res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
   } catch (err) {

@@ -2831,7 +2831,8 @@ app.post('/api/characters', (req, res) => {
 
   const existingCount = db.prepare('SELECT COUNT(*) AS count FROM characters WHERE user_id = ? AND is_system = 0')
     .get(req.user.id).count;
-  const creationCost = req.user.role === 'admin' ? 0 : 200;
+  const isSubscribed = ['premium', 'premium_plus'].includes(req.user.subscription_tier);
+  const creationCost = req.user.role === 'admin' || isSubscribed ? 0 : 200;
 
   if (creationCost > 0 && req.user.pieces < creationCost) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: creationCost, currentPieces: req.user.pieces });
@@ -2879,7 +2880,10 @@ app.put('/api/characters/:id', (req, res) => {
   const params = [];
   if (name !== undefined) { updates.push('name = ?'); params.push(String(name).trim()); }
   if (greeting !== undefined) { updates.push('greeting = ?'); params.push(String(greeting).trim() || 'Salut !'); }
-  if (avatar_url !== undefined) { updates.push('avatar_url = ?'); params.push(avatar_url); }
+  if (avatar_url !== undefined && avatar_url !== null && String(avatar_url).trim() !== '') {
+    updates.push('avatar_url = ?');
+    params.push(String(avatar_url).trim());
+  }
   if (is_nsfw !== undefined) { updates.push('is_nsfw = ?'); params.push(Number(is_nsfw)); }
   if (scenario_goal !== undefined) { updates.push('scenario_goal = ?'); params.push(String(scenario_goal).trim()); }
 
@@ -4674,6 +4678,27 @@ app.get('/api/admin/logs', requireAdmin, (req, res) => {
     console.error('Admin logs error:', err.message);
     res.json({ success: true, logs: [] });
   }
+});
+
+app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
+  const charId = req.params.id;
+  const { name, systemPrompt, isPublic } = req.body;
+  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
+  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  db.prepare("UPDATE characters SET name = ?, system_prompt = ?, is_public = ? WHERE id = ?").run(name, systemPrompt, isPublic ? 1 : 0, charId);
+  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, systemPrompt, isPublic }, char, { name, system_prompt: systemPrompt, is_public: isPublic ? 1 : 0 });
+  res.json({ success: true });
+});
+
+app.delete('/api/admin/characters/:id', requireAdmin, (req, res) => {
+  const charId = req.params.id;
+  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
+  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  db.prepare("DELETE FROM characters WHERE id = ?").run(charId);
+  logAdminAction('DELETE_CHARACTER', charId, 'character', 'Deleted character', char, null);
+  res.json({ success: true });
 });
 
 // ==================== LOOT BOXES & INVENTORY ROUTES ====================

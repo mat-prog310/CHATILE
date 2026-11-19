@@ -4940,7 +4940,6 @@ app.post('/api/loot-boxes/open', (req, res) => {
 });
 
 // Get user inventory
-app.get('/api/inventory', (req, res) => {
   const items = db.prepare(`
     SELECT ui.id as inventoryId, ui.is_equipped as isEquipped, ui.obtained_at as obtainedAt,
            li.id as itemId, li.name, li.description, li.type, li.rarity, li.value_pieces as valuePieces, li.image_url as imageUrl

@@ -859,6 +859,12 @@ if (!modUser) {
 
 const app = express();
 app.disable('x-powered-by');
+
+// Route app-ads.txt obligatoire pour Google AdMob
+app.get('/app-ads.txt', (req, res) => {
+  res.type('text/plain');
+  res.send('google.com, pub-8964953556750058, DIRECT, f08c47fec0942fa0');
+});
 app.use(express.json({ limit: '32kb' }));
 const uploadDirectory = resolve(__dirname, 'uploads');
 mkdirSync(uploadDirectory, { recursive: true });

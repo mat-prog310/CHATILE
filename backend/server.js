@@ -77,7 +77,7 @@ db.exec(`
     display_name TEXT NOT NULL DEFAULT '',
     bio TEXT NOT NULL DEFAULT '',
     avatar_url TEXT,
-    pieces INTEGER NOT NULL DEFAULT 750,
+    pieces INTEGER NOT NULL DEFAULT 100,
     nsfw_enabled INTEGER NOT NULL DEFAULT 0,
     is_adult INTEGER NOT NULL DEFAULT 0,
     last_daily_claim TEXT,
@@ -85,6 +85,8 @@ db.exec(`
     last_streak_date TEXT,
     last_mystery_box TEXT,
     messages_since_last_ad INTEGER NOT NULL DEFAULT 0,
+    daily_messages_count INTEGER NOT NULL DEFAULT 0,
+    last_message_date TEXT,
     subscription_tier TEXT NOT NULL DEFAULT 'free',
     subscription_expires_at TEXT,
     referral_code TEXT UNIQUE,
@@ -536,6 +538,10 @@ ensureColumn('virtual_avatars', 'skill_charisma', 'INTEGER DEFAULT 1');
 ensureColumn('virtual_avatars', 'skill_intelligence', 'INTEGER DEFAULT 1');
 ensureColumn('virtual_avatars', 'skill_creativity', 'INTEGER DEFAULT 1');
 ensureColumn('virtual_avatars', 'skill_endurance', 'INTEGER DEFAULT 1');
+ensureColumn('users', 'daily_messages_count', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('users', 'last_message_date', 'TEXT');
+ensureColumn('users', 'video_generations_count', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('users', 'last_video_month', 'TEXT');
 
 const insertVirtualSeeds = db.transaction(() => {
   const insertItem = db.prepare(`
@@ -544,12 +550,11 @@ const insertVirtualSeeds = db.transaction(() => {
   `);
 
   const houses = [
-    ['Studio', 'house', 500, 'Un petit studio cosy pour commencer.', 'commun'],
-    ['Appartement', 'house', 2000, 'Un bel appartement moderne.', 'rare'],
-    ['Maison de ville', 'house', 5000, 'Une charmante maison avec jardin.', 'rare'],
-    ['Villa', 'house', 10000, 'Une luxueuse villa avec piscine.', 'epique'],
-    ['Manoir', 'house', 25000, 'Un immense manoir historique.', 'epique'],
-    ['Château', 'house', 50000, 'Un château majestueux.', 'legendaire'],
+    ['Studio', 'house', 250, 'Un petit studio cosy pour commencer.', 'commun'],
+    ['Appartement', 'house', 1000, 'Un bel appartement moderne.', 'rare'],
+    ['Villa', 'house', 5000, 'Une luxueuse villa avec piscine.', 'epique'],
+    ['Manoir', 'house', 10000, 'Un immense manoir historique.', 'epique'],
+    ['Château', 'house', 25000, 'Un château majestueux.', 'legendaire'],
   ];
   houses.forEach(h => {
     const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(h[0])}`;
@@ -593,13 +598,19 @@ const insertVirtualSeeds = db.transaction(() => {
   });
 
   const jobs = [
-    ['Serveur', 5, 1, 'Servir les clients au café.'],
-    ['Développeur', 15, 2, 'Coder des applications.'],
-    ['Médecin', 30, 4, 'Soigner les patients.'],
-    ['Célébrité', 100, 6, 'Briller sous les spotlights.'],
+    ['Serveur', 3, 1, 'Servir les clients au café.'],
+    ['Développeur', 6, 2, 'Coder des applications.'],
+    ['Médecin', 12, 4, 'Soigner les patients.'],
+    ['Célébrité', 25, 6, 'Briller sous les spotlights.'],
   ];
   const insertJob = db.prepare('INSERT OR IGNORE INTO virtual_jobs (title, salary_pieces, required_level, description) VALUES (?, ?, ?, ?)');
   jobs.forEach(j => insertJob.run(...j));
+  try {
+    db.prepare('UPDATE virtual_jobs SET salary_pieces = 3 WHERE title = "Serveur"').run();
+    db.prepare('UPDATE virtual_jobs SET salary_pieces = 6 WHERE title = "Développeur"').run();
+    db.prepare('UPDATE virtual_jobs SET salary_pieces = 12 WHERE title = "Médecin"').run();
+    db.prepare('UPDATE virtual_jobs SET salary_pieces = 25 WHERE title = "Célébrité"').run();
+  } catch (_e) {}
 
   const locations = [
     ['Café', 'Un endroit chaleureux pour discuter.', 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb'],
@@ -630,6 +641,7 @@ const insertVirtualSeeds = db.transaction(() => {
 });
 
 insertVirtualSeeds();
+try { db.prepare("DELETE FROM virtual_items WHERE name LIKE '%Maison de ville%'").run(); } catch (_e) {}
 
 for (const [column, declaration] of [
   ['username', 'TEXT'], ['firebase_uid', 'TEXT'], ['subscription_tier', "TEXT NOT NULL DEFAULT 'free'"],
@@ -931,7 +943,7 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
   if (!user) {
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, username, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
-       VALUES (?, ?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
+       VALUES (?, ?, ?, ?, ?, 100, 1, ?, CURRENT_TIMESTAMP)`
     ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, effectiveName, effectiveName, decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
@@ -1610,64 +1622,62 @@ app.post('/api/profile/avatar', (req, res) => {
 });
 
 function dailyClaimState(user) {
-  const today = utcDate();
-  const lastClaimDate = user.last_daily_claim?.slice(0, 10) ?? null;
-  const yesterday = utcDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
-  const nextClaimAt = new Date(`${today}T00:00:00.000Z`);
-  nextClaimAt.setUTCDate(nextClaimAt.getUTCDate() + 1);
+  const now = Date.now();
+  const lastClaimTime = user.last_daily_claim ? Date.parse(user.last_daily_claim) : 0;
+  const COOLDOWN_24H = 24 * 60 * 60 * 1000;
+  const elapsed = now - lastClaimTime;
+  const canClaim = !lastClaimTime || elapsed >= COOLDOWN_24H;
+  const hoursLeft = canClaim ? 0 : Math.ceil((COOLDOWN_24H - elapsed) / (60 * 60 * 1000));
+
   return {
-    canClaim: lastClaimDate !== today,
-    nextClaimAt: lastClaimDate === today ? nextClaimAt.toISOString() : null,
-    streak_days: lastClaimDate === yesterday ? user.streak_days + 1 : lastClaimDate === today ? user.streak_days : 1,
-    todayReward: Math.min(80, 20 + 10 * (lastClaimDate === yesterday ? user.streak_days : 0)),
+    canClaim,
+    hoursLeft,
+    nextClaimAt: canClaim ? null : new Date(lastClaimTime + COOLDOWN_24H).toISOString(),
+    todayReward: 15,
   };
 }
 
 app.get('/api/daily-status', (req, res) => res.json(dailyClaimState(req.user)));
 
 app.post('/api/daily-claim', (req, res) => {
-  const claim = db.transaction(() => {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-    const today = utcDate();
-    const lastClaimDate = user.last_daily_claim?.slice(0, 10) ?? null;
-    
-    if (lastClaimDate === today) {
-      const tomorrow = new Date(`${today}T00:00:00.000Z`);
-      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-      return { 
-        success: false, 
-        error: 'already_claimed_today', 
-        nextClaimAt: tomorrow.toISOString(), 
-        message: "Tu as déjà réclamé ta récompense aujourd'hui. Reviens demain !" 
-      };
-    }
-    
-    const yesterday = utcDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
-    const streak = user.last_streak_date === yesterday ? user.streak_days + 1 : 1;
-    const reward = Math.min(80, 20 + 10 * (streak - 1));
-    
-    db.prepare(`UPDATE users SET pieces = pieces + ?, last_daily_claim = ?, last_streak_date = ?, streak_days = ?
-      WHERE id = ?`).run(reward, `${today} 00:00:00`, today, streak, req.user.id);
-    recordPieceTransaction(req.user.id, reward, 'daily_claim', `Récompense quotidienne · série ${streak} jours`);
-    updateQuestProgress(req.user.id, 'streak', streak);
-    const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-    return { success: true, pieces: updated.pieces, streak_days: streak, reward };
-  })();
-  res.json(claim);
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  const now = Date.now();
+  const lastClaimTime = user.last_daily_claim ? Date.parse(user.last_daily_claim) : 0;
+  const COOLDOWN_24H = 24 * 60 * 60 * 1000;
+  const elapsed = now - lastClaimTime;
+
+  if (lastClaimTime && elapsed < COOLDOWN_24H) {
+    const hoursLeft = Math.ceil((COOLDOWN_24H - elapsed) / (60 * 60 * 1000));
+    return res.status(400).json({
+      success: false,
+      error: 'WAIT_REQUIRED',
+      hoursLeft,
+      message: `Revenez dans ${hoursLeft} heure(s) pour votre prochain bonus.`
+    });
+  }
+
+  const reward = 15;
+  const streak = (user.streak_days || 0) + 1;
+  const nextClaimTime = new Date(now + COOLDOWN_24H).toISOString();
+
+  db.prepare(`UPDATE users SET pieces = pieces + ?, last_daily_claim = ?, last_streak_date = ?, streak_days = ?
+    WHERE id = ?`).run(reward, new Date().toISOString(), utcDate(), streak, req.user.id);
+  recordPieceTransaction(req.user.id, reward, 'daily_claim', 'Bonus quotidien (+15 Pièces)');
+  updateQuestProgress(req.user.id, 'streak', streak);
+
+  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, pieces: updated.pieces, streak_days: streak, reward, nextClaimAt: nextClaimTime });
 });
 
 app.get('/api/shop', (req, res) => {
   res.json({ items: [
-    { id: 'pack_starter', name: '🔥 Pack Starter (Promo)', pieces: 600, price: '4,99 €', productId: 'pack_starter', type: 'consumable', isPopular: true, description: '600 Pièces (Bonus +20%) pour bien débuter.' },
-    { id: 'pack_500', name: 'Pack 500 Pièces', pieces: 500, price: '5,00 €', productId: 'pack_500', type: 'consumable', description: '500 Pièces créditées immédiatement.' },
-    { id: 'pack_pro_gamer', name: '⚡ Pack Pro Gamer (Meilleure Valeur)', pieces: 1800, price: '12,99 €', productId: 'pack_pro_gamer', type: 'consumable', isPopular: true, description: '1 800 Pièces (Super bonus inclus).' },
-    { id: 'pack_1500', name: 'Pack 1 500 Pièces', pieces: 1500, price: '15,00 €', productId: 'pack_1500', type: 'consumable', description: '1 500 Pièces créditées immédiatement.' },
-    { id: 'pack_legendary', name: '👑 Pack Légendaire', pieces: 6500, price: '39,99 €', productId: 'pack_legendary', type: 'consumable', description: '6 500 Pièces pour les joueurs passionnés.' },
-    { id: 'pack_5000', name: 'Pack 5 000 Pièces', pieces: 5000, price: '50,00 €', productId: 'pack_5000', type: 'consumable', description: '5 000 Pièces créditées immédiatement.' },
-    { id: 'pack_ultimate', name: '🚀 Pack Mégapolis Ultime', pieces: 20000, price: '119,99 €', productId: 'pack_ultimate', type: 'consumable', description: '20 000 Pièces + Avantages exclusifs.' },
-    { id: 'pack_15000', name: 'Pack 15 000 Pièces', pieces: 15000, price: '150,00 €', productId: 'pack_15000', type: 'consumable', description: '15 000 Pièces créditées immédiatement.' },
-    { id: 'sub_premium_monthly', name: 'Premium (30 min vocales)', pieces: 1000, price: '9,99 €/mois', productId: 'sub_premium_monthly', type: 'subscription', description: '30 min d’appels vocaux/jour, 1 000 Pièces/mois, zéro pub.' },
-    { id: 'sub_premium_plus_monthly', name: 'Premium+ (60 min vocales)', pieces: 2000, price: '19,99 €/mois', productId: 'sub_premium_plus_monthly', type: 'subscription', description: '60 min d’appels vocaux/jour, 2 000 Pièces/mois, mémoire illimitée.' },
+    { id: 'sub_premium_monthly', name: 'Abonnement Premium', pieces: 1000, price: '9,99 € / mois', productId: 'sub_premium_monthly', type: 'subscription', isPopular: false, description: 'Pour tchatter sans pub avec personnalisation complète.' },
+    { id: 'sub_premium_plus_monthly', name: 'Abonnement Premium+', pieces: 3000, price: '19,99 € / mois', productId: 'sub_premium_plus_monthly', type: 'subscription', isPopular: false, description: 'Accès illimité, Vidéos IA, Fusion & Gains x3.' },
+    { id: 'pack_500', name: 'Pack Découverte', pieces: 500, price: '4,99 €', productId: 'pack_500', type: 'consumable', isPopular: false, description: 'Le prix d’entrée, accessible.' },
+    { id: 'pack_1500', name: 'Pack Gamer', pieces: 1500, price: '12,99 €', productId: 'pack_1500', type: 'consumable', isPopular: false, description: 'Le petit pack confort.' },
+    { id: 'pack_pro_gamer', name: '🔥 Pack Pro Gamer', pieces: 3000, price: '19,99 €', productId: 'pack_pro_gamer', type: 'consumable', isPopular: true, description: 'Le meilleur pack, sélectionné pour toi !' },
+    { id: 'pack_legendary', name: 'Pack Légendaire', pieces: 6500, price: '39,99 €', productId: 'pack_legendary', type: 'consumable', isPopular: false, description: 'Le gros pack pour passionnés.' },
+    { id: 'pack_15000', name: 'Pack Mégapolis Ultime', pieces: 15000, price: '79,99 €', productId: 'pack_15000', type: 'consumable', isPopular: false, description: 'Le pack ultime sans limite.' },
   ] });
 });
 
@@ -1675,16 +1685,16 @@ app.post('/api/verify-purchase', async (req, res) => {
   const purchaseToken = typeof req.body?.purchaseToken === 'string' ? req.body.purchaseToken.trim() : '';
   const productId = typeof req.body?.productId === 'string' ? req.body.productId.trim() : '';
   const product = {
-    pack_starter: { pieces: 600, type: 'product' },
     pack_500: { pieces: 500, type: 'product' },
-    pack_pro_gamer: { pieces: 1800, type: 'product' },
+    pack_starter: { pieces: 500, type: 'product' },
     pack_1500: { pieces: 1500, type: 'product' },
-    pack_legendary: { pieces: 6500, type: 'product' },
+    pack_pro_gamer: { pieces: 3000, type: 'product' },
     pack_5000: { pieces: 5000, type: 'product' },
-    pack_ultimate: { pieces: 20000, type: 'product' },
+    pack_legendary: { pieces: 6500, type: 'product' },
     pack_15000: { pieces: 15000, type: 'product' },
+    pack_ultimate: { pieces: 15000, type: 'product' },
     sub_premium_monthly: { pieces: 1000, type: 'subscription', tier: 'premium' },
-    sub_premium_plus_monthly: { pieces: 2000, type: 'subscription', tier: 'premium_plus' },
+    sub_premium_plus_monthly: { pieces: 3000, type: 'subscription', tier: 'premium_plus' },
   }[productId];
   if (!purchaseToken || purchaseToken.length > 4096 || !product) {
     return res.status(400).json({ error: 'purchaseToken invalide.' });
@@ -1813,8 +1823,8 @@ app.post('/api/mystery-box', (req, res) => {
       return { success: false, nextClaimAt: nextMonday.toISOString() };
     }
 
-    const amount = 10 + Math.floor(Math.random() * 41);
-    const rarity = amount <= 20 ? 'commun' : amount <= 35 ? 'rare' : 'épique';
+    const amount = 5 + Math.floor(Math.random() * 6);
+    const rarity = amount <= 6 ? 'commun' : amount <= 8 ? 'rare' : 'épique';
     db.prepare('UPDATE users SET pieces = pieces + ?, last_mystery_box = ? WHERE id = ?')
       .run(amount, `${currentWeekStart} 00:00:00`, req.user.id);
     recordPieceTransaction(req.user.id, amount, 'mystery_box', `Coffre mystère · ${rarity}`);
@@ -2597,6 +2607,52 @@ app.post('/api/settings/adult', (req, res) => {
   res.json({ is_adult: isAdult });
 });
 
+app.post('/api/characters/video-trailer', async (req, res) => {
+  if (req.user.subscription_tier !== 'premium_plus') {
+    return res.status(403).json({ error: 'Le Générateur de Vidéos IA est réservé exclusivement aux membres Premium+.' });
+  }
+
+  const currentMonth = utcDate().slice(0, 7);
+  if (req.user.last_video_month !== currentMonth) {
+    db.prepare('UPDATE users SET video_generations_count = 0, last_video_month = ? WHERE id = ?').run(currentMonth, req.user.id);
+    req.user.video_generations_count = 0;
+    req.user.last_video_month = currentMonth;
+  }
+
+  if (req.user.video_generations_count >= 5) {
+    return res.status(429).json({
+      error: 'VIDEO_LIMIT_REACHED',
+      message: 'Vous avez atteint votre quota de 5 vidéos IA générées ce mois-ci. Reviens le mois prochain !'
+    });
+  }
+
+  const cost = 500;
+  if (req.user.pieces < cost) {
+    return res.status(402).json({ error: 'Vous n’avez plus assez de Pièces (500 🪙 requis).' });
+  }
+
+  const { characterName = 'Personnage', scenario = '' } = req.body ?? {};
+
+  const trans = db.transaction(() => {
+    db.prepare('UPDATE users SET pieces = pieces - ?, video_generations_count = video_generations_count + 1 WHERE id = ?').run(cost, req.user.id);
+    recordPieceTransaction(req.user.id, -cost, 'video_generation', `Génération vidéo IA : ${characterName}`);
+  });
+  trans();
+
+  const updatedUser = db.prepare('SELECT pieces, video_generations_count FROM users WHERE id = ?').get(req.user.id);
+
+  res.json({
+    title: `Bande-Annonce : ${characterName}`,
+    durationSeconds: 10,
+    sceneDescription: `Plan cinéma au ralenti : ${characterName} s'avance sous des lumières néon intenses avec un regard mystérieux. ${scenario}`,
+    dialogueLine: "Certains secrets ne devraient jamais être révélés... Es-tu prêt(e) à prendre le risque ?",
+    voiceoverText: `Découvre ${characterName} en exclusivité sur CHATILE.`,
+    musicStyle: "Symphonique Synthwave Épique",
+    videosRemainingThisMonth: Math.max(0, 5 - updatedUser.video_generations_count),
+    pieces: updatedUser.pieces
+  });
+});
+
 const OFFICIAL_AVATARS = {
   'léa': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
   'lea': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
@@ -2901,7 +2957,17 @@ app.post('/api/characters', (req, res) => {
   const existingCount = db.prepare('SELECT COUNT(*) AS count FROM characters WHERE user_id = ? AND is_system = 0')
     .get(req.user.id).count;
   const isSubscribed = ['premium', 'premium_plus'].includes(req.user.subscription_tier);
-  const creationCost = req.user.role === 'admin' || isSubscribed ? 0 : 200;
+
+  // Free Tier Limit: Max 5 created characters
+  if (!isSubscribed && req.user.role !== 'admin' && existingCount >= 5) {
+    return res.status(403).json({
+      error: 'CHARACTER_LIMIT_REACHED',
+      code: 'CHARACTER_LIMIT_REACHED',
+      message: 'Vous avez atteint la limite de 5 personnages créés pour le plan Gratuit. Passez au Premium pour créer des personnages en illimité !'
+    });
+  }
+
+  const creationCost = 0;
 
   if (creationCost > 0 && req.user.pieces < creationCost) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: creationCost, currentPieces: req.user.pieces });
@@ -3452,7 +3518,26 @@ app.post('/api/chat', async (req, res) => {
     req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
   const isPremiumPlus = req.user.subscription_tier === 'premium_plus' &&
     req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
-  const cost = usePremiumModel ? (isPremiumPlus ? 0 : (subscriptionActive ? 1 : 3)) : 1;
+
+  // Daily message limit check for Free Users (25 msgs/day)
+  if (req.user.subscription_tier === 'free') {
+    const today = utcDate();
+    if (req.user.last_message_date !== today) {
+      db.prepare('UPDATE users SET daily_messages_count = 0, last_message_date = ? WHERE id = ?').run(today, req.user.id);
+      req.user.daily_messages_count = 0;
+      req.user.last_message_date = today;
+    }
+
+    if (req.user.daily_messages_count >= 25) {
+      return res.status(403).json({
+        error: 'DAILY_LIMIT_REACHED',
+        code: 'DAILY_LIMIT_REACHED',
+        message: 'Vous avez atteint votre limite quotidienne de 25 messages gratuits. Passez au Premium pour discuter sans limites !'
+      });
+    }
+  }
+
+  const cost = usePremiumModel ? (isPremiumPlus ? 1 : (subscriptionActive ? 3 : 5)) : (isPremiumPlus ? 0 : (subscriptionActive ? 1 : 2));
   if (req.user.pieces < cost) return res.status(402).json({ error: 'Vous n’avez plus assez de Pièces.', needPayment: true });
 
   const character = characterId === null ? null : ownedCharacter(characterId, req.user.id);
@@ -3500,8 +3585,8 @@ app.post('/api/chat', async (req, res) => {
       const userMessage = insert.run(req.user.id, characterId, 'user', message);
       const assistantMessage = insert.run(req.user.id, characterId, 'assistant', reply);
       recordPieceTransaction(req.user.id, -cost, 'chat', usePremiumModel ? 'Message GPT-4o' : 'Message GPT-4o-mini');
-      db.prepare(`UPDATE users SET messages_since_last_ad = CASE WHEN ? THEN 0 ELSE messages_since_last_ad + 1 END
-        WHERE id = ?`).run(Number(showInterstitial), req.user.id);
+      db.prepare(`UPDATE users SET messages_since_last_ad = CASE WHEN ? THEN 0 ELSE messages_since_last_ad + 1 END,
+        daily_messages_count = daily_messages_count + 1 WHERE id = ?`).run(Number(showInterstitial), req.user.id);
       db.prepare(`INSERT INTO stats (user_id, character_id, messages_count, last_interaction)
         VALUES (?, ?, 1, CURRENT_TIMESTAMP) ON CONFLICT(user_id, character_id) DO UPDATE SET
         messages_count = messages_count + 1, last_interaction = CURRENT_TIMESTAMP`)

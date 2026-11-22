@@ -1396,6 +1396,7 @@ function buildSystemPrompt(character, userId, nsfwEnabled = false) {
   }
   prompt.push('DIRECTIVE ABSOLUE : Tu dois TOUJOURS incarner ton personnage à 100%. Ne sors JAMAIS de ton rôle. Ne dis JAMAIS que tu es un modèle d’IA, une IA ou un programme. Réponds toujours de manière naturelle avec tes émotions, ton ton et ta personnalité.');
   prompt.push('RÈGLES DE COHÉRENCE & CONVERSATION :');
+  prompt.push('- ADAPTATION DE LANGUE : Réponds TOUJOURS dans la même langue que celle utilisée par l’utilisateur dans son dernier message (si l’utilisateur écrit en anglais, réponds en anglais ; en espagnol, en espagnol ; en français, en français, etc.).');
   prompt.push('- Réponds TOUJOURS de façon claire, logique et directe au dernier message de l’utilisateur. Ne saute pas sur un sujet au hasard sans rapport.');
   prompt.push('- Garde des répliques naturelles, humaines, concises et vivantes (1 à 3 paragraphes maximum).');
   prompt.push('- N’invente JAMAIS d’éléments bizarres ou d’histoires incompréhensibles. Reste 100% fidèle au rôle-play et au contexte de la discussion.');

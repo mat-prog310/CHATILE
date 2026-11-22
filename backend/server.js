@@ -247,16 +247,6 @@ db.exec(`
     quest_id INTEGER NOT NULL REFERENCES weekly_quests(id) ON DELETE CASCADE, progress INTEGER NOT NULL DEFAULT 0,
     claimed INTEGER NOT NULL DEFAULT 0, week_start TEXT NOT NULL, UNIQUE(user_id, quest_id, week_start)
   );
-  CREATE TABLE IF NOT EXISTS daily_ad_challenges (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    target INTEGER NOT NULL,
-    reward INTEGER NOT NULL,
-    progress INTEGER NOT NULL DEFAULT 0,
-    claimed INTEGER NOT NULL DEFAULT 0,
-    challenge_date TEXT NOT NULL,
-    UNIQUE(user_id, target, challenge_date)
-  );
   CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT, referrer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     referee_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -2489,57 +2479,6 @@ app.post('/api/quests/:id/claim', (req, res) => {
   }
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   res.json({ success: true, reward: result.reward, pieces: updated.pieces });
-});
-
-function updateDailyAdChallenges(userId) {
-  const today = new Date().toISOString().slice(0, 10);
-  const targets = [
-    { target: 10, reward: 50 },
-    { target: 25, reward: 150 },
-    { target: 50, reward: 350 },
-    { target: 100, reward: 800 },
-    { target: 250, reward: 2000 },
-    { target: 500, reward: 5000 },
-    { target: 1000, reward: 12000 }
-  ];
-
-  const ensure = db.prepare('INSERT OR IGNORE INTO daily_ad_challenges (user_id, target, reward, challenge_date) VALUES (?, ?, ?, ?)');
-  const update = db.prepare('UPDATE daily_ad_challenges SET progress = MIN(target, progress + 1) WHERE user_id = ? AND target = ? AND challenge_date = ? AND claimed = 0');
-
-  const trans = db.transaction(() => {
-    for (const t of targets) {
-      ensure.run(userId, t.target, t.reward, today);
-      update.run(userId, t.target, today);
-    }
-  });
-  trans();
-}
-
-app.get('/api/challenges/ads', (req, res) => {
-  const today = new Date().toISOString().slice(0, 10);
-  updateDailyAdChallenges(req.user.id);
-  const challenges = db.prepare('SELECT target, reward, progress, claimed FROM daily_ad_challenges WHERE user_id = ? AND challenge_date = ? ORDER BY target ASC').all(req.user.id, today);
-  res.json({ date: today, challenges });
-});
-
-app.post('/api/challenges/ads/:target/claim', (req, res) => {
-  const target = Number(req.params.target);
-  const today = new Date().toISOString().slice(0, 10);
-
-  const challenge = db.prepare('SELECT * FROM daily_ad_challenges WHERE user_id = ? AND target = ? AND challenge_date = ?').get(req.user.id, target, today);
-  if (!challenge) return res.status(404).json({ error: 'Défi introuvable.' });
-  if (challenge.claimed) return res.status(409).json({ error: 'Défi déjà réclamé.' });
-  if (challenge.progress < challenge.target) return res.status(400).json({ error: 'Défi non complété.' });
-
-  const claimTrans = db.transaction(() => {
-    db.prepare('UPDATE daily_ad_challenges SET claimed = 1 WHERE id = ?').run(challenge.id);
-    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(challenge.reward, req.user.id);
-    recordPieceTransaction(req.user.id, challenge.reward, 'ad_challenge', `Défi pub atteint : ${challenge.target} pubs en 1 jour`);
-  });
-  claimTrans();
-
-  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-  res.json({ success: true, reward: challenge.reward, pieces: updatedUser.pieces });
 });
 
 app.get('/api/referral/code', (req, res) => res.json({ code: ensureReferralCode(req.user.id) }));

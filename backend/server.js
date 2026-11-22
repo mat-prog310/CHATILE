@@ -16,7 +16,8 @@ if (!process.env.OPENAI_API_KEY && !process.env.OPENAI_KEY && !process.env.GEMIN
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : resolve(__dirname, 'data', 'pieces.sqlite');
+const persistentBasePath = process.env.RENDER_DISK_PATH || (existsSync('/var/data') ? '/var/data' : (existsSync('/data') ? '/data' : null));
+const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : (persistentBasePath ? resolve(persistentBasePath, 'pieces.sqlite') : resolve(__dirname, 'data', 'pieces.sqlite'));
 mkdirSync(dirname(databasePath), { recursive: true });
 
 function performStartupBackup() {
@@ -878,7 +879,7 @@ app.get('/app-ads.txt', (req, res) => {
   res.send('google.com, pub-8964953556750058, DIRECT, f08c47fec0942fa0');
 });
 app.use(express.json({ limit: '32kb' }));
-const uploadDirectory = resolve(__dirname, 'uploads');
+const uploadDirectory = process.env.RENDER_DISK_PATH ? resolve(process.env.RENDER_DISK_PATH, 'uploads') : (persistentBasePath ? resolve(persistentBasePath, 'uploads') : resolve(__dirname, 'uploads'));
 mkdirSync(uploadDirectory, { recursive: true });
 mkdirSync(resolve(uploadDirectory, 'chat ile'), { recursive: true });
 const pendingCharacterImages = new Set();
@@ -4743,6 +4744,17 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
       SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
     `).get()?.total || 0;
 
+    const userGrowthHistory = [];
+    const activeUsersHistory = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const label = d.slice(5);
+      const totalU = db.prepare('SELECT COUNT(*) as count FROM users WHERE date(created_at) <= ?').get(d)?.count || 0;
+      const activeU = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE date(created_at) <= ? AND date(created_at) >= date(?, \'-7 days\')').get(d, d)?.count || 0;
+      userGrowthHistory.push({ date: label, count: totalU });
+      activeUsersHistory.push({ date: label, count: activeU });
+    }
+
     res.json({
       totalUsers,
       activeUsers,
@@ -4751,11 +4763,13 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
       totalPosts,
       premiumUsers,
       dailyActive,
-      piecesDistributed
+      piecesDistributed,
+      userGrowthHistory,
+      activeUsersHistory
     });
   } catch (err) {
     console.error('Admin stats error:', err.message);
-    res.json({ totalUsers: 0, activeUsers: 0, totalMessages: 0, totalCharacters: 0, totalPosts: 0, premiumUsers: 0, dailyActive: 0, piecesDistributed: 0 });
+    res.json({ totalUsers: 0, activeUsers: 0, totalMessages: 0, totalCharacters: 0, totalPosts: 0, premiumUsers: 0, dailyActive: 0, piecesDistributed: 0, userGrowthHistory: [], activeUsersHistory: [] });
   }
 });
 

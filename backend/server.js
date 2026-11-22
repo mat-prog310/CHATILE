@@ -881,6 +881,7 @@ app.get('/app-ads.txt', (req, res) => {
 app.use(express.json({ limit: '32kb' }));
 const uploadDirectory = process.env.RENDER_DISK_PATH ? resolve(process.env.RENDER_DISK_PATH, 'uploads') : (persistentBasePath ? resolve(persistentBasePath, 'uploads') : resolve(__dirname, 'uploads'));
 mkdirSync(uploadDirectory, { recursive: true });
+console.log(`[Storage] Upload directory initialized at: ${uploadDirectory}`);
 mkdirSync(resolve(uploadDirectory, 'chat ile'), { recursive: true });
 const pendingCharacterImages = new Set();
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: true, maxAge: '1d' }));

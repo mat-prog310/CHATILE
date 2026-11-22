@@ -87,7 +87,9 @@ ipcMain.handle('admin:get-stats', async () => {
       totalChars: res.totalCharacters || 0,
       totalStories: res.totalPosts || 0,
       totalPieces: res.piecesDistributed || 0,
-      premiumUsers: res.premiumUsers || 0
+      premiumUsers: res.premiumUsers || 0,
+      userGrowthHistory: res.userGrowthHistory || [],
+      activeUsersHistory: res.activeUsersHistory || []
     }
   };
 });
@@ -112,6 +114,10 @@ ipcMain.handle('admin:ban-user', async (event, { userId, days, reason }) => {
 
 ipcMain.handle('admin:unban-user', async (event, { userId, reason }) => {
   return await apiCall(`/api/admin/users/${userId}/unban`, 'POST', { reason });
+});
+
+ipcMain.handle('admin:delete-user-permanent', async (event, userId) => {
+  return await apiCall(`/api/admin/users/${userId}`, 'DELETE');
 });
 
 ipcMain.handle('admin:adjust-pieces', async (event, { userId, amount, reason }) => {

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>PiecesIA - Panneau d'Administration</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans antialiased min-h-screen flex flex-col">
@@ -80,6 +81,13 @@
                 <h3 class="text-xl font-bold text-white">Statistiques Globales</h3>
                 <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Stat cards injected dynamically -->
+                </div>
+                <!-- Growth Curve Chart Card -->
+                <div class="bg-gray-800 border border-gray-700 p-6 rounded-2xl shadow-xl space-y-4">
+                    <h4 class="text-base font-bold text-white"><i class="fa-solid fa-chart-line text-indigo-400 mr-2"></i> Évolution des Utilisateurs & Utilisateurs Actifs (7 derniers jours)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="growthChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -365,6 +373,58 @@
                     </div>
                 </div>
             `;
+            renderGrowthChart(s.userGrowthHistory || [], s.activeUsersHistory || []);
+        }
+
+        let growthChartInstance = null;
+
+        function renderGrowthChart(userGrowth, activeGrowth) {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            if (growthChartInstance) {
+                growthChartInstance.destroy();
+            }
+
+            const labels = userGrowth.map(item => item.date);
+            const totalData = userGrowth.map(item => item.count);
+            const activeData = activeGrowth.map(item => item.count);
+
+            growthChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Nombre Total d’Utilisateurs',
+                            data: totalData,
+                            borderColor: '#818cf8',
+                            backgroundColor: 'rgba(129, 140, 248, 0.15)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Utilisateurs Actifs (7j)',
+                            data: activeData,
+                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(52, 211, 153, 0.15)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#9ca3af', font: { size: 12 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(75, 85, 99, 0.2)' }, ticks: { color: '#9ca3af' } },
+                        y: { grid: { color: 'rgba(75, 85, 99, 0.2)' }, ticks: { color: '#9ca3af', precision: 0 } }
+                    }
+                }
+            });
         }
 
         async function loadUsers(page = 1) {

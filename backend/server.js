@@ -4866,7 +4866,7 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 // Global stats
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   try {
-    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE (deleted_at IS NULL OR deleted_at = "") AND role != "admin" AND (is_system_account IS NULL OR is_system_account = 0)').get()?.count || 0;
+    const totalUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE (deleted_at IS NULL OR deleted_at = '') AND role != 'admin' AND (is_system_account IS NULL OR is_system_account = 0)").get()?.count || 0;
     const activeUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE (deleted_at IS NULL OR deleted_at = '') AND last_daily_claim >= date('now', '-7 days')").get()?.count || 0;
     const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
     const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;

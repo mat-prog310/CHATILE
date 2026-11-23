@@ -4995,6 +4995,74 @@ app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
+// List all characters for Admin Desktop App
+app.get(['/api/admin/characters', '/api/admin/characters-list'], requireAdmin, (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    let query = `SELECT c.*, u.username AS creator_username FROM characters c LEFT JOIN users u ON u.id = c.user_id WHERE (c.deleted_at IS NULL OR c.deleted_at = '')`;
+    const params = [];
+
+    if (search.trim() !== '') {
+      query += ` AND (c.name LIKE ? OR c.system_prompt LIKE ?)`;
+      params.push(`%${search.trim()}%`, `%${search.trim()}%`);
+    }
+
+    const countQuery = `SELECT COUNT(*) as c FROM characters c WHERE (c.deleted_at IS NULL OR c.deleted_at = '') ${search ? 'AND (c.name LIKE ? OR c.system_prompt LIKE ?)' : ''}`;
+    const totalCount = db.prepare(countQuery).get(...params)?.c || 0;
+
+    query += ` ORDER BY c.id DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const characters = db.prepare(query).all(...params);
+    res.json({
+      success: true,
+      characters,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 1
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Analytics & Charts data for Admin Desktop App
+app.get(['/api/admin/charts', '/api/admin/analytics', '/api/admin/users-graph', '/api/admin/stats/daily'], requireAdmin, (req, res) => {
+  try {
+    const userGrowth = db.prepare(`
+      SELECT date(created_at) AS date, COUNT(*) AS count
+      FROM users
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY date(created_at)
+      ORDER BY date ASC
+    `).all();
+
+    const messageActivity = db.prepare(`
+      SELECT date(created_at) AS date, COUNT(*) AS count
+      FROM messages
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY date(created_at)
+      ORDER BY date ASC
+    `).all();
+
+    res.json({
+      success: true,
+      userGrowth,
+      messageActivity,
+      chartData: userGrowth.map(u => ({
+        date: u.date,
+        users: u.count,
+        messages: messageActivity.find(m => m.date === u.date)?.count || 0
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ==================== LOOT BOXES & INVENTORY ROUTES ====================
 
 // Get Pity Counter

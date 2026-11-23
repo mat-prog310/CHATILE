@@ -752,9 +752,7 @@ for (const quest of [
   ['Créateur prolifique', 'Créer 3 personnages.', 3, 250, 'characters'],
   ['Explorateur', 'Découvrir 5 personnages.', 5, 200, 'characters'],
   ['Collectionneur', 'Garder une série de 7 jours.', 7, 150, 'streak'],
-  ['Publicitaire débutant', 'Regarder 10 publicités.', 10, 100, 'watch_ad'],
-  ['Publicitaire expert', 'Regarder 50 publicités.', 50, 600, 'watch_ad'],
-  ['Publicitaire prodige', 'Regarder 100 publicités.', 100, 1500, 'watch_ad'],
+  ['Collectionneur de packs', 'Effectuer un achat réel (pack ou abonnement).', 1, 100, 'purchase'],
 ]) seedQuest.run(...quest);
 
 const seedLootItems = [
@@ -1763,6 +1761,7 @@ app.post('/api/verify-purchase', async (req, res) => {
           db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(product.pieces, req.user.id);
           recordPieceTransaction(req.user.id, product.pieces, 'purchase', productId);
         }
+        updateQuestProgress(req.user.id, 'purchase', 1);
       });
       applyPurchase();
     } else if (product.type === 'subscription') {

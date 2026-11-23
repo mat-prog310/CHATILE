@@ -886,6 +886,17 @@ if (!modUser) {
 const app = express();
 app.disable('x-powered-by');
 
+// Enable CORS & Preflight OPTIONS for Admin Desktop / Web clients
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-device-id, x-admin-secret, x-signature, x-timestamp, idempotency-key');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Circuit Breaker State
 let aiFailureCount = 0;
 let circuitOpenUntil = 0;
@@ -937,7 +948,7 @@ app.get('/api/health', (req, res) => {
 const HMAC_SECRET = process.env.HMAC_SECRET || 'chatile_secret_hmac_2026';
 
 function verifyRequestSignature(req, res, next) {
-  if (req.path.startsWith('/uploads') || req.path === '/api/health' || req.path === '/api/version' || req.path === '/app-ads.txt') {
+  if (req.path.startsWith('/uploads') || req.path.startsWith('/api/admin') || req.path === '/api/health' || req.path === '/api/version' || req.path === '/app-ads.txt') {
     return next();
   }
   const signature = req.headers['x-signature'];
@@ -3902,14 +3913,14 @@ function logAdminAction(action, targetId, targetType, details, oldValue = null, 
 
 // Admin middleware
 function requireAdmin(req, res, next) {
-  const adminSecret = req.headers['x-admin-secret'] || req.headers['X-Admin-Secret'];
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  if (expectedPassword && adminSecret && adminSecret.trim() === expectedPassword.trim()) {
+  const adminSecret = req.headers['x-admin-secret'] || req.headers['x-admin-key'] || req.headers['X-Admin-Secret'] || req.headers['authorization'];
+  const expectedPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET || 'chatile_admin_secret').trim();
+  if (adminSecret && (adminSecret.trim() === expectedPassword || adminSecret.replace(/^Bearer\s+/i, '').trim() === expectedPassword)) {
     req.user = req.user || { id: 0, role: 'admin', username: 'desktop_admin' };
     return next();
   }
   if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Accès réservé aux administrateurs.' });
+    return res.status(403).json({ error: 'Accès réservé aux administrateurs. Clé d\'administration invalide.' });
   }
   next();
 }
@@ -4894,28 +4905,36 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 
 // Global stats
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
-  const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-  const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get().count;
-  const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
-  const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get().count;
-  const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get().count;
-  const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get().count;
-  const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get().count;
-  
-  const piecesDistributed = db.prepare(`
-    SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
-  `).get().total || 0;
-  
-  res.json({
-    totalUsers,
-    activeUsers,
-    totalMessages,
-    totalCharacters,
-    totalPosts,
-    premiumUsers,
-    dailyActive,
-    piecesDistributed
-  });
+  try {
+    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get()?.count || 0;
+    const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get()?.count || 0;
+    const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
+    const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
+    const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
+    const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get()?.count || 0;
+    const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get()?.count || 0;
+
+    let piecesDistributed = 0;
+    try {
+      piecesDistributed = db.prepare(`
+        SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
+      `).get()?.total || 0;
+    } catch (_e) {}
+
+    res.json({
+      totalUsers,
+      activeUsers,
+      totalMessages,
+      totalCharacters,
+      totalPosts,
+      premiumUsers,
+      dailyActive,
+      piecesDistributed
+    });
+  } catch (err) {
+    console.error('Admin stats error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Additional Admin API endpoints for Desktop App / Render

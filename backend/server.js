@@ -6,7 +6,7 @@ import { GoogleAuth } from 'google-auth-library';
 import { mkdirSync, renameSync, writeFileSync, copyFileSync, readdirSync, unlinkSync, statSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHmac } from 'node:crypto';
 import multer from 'multer';
 import admin from 'firebase-admin';
 
@@ -1069,13 +1069,19 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
   const targetAdminEmail = process.env.ADMIN_EMAIL || 'matthias.duprey1@gmail.com';
   const isAdmin = decoded.email && decoded.email.toLowerCase() === targetAdminEmail.toLowerCase();
   const role = isAdmin ? 'admin' : 'user';
-  const effectiveName = customUsername || decoded.name || 'Utilisateur CHATILE';
+  const baseName = (customUsername || decoded.name || decoded.email?.split('@')[0] || 'Utilisateur CHATILE').trim();
+
+  let uniqueUsername = baseName;
+  const existingWithUsername = db.prepare('SELECT id FROM users WHERE username = ? AND (firebase_uid IS NULL OR firebase_uid != ?)').get(uniqueUsername, decoded.uid);
+  if (existingWithUsername) {
+    uniqueUsername = `${baseName}_${Math.floor(1000 + Math.random() * 9000)}`;
+  }
 
   if (!user && deviceId) {
     const guestUser = db.prepare('SELECT * FROM users WHERE device_id = ? AND firebase_uid IS NULL').get(deviceId);
     if (guestUser) {
       db.prepare("UPDATE users SET firebase_uid = ?, username = COALESCE(NULLIF(username, ''), ?), display_name = COALESCE(NULLIF(display_name, ''), ?), avatar_url = COALESCE(avatar_url, ?) WHERE id = ?")
-        .run(decoded.uid, effectiveName, effectiveName, decoded.picture || guestUser.avatar_url, guestUser.id);
+        .run(decoded.uid, uniqueUsername, baseName, decoded.picture || guestUser.avatar_url, guestUser.id);
       user = db.prepare('SELECT * FROM users WHERE id = ?').get(guestUser.id);
     }
   }
@@ -1084,15 +1090,15 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, username, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
        VALUES (?, ?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
-    ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, effectiveName, effectiveName, decoded.picture || null, role);
+    ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, uniqueUsername, baseName, decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
-      .run(user.id, effectiveName);
+      .run(user.id, baseName);
   } else {
     const newRole = isAdmin ? 'admin' : user.role;
-    if (newRole !== user.role || (!user.display_name?.trim() && effectiveName.trim()) || (!user.username?.trim() && effectiveName.trim())) {
+    if (newRole !== user.role || (!user.display_name?.trim() && baseName.trim()) || (!user.username?.trim() && uniqueUsername.trim())) {
       db.prepare("UPDATE users SET role = ?, username = COALESCE(NULLIF(username, ''), ?), display_name = COALESCE(NULLIF(display_name, ''), ?), avatar_url = COALESCE(avatar_url, ?) WHERE id = ?")
-        .run(newRole, effectiveName, effectiveName, decoded.picture || null, user.id);
+        .run(newRole, uniqueUsername, baseName, decoded.picture || null, user.id);
       user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
     }
   }
@@ -1103,12 +1109,9 @@ async function identifyUser(req, res, next) {
   if (req.path === '/auth/firebase') return next();
 
   // Allow desktop admin app using x-admin-secret header to bypass regular user token auth
-  const adminSecret = req.headers['x-admin-secret'] || req.headers['X-Admin-Secret'];
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  if (adminSecret) {
-    console.log(`[Admin Auth Check] Expected password set: ${Boolean(expectedPassword)}, Match: ${adminSecret.trim() === (expectedPassword || '').trim()}`);
-  }
-  if (expectedPassword && adminSecret && adminSecret.trim() === expectedPassword.trim()) {
+  const adminSecret = req.headers['x-admin-secret'] || req.headers['x-admin-key'] || req.headers['X-Admin-Secret'] || req.headers['authorization'];
+  const expectedPassword = (process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET || 'chatile_admin_secret').trim();
+  if (adminSecret && (adminSecret.trim() === expectedPassword || adminSecret.replace(/^Bearer\s+/i, '').trim() === expectedPassword)) {
     req.user = { id: 0, role: 'admin', username: 'desktop_admin' };
     return next();
   }

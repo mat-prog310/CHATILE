@@ -10,10 +10,7 @@ import { randomUUID } from 'node:crypto';
 import multer from 'multer';
 import admin from 'firebase-admin';
 
-if (!process.env.MISTRAL_API_KEY) {
-  console.error('ERREUR : MISTRAL_API_KEY manquante dans backend/.env');
-  process.exit(1);
-}
+
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : resolve(__dirname, 'data', 'pieces.sqlite');
@@ -1212,47 +1209,8 @@ async function callOpenAI(messages, model = 'gpt-4o-mini', nsfwEnabled = false) 
 }
 
 async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
-  // Si OpenAI est configuré, on l'utilise directement pour des réponses rapides et garanties
-  const openAIKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
-  if (openAIKey) {
-    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
-    return await callOpenAI(messages, openaiModel, nsfwEnabled);
-  }
-
-  try {
-    if (!process.env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY.startsWith('dev_key') || process.env.MISTRAL_API_KEY.trim() === '') {
-      throw new Error('MISTRAL_API_KEY_NOT_CONFIGURED');
-    }
-
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY.trim().replace(/^["']|["']$/g, '')}`
-      },
-      body: JSON.stringify({
-        model: model || 'mistral-small-latest',
-        messages,
-        max_tokens: 500,
-        temperature: 0.6,
-        top_p: 0.9,
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
-
-    if (!response.ok) {
-      throw new Error(`MISTRAL_ERROR_${response.status}`);
-    }
-
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content;
-    if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_MISTRAL_RESPONSE');
-    return text.trim();
-  } catch (error) {
-    console.warn('Mistral indisponible, tentative OpenAI en secours...');
-    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
-    return await callOpenAI(messages, openaiModel, nsfwEnabled);
-  }
+  const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+  return await callOpenAI(messages, openaiModel, nsfwEnabled);
 }
 
 function parseFacts(summary) {

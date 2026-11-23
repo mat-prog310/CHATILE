@@ -823,8 +823,9 @@ for (const item of seedLootItems) {
   insertLootItem.run(...item);
 }
 
-// Clean up any seed accounts if present
+// Clean up any seed accounts or unused guest accounts if present
 db.prepare("DELETE FROM users WHERE username IN ('chat ile_official', 'chat ile_mod')").run();
+db.prepare("DELETE FROM users WHERE username LIKE 'Guest_%' AND (SELECT COUNT(*) FROM messages WHERE user_id = users.id) = 0").run();
 
 const app = express();
 app.disable('x-powered-by');
@@ -1048,10 +1049,22 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
   return user;
 }
 
+function getOrCreateAdminUser() {
+  let adminUser = db.prepare("SELECT * FROM users WHERE role = 'admin' AND is_system_account = 1 ORDER BY id ASC LIMIT 1").get();
+  if (!adminUser) {
+    const result = db.prepare(`
+      INSERT INTO users (device_id, username, display_name, pieces, role, is_verified, badge_type, is_system_account, created_at)
+      VALUES ('admin_root_device', 'admin_root', 'Administrateur', 0, 'admin', 1, 'official', 1, CURRENT_TIMESTAMP)
+    `).run();
+    adminUser = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
+  }
+  return adminUser;
+}
+
 async function identifyUser(req, res, next) {
   const fullPath = req.originalUrl || req.path || '';
-  if (fullPath.includes('/auth/firebase') || fullPath.includes('/admin') || req.path.startsWith('/admin')) {
-    req.user = { id: 0, role: 'admin', username: 'desktop_admin' };
+  if (fullPath.includes('/auth/firebase') || fullPath.includes('/admin') || req.path.startsWith('/admin') || req.headers['x-admin-secret'] || req.headers['x-admin-key']) {
+    req.user = getOrCreateAdminUser();
     return next();
   }
 
@@ -4853,8 +4866,8 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 // Global stats
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   try {
-    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get()?.count || 0;
-    const activeUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date('now', '-7 days')").get()?.count || 0;
+    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE (deleted_at IS NULL OR deleted_at = "") AND role != "admin" AND (is_system_account IS NULL OR is_system_account = 0)').get()?.count || 0;
+    const activeUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE (deleted_at IS NULL OR deleted_at = '') AND last_daily_claim >= date('now', '-7 days')").get()?.count || 0;
     const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
     const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
     const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
@@ -4868,6 +4881,22 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
       `).get()?.total || 0;
     } catch (_e) {}
 
+    const userGrowthHistory = db.prepare(`
+      SELECT date(created_at) AS date, COUNT(*) AS count
+      FROM users
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY date(created_at)
+      ORDER BY date ASC
+    `).all();
+
+    const activeUsersHistory = db.prepare(`
+      SELECT date(created_at) AS date, COUNT(DISTINCT user_id) AS count
+      FROM messages
+      WHERE created_at >= date('now', '-30 days')
+      GROUP BY date(created_at)
+      ORDER BY date ASC
+    `).all();
+
     res.json({
       totalUsers,
       activeUsers,
@@ -4876,7 +4905,9 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
       totalPosts,
       premiumUsers,
       dailyActive,
-      piecesDistributed
+      piecesDistributed,
+      userGrowthHistory,
+      activeUsersHistory
     });
   } catch (err) {
     console.error('Admin stats error:', err.message);
@@ -4897,7 +4928,7 @@ app.get('/api/admin/users-list', requireAdmin, (req, res) => {
     SELECT u.*,
            (SELECT count(*) FROM characters c WHERE c.user_id = u.id) as character_count
     FROM users u
-    WHERE (u.deleted_at IS NULL OR u.deleted_at = '')
+    WHERE (u.deleted_at IS NULL OR u.deleted_at = '') AND u.role != 'admin' AND (u.is_system_account IS NULL OR u.is_system_account = 0)
   `;
   const params = [];
 
@@ -4907,7 +4938,7 @@ app.get('/api/admin/users-list', requireAdmin, (req, res) => {
     params.push(term, term, term);
   }
 
-  const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
+  const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') AND u.role != 'admin' AND (u.is_system_account IS NULL OR u.is_system_account = 0) ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
   const totalCount = db.prepare(countQuery).get(...params).c;
 
   const validSorts = ['id', 'username', 'created_at', 'pieces', 'subscription_tier', 'character_count'];
@@ -4974,25 +5005,84 @@ app.get('/api/admin/logs', requireAdmin, (req, res) => {
   res.json({ success: true, logs });
 });
 
-app.delete('/api/admin/characters/:id', requireAdmin, (req, res) => {
-  const charId = req.params.id;
-  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
-  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
+// Delete User (supports DELETE and POST, with or without /delete suffix)
+app.all(['/api/admin/users/:id/delete', '/api/admin/users/:id'], requireAdmin, (req, res) => {
+  if (req.method !== 'DELETE' && req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
+  try {
+    const userId = req.params.id;
+    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
-  db.prepare("DELETE FROM characters WHERE id = ?").run(charId);
-  logAdminAction('DELETE_CHARACTER', charId, 'character', 'Deleted character', char, null);
-  res.json({ success: true });
+    const deleteUserTrans = db.transaction(() => {
+      db.prepare("DELETE FROM messages WHERE user_id = ?").run(userId);
+      db.prepare("DELETE FROM characters WHERE user_id = ? AND is_system = 0").run(userId);
+      db.prepare("DELETE FROM piece_transactions WHERE user_id = ?").run(userId);
+      db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+    });
+    deleteUserTrans();
+
+    logAdminAction('DELETE_USER', userId, 'user', 'Deleted user account', user, null);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete Character (supports DELETE and POST, with or without /delete suffix)
+app.all(['/api/admin/characters/:id/delete', '/api/admin/characters/:id'], requireAdmin, (req, res) => {
+  if (req.method !== 'DELETE' && req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
+  try {
+    const charId = req.params.id;
+    const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
+    if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+    const deleteCharTrans = db.transaction(() => {
+      db.prepare("DELETE FROM messages WHERE character_id = ?").run(charId);
+      db.prepare("DELETE FROM characters WHERE id = ?").run(charId);
+    });
+    deleteCharTrans();
+
+    logAdminAction('DELETE_CHARACTER', charId, 'character', 'Deleted character', char, null);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
   const charId = req.params.id;
-  const { name, systemPrompt, isPublic } = req.body;
+  const { name, systemPrompt, greeting, avatar_url, avatarUrl, isPublic, isNsfw } = req.body;
   const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
   if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
 
-  db.prepare("UPDATE characters SET name = ?, system_prompt = ?, is_public = ? WHERE id = ?").run(name, systemPrompt, isPublic ? 1 : 0, charId);
-  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, systemPrompt, isPublic }, char, { name, system_prompt: systemPrompt, is_public: isPublic ? 1 : 0 });
-  res.json({ success: true });
+  const newAvatar = avatar_url || avatarUrl || char.avatar_url;
+  const newGreeting = greeting !== undefined ? greeting : char.greeting;
+  const newName = name !== undefined ? name : char.name;
+  const newPrompt = systemPrompt !== undefined ? systemPrompt : char.system_prompt;
+  const newPublic = isPublic !== undefined ? (isPublic ? 1 : 0) : char.is_public;
+  const newNsfw = isNsfw !== undefined ? (isNsfw ? 1 : 0) : char.is_nsfw;
+
+  db.prepare(`
+    UPDATE characters SET name = ?, system_prompt = ?, greeting = ?, avatar_url = ?, is_public = ?, is_nsfw = ? WHERE id = ?
+  `).run(newName, newPrompt, newGreeting, newAvatar, newPublic, newNsfw, charId);
+
+  const updated = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
+  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name: newName, systemPrompt: newPrompt }, char, updated);
+  res.json({ success: true, character: formatCharacter(updated, req) });
+});
+
+app.post('/api/admin/characters/:id/avatar', requireAdmin, (req, res) => {
+  const charId = Number(req.params.id);
+  const character = db.prepare('SELECT id FROM characters WHERE id = ?').get(charId);
+  if (!character) return res.status(404).json({ error: 'Personnage introuvable.' });
+  avatarUpload.single('avatar')(req, res, (error) => {
+    if (error || !req.file) return res.status(400).json({ error: 'Image invalide.' });
+    const filename = req.file.filename;
+    const relativeUrl = `/uploads/${filename}`;
+    db.prepare('UPDATE characters SET avatar_url = ? WHERE id = ?').run(relativeUrl, charId);
+    const updated = db.prepare('SELECT * FROM characters WHERE id = ?').get(charId);
+    return res.json({ success: true, character: formatCharacter(updated, req) });
+  });
 });
 
 // List all characters for Admin Desktop App
@@ -5017,7 +5107,7 @@ app.get(['/api/admin/characters', '/api/admin/characters-list'], requireAdmin, (
     query += ` ORDER BY c.id DESC LIMIT ? OFFSET ?`;
     params.push(limit, offset);
 
-    const characters = db.prepare(query).all(...params);
+    const characters = db.prepare(query).all(...params).map(c => formatCharacter(c, req));
     res.json({
       success: true,
       characters,

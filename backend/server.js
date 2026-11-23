@@ -74,7 +74,7 @@ db.exec(`
     display_name TEXT NOT NULL DEFAULT '',
     bio TEXT NOT NULL DEFAULT '',
     avatar_url TEXT,
-    pieces INTEGER NOT NULL DEFAULT 750,
+    pieces INTEGER NOT NULL DEFAULT 100,
     nsfw_enabled INTEGER NOT NULL DEFAULT 0,
     is_adult INTEGER NOT NULL DEFAULT 0,
     last_daily_claim TEXT,
@@ -823,9 +823,9 @@ for (const item of seedLootItems) {
   insertLootItem.run(...item);
 }
 
-// Clean up any seed accounts or unused guest accounts if present
+// Clean up any seed accounts or guest accounts if present
 db.prepare("DELETE FROM users WHERE username IN ('chat ile_official', 'chat ile_mod')").run();
-db.prepare("DELETE FROM users WHERE username LIKE 'Guest_%' AND (SELECT COUNT(*) FROM messages WHERE user_id = users.id) = 0").run();
+db.prepare("DELETE FROM users WHERE username LIKE 'Guest_%' OR username LIKE 'guest_%'").run();
 
 const app = express();
 app.disable('x-powered-by');
@@ -1033,7 +1033,7 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
   if (!user) {
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, username, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
-       VALUES (?, ?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
+       VALUES (?, ?, ?, ?, ?, 100, 1, ?, CURRENT_TIMESTAMP)`
     ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, uniqueUsername, baseName, decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
@@ -1070,20 +1070,7 @@ async function identifyUser(req, res, next) {
 
   const authorization = req.get('authorization') ?? '';
   if (!authorization.startsWith('Bearer ')) {
-    const deviceId = req.get('x-device-id');
-    if (deviceId) {
-      let guestUser = db.prepare('SELECT * FROM users WHERE device_id = ?').get(deviceId);
-      if (!guestUser) {
-        const result = db.prepare(
-          `INSERT INTO users (device_id, username, display_name, pieces, welcome_bonus_claimed, role, created_at)
-           VALUES (?, ?, ?, 750, 1, 'user', CURRENT_TIMESTAMP)`
-        ).run(deviceId, `Guest_${deviceId.slice(0, 8)}`, 'Invité CHATILE');
-        guestUser = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
-      }
-      req.user = guestUser;
-      return next();
-    }
-    return res.status(401).json({ error: 'Authentification requise', needLogin: true });
+    return res.status(401).json({ error: 'Authentification requise. Veuillez créer un compte ou vous connecter.', needLogin: true });
   }
 
   const token = authorization.slice(7).trim();

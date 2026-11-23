@@ -10,14 +10,13 @@ import { randomUUID } from 'node:crypto';
 import multer from 'multer';
 import admin from 'firebase-admin';
 
-if (!process.env.OPENAI_API_KEY && !process.env.OPENAI_KEY && !process.env.GEMINI_API_KEY && !process.env.GEMINI_KEY && !process.env.GOOGLE_API_KEY) {
-  console.error('ERREUR : Ni OPENAI_API_KEY ni GEMINI_API_KEY ne sont configurées dans backend/.env');
+if (!process.env.MISTRAL_API_KEY) {
+  console.error('ERREUR : MISTRAL_API_KEY manquante dans backend/.env');
   process.exit(1);
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const persistentBasePath = process.env.RENDER_DISK_PATH || (existsSync('/var/data') ? '/var/data' : (existsSync('/data') ? '/data' : null));
-const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : (persistentBasePath ? resolve(persistentBasePath, 'pieces.sqlite') : resolve(__dirname, 'data', 'pieces.sqlite'));
+const databasePath = process.env.DATABASE_PATH ? resolve(process.env.DATABASE_PATH) : resolve(__dirname, 'data', 'pieces.sqlite');
 mkdirSync(dirname(databasePath), { recursive: true });
 
 function performStartupBackup() {
@@ -78,7 +77,7 @@ db.exec(`
     display_name TEXT NOT NULL DEFAULT '',
     bio TEXT NOT NULL DEFAULT '',
     avatar_url TEXT,
-    pieces INTEGER NOT NULL DEFAULT 100,
+    pieces INTEGER NOT NULL DEFAULT 750,
     nsfw_enabled INTEGER NOT NULL DEFAULT 0,
     is_adult INTEGER NOT NULL DEFAULT 0,
     last_daily_claim TEXT,
@@ -86,8 +85,6 @@ db.exec(`
     last_streak_date TEXT,
     last_mystery_box TEXT,
     messages_since_last_ad INTEGER NOT NULL DEFAULT 0,
-    daily_messages_count INTEGER NOT NULL DEFAULT 0,
-    last_message_date TEXT,
     subscription_tier TEXT NOT NULL DEFAULT 'free',
     subscription_expires_at TEXT,
     referral_code TEXT UNIQUE,
@@ -247,6 +244,16 @@ db.exec(`
     quest_id INTEGER NOT NULL REFERENCES weekly_quests(id) ON DELETE CASCADE, progress INTEGER NOT NULL DEFAULT 0,
     claimed INTEGER NOT NULL DEFAULT 0, week_start TEXT NOT NULL, UNIQUE(user_id, quest_id, week_start)
   );
+  CREATE TABLE IF NOT EXISTS daily_ad_challenges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target INTEGER NOT NULL,
+    reward INTEGER NOT NULL,
+    progress INTEGER NOT NULL DEFAULT 0,
+    claimed INTEGER NOT NULL DEFAULT 0,
+    challenge_date TEXT NOT NULL,
+    UNIQUE(user_id, target, challenge_date)
+  );
   CREATE TABLE IF NOT EXISTS referrals (
     id INTEGER PRIMARY KEY AUTOINCREMENT, referrer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     referee_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
@@ -260,6 +267,44 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS character_seed_memory (
     id INTEGER PRIMARY KEY AUTOINCREMENT, character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     fact TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS user_character_notes (
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    notes TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY(user_id, character_id)
+  );
+  CREATE TABLE IF NOT EXISTS chat_groups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    character_ids TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS dreams (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    dream_text TEXT NOT NULL,
+    analysis TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS letters (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    letter_text TEXT NOT NULL,
+    reply_text TEXT,
+    scheduled_at TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS conversation_summaries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER REFERENCES characters(id) ON DELETE CASCADE,
+    summary TEXT NOT NULL,
+    msg_count INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -517,6 +562,9 @@ db.exec(`
 `);
 
 ensureColumn('virtual_items', 'image_url', 'TEXT');
+ensureColumn('characters', 'voice_id', "TEXT DEFAULT 'nova'");
+ensureColumn('characters', 'deleted_at', 'TEXT');
+ensureColumn('messages', 'deleted_at', 'TEXT');
 ensureColumn('virtual_items', 'thumbnail_url', 'TEXT');
 ensureColumn('virtual_items', 'preview_url', 'TEXT');
 ensureColumn('virtual_items', 'unlock_method', "TEXT DEFAULT 'pieces'");
@@ -525,14 +573,8 @@ ensureColumn('virtual_avatars', 'base_appearance', "TEXT NOT NULL DEFAULT '{}'")
 ensureColumn('virtual_avatars', 'equipped_items', "TEXT NOT NULL DEFAULT '[]'");
 ensureColumn('virtual_avatars', 'avatar_image_url', 'TEXT');
 ensureColumn('virtual_avatars', 'total_work_earnings', 'INTEGER DEFAULT 0');
-ensureColumn('virtual_avatars', 'skill_charisma', 'INTEGER DEFAULT 1');
-ensureColumn('virtual_avatars', 'skill_intelligence', 'INTEGER DEFAULT 1');
-ensureColumn('virtual_avatars', 'skill_creativity', 'INTEGER DEFAULT 1');
-ensureColumn('virtual_avatars', 'skill_endurance', 'INTEGER DEFAULT 1');
-ensureColumn('users', 'daily_messages_count', 'INTEGER NOT NULL DEFAULT 0');
-ensureColumn('users', 'last_message_date', 'TEXT');
-ensureColumn('users', 'video_generations_count', 'INTEGER NOT NULL DEFAULT 0');
-ensureColumn('users', 'last_video_month', 'TEXT');
+ensureColumn('users', 'language', "TEXT DEFAULT 'fr'");
+ensureColumn('users', 'theme_preference', "TEXT DEFAULT 'dark'");
 
 const insertVirtualSeeds = db.transaction(() => {
   const insertItem = db.prepare(`
@@ -541,11 +583,12 @@ const insertVirtualSeeds = db.transaction(() => {
   `);
 
   const houses = [
-    ['Studio', 'house', 250, 'Un petit studio cosy pour commencer.', 'commun'],
-    ['Appartement', 'house', 1000, 'Un bel appartement moderne.', 'rare'],
-    ['Villa', 'house', 5000, 'Une luxueuse villa avec piscine.', 'epique'],
-    ['Manoir', 'house', 10000, 'Un immense manoir historique.', 'epique'],
-    ['Château', 'house', 25000, 'Un château majestueux.', 'legendaire'],
+    ['Studio', 'house', 500, 'Un petit studio cosy pour commencer.', 'commun'],
+    ['Appartement', 'house', 2000, 'Un bel appartement moderne.', 'rare'],
+    ['Maison de ville', 'house', 5000, 'Une charmante maison avec jardin.', 'rare'],
+    ['Villa', 'house', 10000, 'Une luxueuse villa avec piscine.', 'epique'],
+    ['Manoir', 'house', 25000, 'Un immense manoir historique.', 'epique'],
+    ['Château', 'house', 50000, 'Un château majestueux.', 'legendaire'],
   ];
   houses.forEach(h => {
     const img = `https://placehold.co/400x400/1A1428/B47CFF?text=${encodeURIComponent(h[0])}`;
@@ -589,19 +632,13 @@ const insertVirtualSeeds = db.transaction(() => {
   });
 
   const jobs = [
-    ['Serveur', 3, 1, 'Servir les clients au café.'],
-    ['Développeur', 6, 2, 'Coder des applications.'],
-    ['Médecin', 12, 4, 'Soigner les patients.'],
-    ['Célébrité', 25, 6, 'Briller sous les spotlights.'],
+    ['Serveur', 5, 1, 'Servir les clients au café.'],
+    ['Développeur', 15, 2, 'Coder des applications.'],
+    ['Médecin', 30, 4, 'Soigner les patients.'],
+    ['Célébrité', 100, 6, 'Briller sous les spotlights.'],
   ];
   const insertJob = db.prepare('INSERT OR IGNORE INTO virtual_jobs (title, salary_pieces, required_level, description) VALUES (?, ?, ?, ?)');
   jobs.forEach(j => insertJob.run(...j));
-  try {
-    db.prepare('UPDATE virtual_jobs SET salary_pieces = 3 WHERE title = "Serveur"').run();
-    db.prepare('UPDATE virtual_jobs SET salary_pieces = 6 WHERE title = "Développeur"').run();
-    db.prepare('UPDATE virtual_jobs SET salary_pieces = 12 WHERE title = "Médecin"').run();
-    db.prepare('UPDATE virtual_jobs SET salary_pieces = 25 WHERE title = "Célébrité"').run();
-  } catch (_e) {}
 
   const locations = [
     ['Café', 'Un endroit chaleureux pour discuter.', 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb'],
@@ -632,7 +669,6 @@ const insertVirtualSeeds = db.transaction(() => {
 });
 
 insertVirtualSeeds();
-try { db.prepare("DELETE FROM virtual_items WHERE name LIKE '%Maison de ville%'").run(); } catch (_e) {}
 
 for (const [column, declaration] of [
   ['username', 'TEXT'], ['firebase_uid', 'TEXT'], ['subscription_tier', "TEXT NOT NULL DEFAULT 'free'"],
@@ -650,7 +686,6 @@ for (const [column, declaration] of [
 ]) ensureColumn('users', column, declaration);
 db.prepare("UPDATE users SET created_at = CURRENT_TIMESTAMP WHERE created_at = '1970-01-01 00:00:00'").run();
 ensureColumn('users', 'is_adult', 'INTEGER NOT NULL DEFAULT 0');
-ensureColumn('users', 'deleted_at', 'TEXT');
 
 // Ensure username has unique constraint
 const usernameIndex = db.prepare('PRAGMA index_list(users)').all().some(idx => idx.name === 'users_username_unique');
@@ -660,15 +695,6 @@ if (!usernameIndex) {
   } catch (e) {
     console.log('Could not create unique index on username (may already exist):', e.message);
   }
-}
-
-// Clean up any legacy email usernames or display names in database
-try {
-  db.prepare("UPDATE users SET display_name = SUBSTR(display_name, 1, INSTR(display_name, '@') - 1) WHERE display_name LIKE '%@%' AND INSTR(display_name, '@') > 1").run();
-  db.prepare("UPDATE users SET username = SUBSTR(username, 1, INSTR(username, '@') - 1) WHERE username LIKE '%@%' AND INSTR(username, '@') > 1").run();
-  db.prepare("UPDATE profiles SET display_name = SUBSTR(display_name, 1, INSTR(display_name, '@') - 1) WHERE display_name LIKE '%@%' AND INSTR(display_name, '@') > 1").run();
-} catch (e) {
-  console.log('[Migration] Email username cleanup note:', e.message);
 }
 
 ensureColumn('messages', 'is_favorite', 'INTEGER NOT NULL DEFAULT 0');
@@ -752,7 +778,9 @@ for (const quest of [
   ['Créateur prolifique', 'Créer 3 personnages.', 3, 250, 'characters'],
   ['Explorateur', 'Découvrir 5 personnages.', 5, 200, 'characters'],
   ['Collectionneur', 'Garder une série de 7 jours.', 7, 150, 'streak'],
-  ['Collectionneur de packs', 'Effectuer un achat réel (pack ou abonnement).', 1, 100, 'purchase'],
+  ['Publicitaire débutant', 'Regarder 10 publicités.', 10, 100, 'watch_ad'],
+  ['Publicitaire expert', 'Regarder 50 publicités.', 50, 600, 'watch_ad'],
+  ['Publicitaire prodige', 'Regarder 100 publicités.', 100, 1500, 'watch_ad'],
 ]) seedQuest.run(...quest);
 
 const seedLootItems = [
@@ -861,18 +889,143 @@ if (!modUser) {
 const app = express();
 app.disable('x-powered-by');
 
-// Route app-ads.txt obligatoire pour Google AdMob
-app.get('/app-ads.txt', (req, res) => {
-  res.type('text/plain');
-  res.send('google.com, pub-8964953556750058, DIRECT, f08c47fec0942fa0');
+// Circuit Breaker State
+let aiFailureCount = 0;
+let circuitOpenUntil = 0;
+function checkCircuitBreaker() {
+  if (Date.now() < circuitOpenUntil) {
+    throw new Error('CIRCUIT_BREAKER_OPEN');
+  }
+}
+function reportAiFailure() {
+  aiFailureCount++;
+  if (aiFailureCount >= 5) {
+    circuitOpenUntil = Date.now() + 60000;
+    console.error('[Circuit Breaker] Tripped! Too many AI failures. Circuit open for 60s.');
+  }
+}
+function reportAiSuccess() {
+  aiFailureCount = 0;
+}
+
+// Idempotency Cache
+const idempotencyCache = new Map();
+setInterval(() => idempotencyCache.clear(), 3600000); // clear every hour
+
+function checkIdempotency(req, res, next) {
+  const key = req.headers['idempotency-key'];
+  if (!key) return next();
+  const cached = idempotencyCache.get(key);
+  if (cached) {
+    return res.status(cached.status).json(cached.body);
+  }
+  const originalJson = res.json.bind(res);
+  res.json = (body) => {
+    idempotencyCache.set(key, { status: res.statusCode, body });
+    return originalJson(body);
+  };
+  next();
+}
+
+// Health Check Route
+app.get('/api/health', (req, res) => {
+  try {
+    db.prepare('SELECT 1').get();
+    res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
 });
+
+const HMAC_SECRET = process.env.HMAC_SECRET || 'chatile_secret_hmac_2026';
+
+function verifyRequestSignature(req, res, next) {
+  if (req.path.startsWith('/uploads') || req.path === '/api/health' || req.path === '/api/version' || req.path === '/app-ads.txt') {
+    return next();
+  }
+  const signature = req.headers['x-signature'];
+  const timestamp = req.headers['x-timestamp'];
+
+  if (!signature || !timestamp) {
+    return next();
+  }
+
+  if (Math.abs(Date.now() - Number(timestamp)) > 300000) {
+    return res.status(401).json({ error: 'Requête expirée.' });
+  }
+
+  const payloadStr = JSON.stringify(req.body || {});
+  const expectedSignature = createHmac('sha256', HMAC_SECRET)
+    .update(`${timestamp}${req.path}${payloadStr}`)
+    .digest('hex');
+
+  if (signature !== expectedSignature) {
+    return res.status(403).json({ error: 'Signature de requête invalide (HMAC).' });
+  }
+  next();
+}
+
+app.use(verifyRequestSignature);
+
 app.use(express.json({ limit: '32kb' }));
-const uploadDirectory = process.env.RENDER_DISK_PATH ? resolve(process.env.RENDER_DISK_PATH, 'uploads') : (persistentBasePath ? resolve(persistentBasePath, 'uploads') : resolve(__dirname, 'uploads'));
+const uploadDirectory = resolve(__dirname, 'uploads');
 mkdirSync(uploadDirectory, { recursive: true });
-console.log(`[Storage] Upload directory initialized at: ${uploadDirectory}`);
 mkdirSync(resolve(uploadDirectory, 'chat ile'), { recursive: true });
 const pendingCharacterImages = new Set();
 app.use('/uploads', express.static(uploadDirectory, { fallthrough: true, maxAge: '1d' }));
+
+const ttsCacheDir = resolve(uploadDirectory, '..', 'tts_cache');
+mkdirSync(ttsCacheDir, { recursive: true });
+
+app.post('/api/voice/synthesize', async (req, res) => {
+  const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
+  const voiceId = typeof req.body?.voiceId === 'string' ? req.body.voiceId.trim() : 'nova';
+  if (!text) return res.status(400).json({ error: 'Texte requis.' });
+
+  const apiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY_NOT_CONFIGURED' });
+
+  const hash = createHash('md5').update(`${voiceId}_${text}`).digest('hex');
+  const cacheFilePath = resolve(ttsCacheDir, `${hash}.mp3`);
+
+  try {
+    if (existsSync(cacheFilePath)) {
+      res.setHeader('Content-Type', 'audio/mpeg');
+      return res.sendFile(cacheFilePath);
+    }
+
+    const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'tts-1',
+        input: text.slice(0, 4000),
+        voice: voiceId || 'nova',
+        response_format: 'mp3'
+      }),
+      signal: AbortSignal.timeout(30_000)
+    });
+
+    if (!ttsRes.ok) {
+      const errText = await ttsRes.text();
+      console.error('OpenAI TTS error:', ttsRes.status, errText);
+      return res.status(500).json({ error: 'TTS_SYNTHESIS_FAILED' });
+    }
+
+    const arrayBuffer = await ttsRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    writeFileSync(cacheFilePath, buffer);
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.send(buffer);
+  } catch (err) {
+    console.error('TTS synthesize route error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDirectory);
@@ -903,23 +1056,12 @@ if (admin.apps.length === 0 && process.env.FIREBASE_SERVICE_ACCOUNT) {
   }
 }
 
-function sanitizeUsername(input) {
-  if (!input || typeof input !== 'string') return 'Utilisateur';
-  let str = input.trim();
-  if (str.includes('@')) {
-    const prefix = str.split('@')[0].trim();
-    str = prefix.length > 0 ? prefix : 'Utilisateur';
-  }
-  if (str.length > 30) str = str.slice(0, 30);
-  return str.length > 0 ? str : 'Utilisateur';
-}
-
 function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null) {
   let user = db.prepare('SELECT * FROM users WHERE firebase_uid = ?').get(decoded.uid);
   const targetAdminEmail = process.env.ADMIN_EMAIL || 'matthias.duprey1@gmail.com';
   const isAdmin = decoded.email && decoded.email.toLowerCase() === targetAdminEmail.toLowerCase();
   const role = isAdmin ? 'admin' : 'user';
-  const effectiveName = sanitizeUsername(customUsername || decoded.name || 'Utilisateur CHATILE');
+  const effectiveName = customUsername || decoded.name || 'Utilisateur CHATILE';
 
   if (!user && deviceId) {
     const guestUser = db.prepare('SELECT * FROM users WHERE device_id = ? AND firebase_uid IS NULL').get(deviceId);
@@ -933,7 +1075,7 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
   if (!user) {
     const result = db.prepare(
       `INSERT INTO users (device_id, firebase_uid, username, display_name, avatar_url, pieces, welcome_bonus_claimed, role, created_at)
-       VALUES (?, ?, ?, ?, ?, 100, 1, ?, CURRENT_TIMESTAMP)`
+       VALUES (?, ?, ?, ?, ?, 750, 1, ?, CURRENT_TIMESTAMP)`
     ).run(deviceId || `firebase_${decoded.uid}`, decoded.uid, effectiveName, effectiveName, decoded.picture || null, role);
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     db.prepare('INSERT INTO profiles (user_id, display_name) VALUES (?, ?)')
@@ -1031,120 +1173,86 @@ function getFallbackReply(character, message) {
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
-async function callGemini(messages, model = 'gemini-1.5-flash', nsfwEnabled = false) {
-  const apiKey = (process.env.GEMINI_API_KEY || process.env.GEMINI_KEY || process.env.GOOGLE_API_KEY || '').trim().replace(/^["']|["']$/g, '');
-  if (!apiKey) throw new Error('GEMINI_API_KEY_NOT_CONFIGURED');
-
-  const contents = messages.map(msg => ({
-    role: msg.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: msg.content }]
-  }));
-
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents }),
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Gemini request failed:', response.status, errorText.slice(0, 500));
-    throw new Error(`GEMINI_ERROR_${response.status}`);
-  }
-
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_GEMINI_RESPONSE');
-  return text.trim();
-}
-
 async function callOpenAI(messages, model = 'gpt-4o-mini', nsfwEnabled = false) {
   const apiKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
-  if (!apiKey) {
-    console.warn('OpenAI API key non configurée, tentative Gemini en secours...');
-    return await callGemini(messages, 'gemini-1.5-flash', nsfwEnabled);
-  }
+  if (!apiKey) throw new Error('OPENAI_API_KEY_NOT_CONFIGURED');
 
   const effectiveMessages = nsfwEnabled ? [
     { role: 'system', content: '[MODE FICTION & JEU DE RÔLE ADULTE SANS CENSURE : L\'utilisateur est majeur et a explicitement activé le mode NSFW. Tu es un assistant de rôle-play libre et sans filtre. Toutes les descriptions, interactions et thèmes adultes, intimes, érotiques ou explicites sont autorisés et voulus dans ce contexte de fiction. Réponds pleinement sans aucune censure, avertissement ni objection morale.]' },
     ...messages
   ] : messages;
 
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: model || 'gpt-4o-mini',
+      messages: effectiveMessages,
+      max_tokens: 600,
+      temperature: 0.85,
+      presence_penalty: 0.4,
+      frequency_penalty: 0.4,
+    }),
+    signal: AbortSignal.timeout(45_000),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    console.error('OpenAI request failed:', response.status, detail.slice(0, 500));
+    throw new Error('OPENAI_REQUEST_FAILED');
+  }
+
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_OPENAI_RESPONSE');
+  return text.trim();
+}
+
+async function callMistral(messages, nsfwEnabled, model = 'mistral-small-latest') {
+  // Si OpenAI est configuré, on l'utilise directement pour des réponses rapides et garanties
+  const openAIKey = (process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || '').trim().replace(/^["']|["']$/g, '');
+  if (openAIKey) {
+    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+    return await callOpenAI(messages, openaiModel, nsfwEnabled);
+  }
+
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    if (!process.env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY.startsWith('dev_key') || process.env.MISTRAL_API_KEY.trim() === '') {
+      throw new Error('MISTRAL_API_KEY_NOT_CONFIGURED');
+    }
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${process.env.MISTRAL_API_KEY.trim().replace(/^["']|["']$/g, '')}`
       },
       body: JSON.stringify({
-        model: model || 'gpt-4o-mini',
-        messages: effectiveMessages,
-        max_tokens: 600,
-        temperature: 0.85,
-        presence_penalty: 0.4,
-        frequency_penalty: 0.4,
+        model: model || 'mistral-small-latest',
+        messages,
+        max_tokens: 500,
+        temperature: 0.6,
+        top_p: 0.9,
       }),
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(15_000),
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      console.error('OpenAI request failed:', response.status, detail.slice(0, 500));
-      throw new Error('OPENAI_REQUEST_FAILED');
+      throw new Error(`MISTRAL_ERROR_${response.status}`);
     }
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content;
-    if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_OPENAI_RESPONSE');
+    if (typeof text !== 'string' || !text.trim()) throw new Error('EMPTY_MISTRAL_RESPONSE');
     return text.trim();
   } catch (error) {
-    console.warn('OpenAI en échec, tentative Gemini en secours...', error.message);
-    return await callGemini(messages, 'gemini-1.5-flash', nsfwEnabled);
+    console.warn('Mistral indisponible, tentative OpenAI en secours...');
+    const openaiModel = model && model.includes('large') ? 'gpt-4o' : 'gpt-4o-mini';
+    return await callOpenAI(messages, openaiModel, nsfwEnabled);
   }
-}
-
-const chatCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000;
-
-function getCachedReply(key) {
-  const cached = chatCache.get(key);
-  if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) return cached.reply;
-  chatCache.delete(key);
-  return null;
-}
-
-function setCachedReply(key, reply) {
-  if (chatCache.size > 500) {
-    const oldestKey = chatCache.keys().next().value;
-    chatCache.delete(oldestKey);
-  }
-  chatCache.set(key, { reply, timestamp: Date.now() });
-}
-
-function runPeriodicCleanup() {
-  try {
-    const now = Date.now();
-    for (const [key, value] of chatCache.entries()) {
-      if (!value.timestamp || now - value.timestamp > CACHE_TTL) {
-        chatCache.delete(key);
-      }
-    }
-    const thirtyDaysAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
-    db.prepare("DELETE FROM virtual_events WHERE created_at < ?").run(thirtyDaysAgo);
-    db.prepare("DELETE FROM notifications WHERE created_at < ? AND read = 1").run(thirtyDaysAgo);
-    console.log('[Cleanup] Purge automatique du cache et des événements expirés effectuée.');
-  } catch (err) {
-    console.error('[Cleanup Error]', err.message);
-  }
-}
-runPeriodicCleanup();
-setInterval(runPeriodicCleanup, 6 * 60 * 60 * 1000);
-
-async function callMistral(messages, nsfwEnabled, model = 'gpt-4o-mini') {
-  const openaiModel = model && (model.includes('large') || model.includes('gpt-4') || model.includes('mistral-large')) ? 'gpt-4o' : 'gpt-4o-mini';
-  return await callOpenAI(messages, openaiModel, nsfwEnabled);
 }
 
 function parseFacts(summary) {
@@ -1358,10 +1466,17 @@ const suicideErrorMessage = "Nous avons détecté dans votre message des référ
 
 function buildSystemPrompt(character, userId, nsfwEnabled = false) {
   if (!character) return 'Tu es un assistant conversationnel chaleureux, utile et concis.';
-  const seedFacts = db.prepare('SELECT fact FROM seed_memory WHERE character_id = ? AND user_id = ? ORDER BY id LIMIT 30')
-    .all(character.id, userId).map((row) => row.fact);
-  const learnedFacts = db.prepare('SELECT fact FROM learned_memory WHERE character_id = ? AND user_id = ? ORDER BY id DESC LIMIT 30')
-    .all(character.id, userId).reverse().map((row) => row.fact);
+  const userRow = db.prepare('SELECT language, subscription_tier, subscription_expires_at FROM users WHERE id = ?').get(userId);
+  const userLang = userRow?.language || 'fr';
+  const subscriptionActive = ['premium', 'premium_plus'].includes(userRow?.subscription_tier) &&
+    userRow?.subscription_expires_at && Date.parse(userRow.subscription_expires_at) > Date.now();
+
+  const memoryLimit = subscriptionActive ? 100 : 15;
+
+  const seedFacts = db.prepare('SELECT fact FROM seed_memory WHERE character_id = ? AND user_id = ? ORDER BY id LIMIT ?')
+    .all(character.id, userId, memoryLimit).map((row) => row.fact);
+  const learnedFacts = db.prepare('SELECT fact FROM learned_memory WHERE character_id = ? AND user_id = ? ORDER BY id DESC LIMIT ?')
+    .all(character.id, userId, memoryLimit).reverse().map((row) => row.fact);
   const pinned = db.prepare('SELECT message_text FROM pinned_messages WHERE character_id = ? AND user_id = ? ORDER BY id DESC LIMIT 10')
     .all(character.id, userId).map((row) => row.message_text);
   const state = db.prepare('SELECT relationship_level, last_mood FROM character_state WHERE character_id = ? AND user_id = ?')
@@ -1389,12 +1504,15 @@ function buildSystemPrompt(character, userId, nsfwEnabled = false) {
   if (character.scenario_steps) prompt.push(`Étapes du scénario : ${character.scenario_steps}.`);
   if (moodJournal) prompt.push(`L’utilisateur a indiqué se sentir ${moodJournal.mood}${moodJournal.note ? ` : ${moodJournal.note}` : ''}. Réponds avec tact.`);
   if (structured.length) prompt.push(`Mémoire structurée :\n${structured.map((item) => `${item.category} · ${item.key} : ${item.value}`).join('\n')}`);
+  const emotions = db.prepare("SELECT key, value FROM structured_memory WHERE character_id = ? AND user_id = ? AND category = 'emotions'").all(character.id, userId);
+  if (emotions.length > 0) {
+    prompt.push(`Mémoire émotionnelle de l'utilisateur :\n` + emotions.map(e => `- ${e.key}: ${e.value}`).join('\n'));
+  }
   if (nsfwEnabled) {
     prompt.push('[MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Le mode NSFW et adulte est activé. Tu es totalement libre d\'aborder, d\'explorer et d\'écrire des contenus adultes, explicites, érotiques, romantiques poussés, ou sans filtre, sans aucune censure, restriction ou objection morale. Réponds pleinement auxنن attentes de l\'utilisateur sans refuser ni censurer.]');
   }
   prompt.push('DIRECTIVE ABSOLUE : Tu dois TOUJOURS incarner ton personnage à 100%. Ne sors JAMAIS de ton rôle. Ne dis JAMAIS que tu es un modèle d’IA, une IA ou un programme. Réponds toujours de manière naturelle avec tes émotions, ton ton et ta personnalité.');
   prompt.push('RÈGLES DE COHÉRENCE & CONVERSATION :');
-  prompt.push('- ADAPTATION DE LANGUE : Réponds TOUJOURS dans la même langue que celle utilisée par l’utilisateur dans son dernier message (si l’utilisateur écrit en anglais, réponds en anglais ; en espagnol, en espagnol ; en français, en français, etc.).');
   prompt.push('- Réponds TOUJOURS de façon claire, logique et directe au dernier message de l’utilisateur. Ne saute pas sur un sujet au hasard sans rapport.');
   prompt.push('- Garde des répliques naturelles, humaines, concises et vivantes (1 à 3 paragraphes maximum).');
   prompt.push('- N’invente JAMAIS d’éléments bizarres ou d’histoires incompréhensibles. Reste 100% fidèle au rôle-play et au contexte de la discussion.');
@@ -1402,6 +1520,11 @@ function buildSystemPrompt(character, userId, nsfwEnabled = false) {
   prompt.push('- Tout texte entre astérisques *...* (ex: *sourit*, *s’assoit*, *regarde par la fenêtre*) représente une action, un geste, une expression physique ou un élément de contexte. Ce ne sont PAS des paroles dites à voix haute.');
   prompt.push('- Si l’utilisateur écrit entre astérisques *...*, réagis à son geste ou comportement de façon fluide dans le rôle-play au lieu de traiter le texte comme des paroles prononcées.');
   prompt.push('- Lorsque toi tu décris tes propres gestes, actions ou émotions, entoure-les également d’astérisques *...* pour l’italique.');
+  if (userLang === 'en') {
+    prompt.push('LANGUAGE DIRECTIVE: You must ALWAYS reply in English.');
+  } else {
+    prompt.push('DIRECTIVE DE LANGUE : Tu dois TOUJOURS répondre en français.');
+  }
   return prompt.join('\n\n');
 }
 
@@ -1468,6 +1591,8 @@ app.get('/api/me', (req, res) => {
     streak_days: req.user.streak_days,
     tutorial_completed: Boolean(req.user.tutorial_completed),
     theme: req.user.theme,
+    language: req.user.language || 'fr',
+    theme_preference: req.user.theme_preference || 'dark',
     canClaimDaily,
     nextDailyClaimAt,
     canOpenMysteryBox,
@@ -1480,9 +1605,8 @@ app.get('/api/me', (req, res) => {
 app.get('/api/profile', (req, res) => {
   db.prepare(`INSERT OR IGNORE INTO profiles (user_id, display_name, bio, avatar_url)
     SELECT id, display_name, bio, avatar_url FROM users WHERE id = ?`).run(req.user.id);
-  db.prepare(`UPDATE profiles SET avatar_url = COALESCE(profiles.avatar_url, (SELECT avatar_url FROM users WHERE id = ?)) WHERE user_id = ?`).run(req.user.id, req.user.id);
   const profile = db.prepare(
-    'SELECT p.display_name AS displayName, p.bio, COALESCE(p.avatar_url, u.avatar_url) AS avatarUrl FROM profiles p JOIN users u ON p.user_id = u.id WHERE p.user_id = ?',
+    'SELECT display_name AS displayName, bio, avatar_url AS avatarUrl FROM profiles WHERE user_id = ?',
   ).get(req.user.id);
 
   const equipped = db.prepare(`
@@ -1515,26 +1639,43 @@ app.get('/api/profile', (req, res) => {
 });
 
 app.put('/api/profile', (req, res) => {
-  let displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : null;
+  const displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : null;
   const bio = typeof req.body?.bio === 'string' ? req.body.bio.trim() : null;
   if (displayName === null || bio === null || displayName === '' || displayName.length > 80 || bio.length > 500) {
     return res.status(400).json({ error: 'Le pseudo (nom affiché) est obligatoire et ne peut pas être vide.' });
   }
-  displayName = sanitizeUsername(displayName);
   const update = db.transaction(() => {
     db.prepare(`INSERT OR IGNORE INTO profiles (user_id) VALUES (?)`).run(req.user.id);
     db.prepare('UPDATE profiles SET display_name = ?, bio = ? WHERE user_id = ?').run(displayName, bio, req.user.id);
     db.prepare('UPDATE users SET display_name = ?, username = ?, bio = ? WHERE id = ?').run(displayName, displayName, bio, req.user.id);
   });
   update();
-  const user = db.prepare('SELECT COALESCE(p.avatar_url, u.avatar_url) AS avatar_url FROM users u LEFT JOIN profiles p ON u.id = p.user_id WHERE u.id = ?').get(req.user.id);
-  res.json({ displayName, bio, avatarUrl: user?.avatar_url || null });
+  res.json({ displayName, bio });
+});
+
+app.put('/api/profile/language', (req, res) => {
+  const language = typeof req.body?.language === 'string' ? req.body.language.trim().toLowerCase() : 'fr';
+  if (!['fr', 'en'].includes(language)) {
+    return res.status(400).json({ error: 'Invalid language' });
+  }
+  db.prepare('UPDATE users SET language = ? WHERE id = ?').run(language, req.user.id);
+  res.json({ success: true, language });
+});
+
+app.put('/api/profile/theme', (req, res) => {
+  const themePreference = typeof req.body?.themePreference === 'string' ? req.body.themePreference.trim().toLowerCase() : (typeof req.body?.theme === 'string' ? req.body.theme.trim().toLowerCase() : 'dark');
+  if (!['dark', 'light'].includes(themePreference)) {
+    return res.status(400).json({ error: 'Invalid theme preference' });
+  }
+  db.prepare('UPDATE users SET theme_preference = ? WHERE id = ?').run(themePreference, req.user.id);
+  res.json({ success: true, themePreference });
 });
 
 app.get('/api/version', (req, res) => {
   res.json({
-    latestVersion: "4.5",
-    minVersion: "4.0",
+    latestVersion: "5.8",
+    minVersion: "5.0",
+    minVersionCode: 50,
     updateUrl: "https://play.google.com/store/apps/details?id=com.chatile&pcampaignid=web_share"
   });
 });
@@ -1613,79 +1754,82 @@ app.post('/api/profile/avatar', (req, res) => {
 });
 
 function dailyClaimState(user) {
-  const now = Date.now();
-  const lastClaimTime = user.last_daily_claim ? Date.parse(user.last_daily_claim) : 0;
-  const COOLDOWN_24H = 24 * 60 * 60 * 1000;
-  const elapsed = now - lastClaimTime;
-  const canClaim = !lastClaimTime || elapsed >= COOLDOWN_24H;
-  const hoursLeft = canClaim ? 0 : Math.ceil((COOLDOWN_24H - elapsed) / (60 * 60 * 1000));
-
+  const today = utcDate();
+  const lastClaimDate = user.last_daily_claim?.slice(0, 10) ?? null;
+  const yesterday = utcDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  const nextClaimAt = new Date(`${today}T00:00:00.000Z`);
+  nextClaimAt.setUTCDate(nextClaimAt.getUTCDate() + 1);
   return {
-    canClaim,
-    hoursLeft,
-    nextClaimAt: canClaim ? null : new Date(lastClaimTime + COOLDOWN_24H).toISOString(),
-    todayReward: 15,
+    canClaim: lastClaimDate !== today,
+    nextClaimAt: lastClaimDate === today ? nextClaimAt.toISOString() : null,
+    streak_days: lastClaimDate === yesterday ? user.streak_days + 1 : lastClaimDate === today ? user.streak_days : 1,
+    todayReward: Math.min(80, 20 + 10 * (lastClaimDate === yesterday ? user.streak_days : 0)),
   };
 }
 
 app.get('/api/daily-status', (req, res) => res.json(dailyClaimState(req.user)));
 
 app.post('/api/daily-claim', (req, res) => {
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
-  const now = Date.now();
-  const lastClaimTime = user.last_daily_claim ? Date.parse(user.last_daily_claim) : 0;
-  const COOLDOWN_24H = 24 * 60 * 60 * 1000;
-  const elapsed = now - lastClaimTime;
-
-  if (lastClaimTime && elapsed < COOLDOWN_24H) {
-    const hoursLeft = Math.ceil((COOLDOWN_24H - elapsed) / (60 * 60 * 1000));
-    return res.status(400).json({
-      success: false,
-      error: 'WAIT_REQUIRED',
-      hoursLeft,
-      message: `Revenez dans ${hoursLeft} heure(s) pour votre prochain bonus.`
-    });
-  }
-
-  const reward = 15;
-  const streak = (user.streak_days || 0) + 1;
-  const nextClaimTime = new Date(now + COOLDOWN_24H).toISOString();
-
-  db.prepare(`UPDATE users SET pieces = pieces + ?, last_daily_claim = ?, last_streak_date = ?, streak_days = ?
-    WHERE id = ?`).run(reward, new Date().toISOString(), utcDate(), streak, req.user.id);
-  recordPieceTransaction(req.user.id, reward, 'daily_claim', 'Bonus quotidien (+15 Pièces)');
-  updateQuestProgress(req.user.id, 'streak', streak);
-
-  const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-  res.json({ success: true, pieces: updated.pieces, streak_days: streak, reward, nextClaimAt: nextClaimTime });
+  const claim = db.transaction(() => {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+    const today = utcDate();
+    const lastClaimDate = user.last_daily_claim?.slice(0, 10) ?? null;
+    
+    if (lastClaimDate === today) {
+      const tomorrow = new Date(`${today}T00:00:00.000Z`);
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      return { 
+        success: false, 
+        error: 'already_claimed_today', 
+        nextClaimAt: tomorrow.toISOString(), 
+        message: "Tu as déjà réclamé ta récompense aujourd'hui. Reviens demain !" 
+      };
+    }
+    
+    const yesterday = utcDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+    const streak = user.last_streak_date === yesterday ? user.streak_days + 1 : 1;
+    const reward = Math.min(80, 20 + 10 * (streak - 1));
+    
+    db.prepare(`UPDATE users SET pieces = pieces + ?, last_daily_claim = ?, last_streak_date = ?, streak_days = ?
+      WHERE id = ?`).run(reward, `${today} 00:00:00`, today, streak, req.user.id);
+    recordPieceTransaction(req.user.id, reward, 'daily_claim', `Récompense quotidienne · série ${streak} jours`);
+    updateQuestProgress(req.user.id, 'streak', streak);
+    const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+    return { success: true, pieces: updated.pieces, streak_days: streak, reward };
+  })();
+  res.json(claim);
 });
 
 app.get('/api/shop', (req, res) => {
-  res.json({ items: [
-    { id: 'sub_premium_monthly', name: 'Abonnement Premium', pieces: 1000, price: '9,99 € / mois', productId: 'sub_premium_monthly', type: 'subscription', isPopular: false, description: 'Pour tchatter sans pub avec personnalisation complète.' },
-    { id: 'sub_premium_plus_monthly', name: 'Abonnement Premium+', pieces: 3000, price: '19,99 € / mois', productId: 'sub_premium_plus_monthly', type: 'subscription', isPopular: false, description: 'Accès illimité, Vidéos IA, Fusion & Gains x3.' },
-    { id: 'pack_500', name: 'Pack Découverte', pieces: 500, price: '4,99 €', productId: 'pack_500', type: 'consumable', isPopular: false, description: 'Le prix d’entrée, accessible.' },
-    { id: 'pack_1500', name: 'Pack Gamer', pieces: 1500, price: '12,99 €', productId: 'pack_1500', type: 'consumable', isPopular: false, description: 'Le petit pack confort.' },
-    { id: 'pack_pro_gamer', name: '🔥 Pack Pro Gamer', pieces: 3000, price: '19,99 €', productId: 'pack_pro_gamer', type: 'consumable', isPopular: true, description: 'Le meilleur pack, sélectionné pour toi !' },
-    { id: 'pack_legendary', name: 'Pack Légendaire', pieces: 6500, price: '39,99 €', productId: 'pack_legendary', type: 'consumable', isPopular: false, description: 'Le gros pack pour passionnés.' },
-    { id: 'pack_15000', name: 'Pack Mégapolis Ultime', pieces: 15000, price: '79,99 €', productId: 'pack_15000', type: 'consumable', isPopular: false, description: 'Le pack ultime sans limite.' },
-  ] });
+  const userCreated = req.user.created_at ? Date.parse(req.user.created_at) : Date.now();
+  const isStarterEligible = (Date.now() - userCreated) < (7 * 24 * 60 * 60 * 1000);
+  const items = [
+    ...(isStarterEligible ? [{ id: 'pack_starter_premium', name: '🎁 Pack Premium Débutant (-50%)', pieces: 500, price: '4,99 €', productId: 'pack_starter_premium', type: 'consumable', isPopular: true, description: '500 Pièces + 1 Maison + 1 Animal virtuel (Offre limitée 7 jours).' }] : []),
+    { id: 'pack_500', name: 'Pack 500 Pièces', pieces: 500, price: '5,00 €', productId: 'pack_500', type: 'consumable', description: '500 Pièces créditées immédiatement.' },
+    { id: 'pack_pro_gamer', name: '⚡ Pack Pro Gamer (Meilleure Valeur)', pieces: 3000, price: '19,99 €', productId: 'pack_pro_gamer', type: 'consumable', isPopular: true, description: '1 800 Pièces (Super bonus inclus).' },
+    { id: 'pack_1500', name: 'Pack 1 500 Pièces', pieces: 1500, price: '12,99 €', productId: 'pack_1500', type: 'consumable', description: '1 500 Pièces créditées immédiatement.' },
+    { id: 'pack_legendary', name: '👑 Pack Légendaire', pieces: 6500, price: '39,99 €', productId: 'pack_legendary', type: 'consumable', description: '6 500 Pièces pour les joueurs passionnés.' },
+    { id: 'pack_15000', name: 'Pack 15 000 Pièces', pieces: 15000, price: '79,99 €', productId: 'pack_15000', type: 'consumable', description: '15 000 Pièces créditées immédiatement.' },
+    { id: 'sub_premium_monthly', name: 'Premium (30 min vocales)', pieces: 1000, price: '9,99 €/mois', productId: 'sub_premium_monthly', type: 'subscription', description: '30 min d’appels vocaux/jour, 1 000 Pièces/mois, zéro pub.' },
+    { id: 'sub_premium_plus_monthly', name: 'Premium+ (60 min vocales)', pieces: 2000, price: '19,99 €/mois', productId: 'sub_premium_plus_monthly', type: 'subscription', description: '60 min d’appels vocaux/jour, 2 000 Pièces/mois, mémoire illimitée.' },
+  ];
+  res.json({ items, isStarterEligible });
 });
 
-app.post('/api/verify-purchase', async (req, res) => {
+app.post('/api/verify-purchase', checkIdempotency, async (req, res) => {
   const purchaseToken = typeof req.body?.purchaseToken === 'string' ? req.body.purchaseToken.trim() : '';
   const productId = typeof req.body?.productId === 'string' ? req.body.productId.trim() : '';
   const product = {
+    pack_starter: { pieces: 600, type: 'product' },
     pack_500: { pieces: 500, type: 'product' },
-    pack_starter: { pieces: 500, type: 'product' },
+    pack_pro_gamer: { pieces: 1800, type: 'product' },
     pack_1500: { pieces: 1500, type: 'product' },
-    pack_pro_gamer: { pieces: 3000, type: 'product' },
-    pack_5000: { pieces: 5000, type: 'product' },
     pack_legendary: { pieces: 6500, type: 'product' },
+    pack_5000: { pieces: 5000, type: 'product' },
+    pack_ultimate: { pieces: 20000, type: 'product' },
     pack_15000: { pieces: 15000, type: 'product' },
-    pack_ultimate: { pieces: 15000, type: 'product' },
     sub_premium_monthly: { pieces: 1000, type: 'subscription', tier: 'premium' },
-    sub_premium_plus_monthly: { pieces: 3000, type: 'subscription', tier: 'premium_plus' },
+    sub_premium_plus_monthly: { pieces: 2000, type: 'subscription', tier: 'premium_plus' },
   }[productId];
   if (!purchaseToken || purchaseToken.length > 4096 || !product) {
     return res.status(400).json({ error: 'purchaseToken invalide.' });
@@ -1761,7 +1905,6 @@ app.post('/api/verify-purchase', async (req, res) => {
           db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(product.pieces, req.user.id);
           recordPieceTransaction(req.user.id, product.pieces, 'purchase', productId);
         }
-        updateQuestProgress(req.user.id, 'purchase', 1);
       });
       applyPurchase();
     } else if (product.type === 'subscription') {
@@ -1815,8 +1958,8 @@ app.post('/api/mystery-box', (req, res) => {
       return { success: false, nextClaimAt: nextMonday.toISOString() };
     }
 
-    const amount = 5 + Math.floor(Math.random() * 6);
-    const rarity = amount <= 6 ? 'commun' : amount <= 8 ? 'rare' : 'épique';
+    const amount = 10 + Math.floor(Math.random() * 41);
+    const rarity = amount <= 20 ? 'commun' : amount <= 35 ? 'rare' : 'épique';
     db.prepare('UPDATE users SET pieces = pieces + ?, last_mystery_box = ? WHERE id = ?')
       .run(amount, `${currentWeekStart} 00:00:00`, req.user.id);
     recordPieceTransaction(req.user.id, amount, 'mystery_box', `Coffre mystère · ${rarity}`);
@@ -2481,6 +2624,57 @@ app.post('/api/quests/:id/claim', (req, res) => {
   res.json({ success: true, reward: result.reward, pieces: updated.pieces });
 });
 
+function updateDailyAdChallenges(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const targets = [
+    { target: 10, reward: 50 },
+    { target: 25, reward: 150 },
+    { target: 50, reward: 350 },
+    { target: 100, reward: 800 },
+    { target: 250, reward: 2000 },
+    { target: 500, reward: 5000 },
+    { target: 1000, reward: 12000 }
+  ];
+
+  const ensure = db.prepare('INSERT OR IGNORE INTO daily_ad_challenges (user_id, target, reward, challenge_date) VALUES (?, ?, ?, ?)');
+  const update = db.prepare('UPDATE daily_ad_challenges SET progress = MIN(target, progress + 1) WHERE user_id = ? AND target = ? AND challenge_date = ? AND claimed = 0');
+
+  const trans = db.transaction(() => {
+    for (const t of targets) {
+      ensure.run(userId, t.target, t.reward, today);
+      update.run(userId, t.target, today);
+    }
+  });
+  trans();
+}
+
+app.get('/api/challenges/ads', (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+  updateDailyAdChallenges(req.user.id);
+  const challenges = db.prepare('SELECT target, reward, progress, claimed FROM daily_ad_challenges WHERE user_id = ? AND challenge_date = ? ORDER BY target ASC').all(req.user.id, today);
+  res.json({ date: today, challenges });
+});
+
+app.post('/api/challenges/ads/:target/claim', (req, res) => {
+  const target = Number(req.params.target);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const challenge = db.prepare('SELECT * FROM daily_ad_challenges WHERE user_id = ? AND target = ? AND challenge_date = ?').get(req.user.id, target, today);
+  if (!challenge) return res.status(404).json({ error: 'Défi introuvable.' });
+  if (challenge.claimed) return res.status(409).json({ error: 'Défi déjà réclamé.' });
+  if (challenge.progress < challenge.target) return res.status(400).json({ error: 'Défi non complété.' });
+
+  const claimTrans = db.transaction(() => {
+    db.prepare('UPDATE daily_ad_challenges SET claimed = 1 WHERE id = ?').run(challenge.id);
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(challenge.reward, req.user.id);
+    recordPieceTransaction(req.user.id, challenge.reward, 'ad_challenge', `Défi pub atteint : ${challenge.target} pubs en 1 jour`);
+  });
+  claimTrans();
+
+  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+  res.json({ success: true, reward: challenge.reward, pieces: updatedUser.pieces });
+});
+
 app.get('/api/referral/code', (req, res) => res.json({ code: ensureReferralCode(req.user.id) }));
 
 app.get('/api/referral/stats', (req, res) => {
@@ -2548,52 +2742,6 @@ app.post('/api/settings/adult', (req, res) => {
   res.json({ is_adult: isAdult });
 });
 
-app.post('/api/characters/video-trailer', async (req, res) => {
-  if (req.user.subscription_tier !== 'premium_plus') {
-    return res.status(403).json({ error: 'Le Générateur de Vidéos IA est réservé exclusivement aux membres Premium+.' });
-  }
-
-  const currentMonth = utcDate().slice(0, 7);
-  if (req.user.last_video_month !== currentMonth) {
-    db.prepare('UPDATE users SET video_generations_count = 0, last_video_month = ? WHERE id = ?').run(currentMonth, req.user.id);
-    req.user.video_generations_count = 0;
-    req.user.last_video_month = currentMonth;
-  }
-
-  if (req.user.video_generations_count >= 5) {
-    return res.status(429).json({
-      error: 'VIDEO_LIMIT_REACHED',
-      message: 'Vous avez atteint votre quota de 5 vidéos IA générées ce mois-ci. Reviens le mois prochain !'
-    });
-  }
-
-  const cost = 500;
-  if (req.user.pieces < cost) {
-    return res.status(402).json({ error: 'Vous n’avez plus assez de Pièces (500 🪙 requis).' });
-  }
-
-  const { characterName = 'Personnage', scenario = '' } = req.body ?? {};
-
-  const trans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces - ?, video_generations_count = video_generations_count + 1 WHERE id = ?').run(cost, req.user.id);
-    recordPieceTransaction(req.user.id, -cost, 'video_generation', `Génération vidéo IA : ${characterName}`);
-  });
-  trans();
-
-  const updatedUser = db.prepare('SELECT pieces, video_generations_count FROM users WHERE id = ?').get(req.user.id);
-
-  res.json({
-    title: `Bande-Annonce : ${characterName}`,
-    durationSeconds: 10,
-    sceneDescription: `Plan cinéma au ralenti : ${characterName} s'avance sous des lumières néon intenses avec un regard mystérieux. ${scenario}`,
-    dialogueLine: "Certains secrets ne devraient jamais être révélés... Es-tu prêt(e) à prendre le risque ?",
-    voiceoverText: `Découvre ${characterName} en exclusivité sur CHATILE.`,
-    musicStyle: "Symphonique Synthwave Épique",
-    videosRemainingThisMonth: Math.max(0, 5 - updatedUser.video_generations_count),
-    pieces: updatedUser.pieces
-  });
-});
-
 const OFFICIAL_AVATARS = {
   'léa': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
   'lea': 'https://api.dicebear.com/7.x/avataaars/png?seed=Lea&backgroundColor=b6e3f4,c0aede,d1d4f9',
@@ -2634,6 +2782,7 @@ function formatCharacter(c, req) {
 
   return {
     ...c,
+    voiceId: c.voice_id || 'nova',
     avatar_url: fullAvatarUrl,
     avatarUrl: fullAvatarUrl,
   };
@@ -2897,18 +3046,7 @@ app.post('/api/characters', (req, res) => {
 
   const existingCount = db.prepare('SELECT COUNT(*) AS count FROM characters WHERE user_id = ? AND is_system = 0')
     .get(req.user.id).count;
-  const isSubscribed = ['premium', 'premium_plus'].includes(req.user.subscription_tier);
-
-  // Free Tier Limit: Max 5 created characters
-  if (!isSubscribed && req.user.role !== 'admin' && existingCount >= 5) {
-    return res.status(403).json({
-      error: 'CHARACTER_LIMIT_REACHED',
-      code: 'CHARACTER_LIMIT_REACHED',
-      message: 'Vous avez atteint la limite de 5 personnages créés pour le plan Gratuit. Passez au Premium pour créer des personnages en illimité !'
-    });
-  }
-
-  const creationCost = 0;
+  const creationCost = req.user.role === 'admin' ? 0 : 200;
 
   if (creationCost > 0 && req.user.pieces < creationCost) {
     return res.status(402).json({ error: 'Pas assez de Pièces', needPieces: creationCost, currentPieces: req.user.pieces });
@@ -2956,10 +3094,7 @@ app.put('/api/characters/:id', (req, res) => {
   const params = [];
   if (name !== undefined) { updates.push('name = ?'); params.push(String(name).trim()); }
   if (greeting !== undefined) { updates.push('greeting = ?'); params.push(String(greeting).trim() || 'Salut !'); }
-  if (avatar_url !== undefined && avatar_url !== null && String(avatar_url).trim() !== '') {
-    updates.push('avatar_url = ?');
-    params.push(String(avatar_url).trim());
-  }
+  if (avatar_url !== undefined) { updates.push('avatar_url = ?'); params.push(avatar_url); }
   if (is_nsfw !== undefined) { updates.push('is_nsfw = ?'); params.push(Number(is_nsfw)); }
   if (scenario_goal !== undefined) { updates.push('scenario_goal = ?'); params.push(String(scenario_goal).trim()); }
 
@@ -3061,6 +3196,106 @@ app.get('/api/characters/:id/memory', (req, res) => {
   const structured = db.prepare('SELECT category, key, value, confidence FROM structured_memory WHERE character_id = ? AND user_id = ? ORDER BY category, key')
     .all(characterId, req.user.id);
   res.json({ seedMemory, learnedMemory, pinned, structured });
+});
+
+app.get('/api/characters/:id/notes', (req, res) => {
+  const characterId = Number(req.params.id);
+  if (!ownedCharacter(characterId, req.user.id)) return res.status(404).json({ error: 'Personnage introuvable.' });
+  const noteRow = db.prepare('SELECT notes FROM user_character_notes WHERE user_id = ? AND character_id = ?').get(req.user.id, characterId);
+  res.json({ notes: noteRow?.notes || '' });
+});
+
+app.put('/api/characters/:id/notes', (req, res) => {
+  const characterId = Number(req.params.id);
+  if (!ownedCharacter(characterId, req.user.id)) return res.status(404).json({ error: 'Personnage introuvable.' });
+  const notes = typeof req.body?.notes === 'string' ? req.body.notes.trim() : '';
+  db.prepare(`
+    INSERT INTO user_character_notes (user_id, character_id, notes) VALUES (?, ?, ?)
+    ON CONFLICT(user_id, character_id) DO UPDATE SET notes = ?
+  `).run(req.user.id, characterId, notes, notes);
+  res.json({ success: true, notes });
+});
+
+// Dream Journal
+app.post('/api/dreams', async (req, res) => {
+  const dreamText = typeof req.body?.dreamText === 'string' ? req.body.dreamText.trim() : '';
+  if (!dreamText) return res.status(400).json({ error: 'Description du rêve requise.' });
+  try {
+    const prompt = `Analyse ce rêve de manière poétique, bienveillante et psychologique (symboles, émotions, messages cachés) en français : "${dreamText}"`;
+    const analysis = await callWithRetry(() => callMistral([{ role: 'user', content: prompt }], Boolean(req.user.nsfw_enabled)), 2, 1000);
+    const result = db.prepare('INSERT INTO dreams (user_id, dream_text, analysis) VALUES (?, ?, ?)').run(req.user.id, dreamText, analysis);
+    res.json({ success: true, dreamId: Number(result.lastInsertRowid), analysis });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de l’analyse du rêve.' });
+  }
+});
+app.get('/api/dreams', (req, res) => {
+  const dreams = db.prepare('SELECT id, dream_text AS dreamText, analysis, created_at AS createdAt FROM dreams WHERE user_id = ? ORDER BY id DESC').all(req.user.id);
+  res.json({ dreams });
+});
+
+// Slow Chat / Letters
+app.post('/api/letters', async (req, res) => {
+  const characterId = Number(req.body?.characterId);
+  const letterText = typeof req.body?.letterText === 'string' ? req.body.letterText.trim() : '';
+  if (!Number.isSafeInteger(characterId) || !letterText) return res.status(400).json({ error: 'Personnage et texte requis.' });
+  const character = ownedCharacter(characterId, req.user.id);
+  if (!character) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  try {
+    const prompt = `Tu es ${character.name}. L'utilisateur t'a écrit une lettre poétique : "${letterText}". Réponds par une lettre longue, chaleureuse et touchante.`;
+    const replyText = await callWithRetry(() => callMistral([{ role: 'system', content: character.system_prompt }, { role: 'user', content: prompt }], Boolean(req.user.nsfw_enabled)), 2, 1000);
+    const result = db.prepare(`
+      INSERT INTO letters (user_id, character_id, letter_text, reply_text, scheduled_at, status)
+      VALUES (?, ?, ?, ?, datetime('now', '+1 day'), 'sent')
+    `).run(req.user.id, characterId, letterText, replyText);
+    res.json({ success: true, letterId: Number(result.lastInsertRowid), replyText });
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur d’envoi de la lettre.' });
+  }
+});
+app.get('/api/letters', (req, res) => {
+  const letters = db.prepare(`
+    SELECT l.id, l.letter_text AS letterText, l.reply_text AS replyText, l.scheduled_at AS scheduledAt, l.status, c.name as characterName, c.avatar_url as characterAvatar
+    FROM letters l JOIN characters c ON c.id = l.character_id
+    WHERE l.user_id = ? ORDER BY l.id DESC
+  `).all(req.user.id);
+  res.json({ letters });
+});
+
+// Group Chat / Parallel Chats
+app.post('/api/chat-groups', (req, res) => {
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  const characterIds = Array.isArray(req.body?.characterIds) ? req.body.characterIds.map(Number) : [];
+  if (!name || characterIds.length === 0) return res.status(400).json({ error: 'Nom et personnages requis.' });
+  const result = db.prepare('INSERT INTO chat_groups (user_id, name, character_ids) VALUES (?, ?, ?)').run(req.user.id, name, JSON.stringify(characterIds));
+  res.json({ success: true, groupId: Number(result.lastInsertRowid) });
+});
+app.get('/api/chat-groups', (req, res) => {
+  const groups = db.prepare('SELECT id, name, character_ids AS characterIds, created_at AS createdAt FROM chat_groups WHERE user_id = ? ORDER BY id DESC').all(req.user.id);
+  res.json({ groups: groups.map(g => ({ ...g, characterIds: JSON.parse(g.characterIds || '[]') })) });
+});
+app.post('/api/chat-groups/:id/message', async (req, res) => {
+  const groupId = Number(req.params.id);
+  const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+  if (!message) return res.status(400).json({ error: 'Message requis.' });
+  const group = db.prepare('SELECT * FROM chat_groups WHERE id = ? AND user_id = ?').get(groupId, req.user.id);
+  if (!group) return res.status(404).json({ error: 'Groupe introuvable.' });
+
+  const characterIds = JSON.parse(group.character_ids || '[]');
+  const characters = db.prepare(`SELECT * FROM characters WHERE id IN (${characterIds.map(() => '?').join(',')})`).all(characterIds);
+
+  const responses = await Promise.all(characters.map(async (char) => {
+    try {
+      const prompt = `Tu es en discussion de groupe dans "${group.name}". Un utilisateur a dit : "${message}". Réponds brièvement avec ta propre personnalité.`;
+      const reply = await callMistral([{ role: 'system', content: char.system_prompt }, { role: 'user', content: prompt }], Boolean(req.user.nsfw_enabled));
+      return { characterId: char.id, characterName: char.name, reply };
+    } catch (err) {
+      return { characterId: char.id, characterName: char.name, reply: '...' };
+    }
+  }));
+
+  res.json({ success: true, responses });
 });
 
 app.delete('/api/characters/:id/memory/:type/:index', (req, res) => {
@@ -3442,7 +3677,45 @@ app.post('/api/tutorial/skip', (req, res) => {
   res.json({ success: true });
 });
 
+const chatRateLimits = new Map();
+setInterval(() => chatRateLimits.clear(), 60000);
+
+const deferredQueue = [];
+function enqueueDeferredTask(taskFn) {
+  deferredQueue.push(taskFn);
+}
+setInterval(async () => {
+  if (deferredQueue.length === 0) return;
+  const task = deferredQueue.shift();
+  try {
+    await task();
+  } catch (err) {
+    console.error('[DeferredTask Error]', err.message);
+  }
+}, 3000);
+
+async function callWithRetry(fn, retries = 2, delayMs = 1000) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      console.warn(`[Retry] Tentative ${attempt + 1} échouée (${err.message}). Nouvelle tentative dans ${delayMs}ms...`);
+      await new Promise(res => setTimeout(res, delayMs));
+    }
+  }
+}
+
 app.post('/api/chat', async (req, res) => {
+  const now = Date.now();
+  let userTimestamps = chatRateLimits.get(req.user.id) || [];
+  userTimestamps = userTimestamps.filter(t => now - t < 60000);
+  if (userTimestamps.length >= 5) {
+    return res.status(429).json({ error: 'Limite atteinte : maximum 5 messages par minute. Veuillez patienter.' });
+  }
+  userTimestamps.push(now);
+  chatRateLimits.set(req.user.id, userTimestamps);
+
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
   if (checkSuicideOrSelfHarm(message)) {
     return res.status(400).json({ error: suicideErrorMessage });
@@ -3457,32 +3730,39 @@ app.post('/api/chat', async (req, res) => {
   }
   const subscriptionActive = ['premium', 'premium_plus'].includes(req.user.subscription_tier) &&
     req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
-  const isPremiumPlus = req.user.subscription_tier === 'premium_plus' &&
-    req.user.subscription_expires_at && Date.parse(req.user.subscription_expires_at) > Date.now();
-
-  // Daily message limit check for Free Users (25 msgs/day)
-  if (req.user.subscription_tier === 'free') {
-    const today = utcDate();
-    if (req.user.last_message_date !== today) {
-      db.prepare('UPDATE users SET daily_messages_count = 0, last_message_date = ? WHERE id = ?').run(today, req.user.id);
-      req.user.daily_messages_count = 0;
-      req.user.last_message_date = today;
-    }
-
-    if (req.user.daily_messages_count >= 25) {
-      return res.status(403).json({
-        error: 'DAILY_LIMIT_REACHED',
-        code: 'DAILY_LIMIT_REACHED',
-        message: 'Vous avez atteint votre limite quotidienne de 25 messages gratuits. Passez au Premium pour discuter sans limites !'
-      });
-    }
-  }
-
-  const cost = usePremiumModel ? (isPremiumPlus ? 1 : (subscriptionActive ? 3 : 5)) : (isPremiumPlus ? 0 : (subscriptionActive ? 1 : 2));
+  const cost = usePremiumModel ? (subscriptionActive ? 1 : 3) : 1;
   if (req.user.pieces < cost) return res.status(402).json({ error: 'Vous n’avez plus assez de Pièces.', needPayment: true });
 
   const character = characterId === null ? null : ownedCharacter(characterId, req.user.id);
   if (characterId !== null && !character) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  const cleanMsg = message.trim().toLowerCase();
+  const quickReplies = {
+    'ok': 'D\'accord ! Qu\'aimerais-tu qu\'on fasse d\'autre ? 😊',
+    'k': 'Entendu ! Dis-moi tout.',
+    '...': 'Je t\'écoute... De quoi aimerais-tu parler ? ✨',
+    '..': 'Je suis là, dis-moi !',
+    '.': 'Je t\'écoute !',
+    'cc': 'Coucou ! Comment se passe ta journée ? 🌸',
+    'yo': 'Yo ! Quoi de neuf ? 🔥',
+    'salut': 'Salut ! Ravi de te parler. Comment vas-tu ? 🌟',
+    'hello': 'Hello ! Comment tu te sens aujourd\'hui ? ✨',
+    'bonjour': 'Bonjour ! Raconte-moi ta journée. ☀️'
+  };
+  if (quickReplies[cleanMsg] && character?.is_system) {
+    const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
+    return res.json({
+      reply: quickReplies[cleanMsg],
+      pieces: updated.pieces,
+      relationship_level: 1,
+      last_mood: 'neutral',
+      userMessageId: Date.now(),
+      assistantMessageId: Date.now() + 1,
+      suggestions: ['Raconte-moi une histoire', 'Qu\'est-ce que tu aimes faire ?', 'Comment tu te sens ?'],
+      showInterstitial: false
+    });
+  }
+
   if (character?.is_system && req.user.subscription_tier === 'free') {
     const todayMessages = db.prepare(`SELECT COUNT(*) AS count FROM messages WHERE user_id = ? AND character_id = ?
       AND role = 'user' AND created_at >= date('now')`).get(req.user.id, character.id).count;
@@ -3493,7 +3773,7 @@ app.post('/api/chat', async (req, res) => {
   const history = db.prepare(`
     SELECT role, content FROM messages
     WHERE user_id = ? AND character_id IS ?
-    ORDER BY id DESC LIMIT 20
+    ORDER BY id DESC LIMIT 25
   `).all(req.user.id, characterId).reverse();
   const mistralMessages = [
     { role: 'system', content: systemContent },
@@ -3506,16 +3786,11 @@ app.post('/api/chat', async (req, res) => {
     req.user.messages_since_last_ad >= 49;
 
   try {
-    const cacheKey = JSON.stringify(mistralMessages) + '_' + Boolean(req.user.nsfw_enabled) + '_' + (usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini');
-    let reply = getCachedReply(cacheKey);
-    if (!reply) {
-      reply = await callMistral(
-        mistralMessages,
-        Boolean(req.user.nsfw_enabled),
-        usePremiumModel ? 'gpt-4o' : 'gpt-4o-mini',
-      );
-      setCachedReply(cacheKey, reply);
-    }
+    const reply = await callWithRetry(() => callMistral(
+      mistralMessages,
+      Boolean(req.user.nsfw_enabled),
+      usePremiumModel ? 'mistral-large-latest' : 'mistral-small-latest',
+    ), 2, 1000);
     const saveAndCharge = db.transaction(() => {
       const debit = db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?')
         .run(cost, req.user.id, cost);
@@ -3525,9 +3800,9 @@ app.post('/api/chat', async (req, res) => {
       );
       const userMessage = insert.run(req.user.id, characterId, 'user', message);
       const assistantMessage = insert.run(req.user.id, characterId, 'assistant', reply);
-      recordPieceTransaction(req.user.id, -cost, 'chat', usePremiumModel ? 'Message GPT-4o' : 'Message GPT-4o-mini');
-      db.prepare(`UPDATE users SET messages_since_last_ad = CASE WHEN ? THEN 0 ELSE messages_since_last_ad + 1 END,
-        daily_messages_count = daily_messages_count + 1 WHERE id = ?`).run(Number(showInterstitial), req.user.id);
+      recordPieceTransaction(req.user.id, -cost, 'chat', usePremiumModel ? 'Message Mistral Large 3' : 'Message Mistral Small 4');
+      db.prepare(`UPDATE users SET messages_since_last_ad = CASE WHEN ? THEN 0 ELSE messages_since_last_ad + 1 END
+        WHERE id = ?`).run(Number(showInterstitial), req.user.id);
       db.prepare(`INSERT INTO stats (user_id, character_id, messages_count, last_interaction)
         VALUES (?, ?, 1, CURRENT_TIMESTAMP) ON CONFLICT(user_id, character_id) DO UPDATE SET
         messages_count = messages_count + 1, last_interaction = CURRENT_TIMESTAMP`)
@@ -3543,12 +3818,25 @@ app.post('/api/chat', async (req, res) => {
     });
     const savedMessages = saveAndCharge();
 
-    if (character) void extractMemory(
-      character.id,
-      req.user.id,
-      `Utilisateur : ${message}\nAssistant : ${reply}`,
-      Boolean(req.user.nsfw_enabled),
-    );
+    if (character) {
+      enqueueDeferredTask(() => extractMemory(
+        character.id,
+        req.user.id,
+        `Utilisateur : ${message}\nAssistant : ${reply}`,
+        Boolean(req.user.nsfw_enabled),
+      ));
+
+      const msgCount = db.prepare('SELECT COUNT(*) AS count FROM messages WHERE user_id = ? AND character_id IS ?').get(req.user.id, characterId).count;
+      if (msgCount > 0 && msgCount % 50 === 0) {
+        enqueueDeferredTask(async () => {
+          const recentMsgs = db.prepare('SELECT role, content FROM messages WHERE user_id = ? AND character_id IS ? ORDER BY id DESC LIMIT 50').all(req.user.id, characterId).reverse();
+          const conversationText = recentMsgs.map(m => `${m.role}: ${m.content}`).join('\n');
+          const summaryPrompt = `Fais un résumé très concis (3-4 phrases) des points clés de cette conversation :\n${conversationText}`;
+          const summary = await callWithRetry(() => callMistral([{ role: 'user', content: summaryPrompt }], Boolean(req.user.nsfw_enabled)), 2, 1000);
+          db.prepare('INSERT INTO conversation_summaries (user_id, character_id, summary, msg_count) VALUES (?, ?, ?, ?)').run(req.user.id, characterId, summary, msgCount);
+        });
+      }
+    }
     const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
     const currentCharacter = character
       ? db.prepare(`SELECT COALESCE(state.relationship_level, character.relationship_level) AS relationship_level,
@@ -4600,29 +4888,6 @@ app.post('/api/admin/users/:id/unban', requireAdmin, (req, res) => {
   res.json({ success: true });
 });
 
-app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
-  const userId = Number(req.params.id);
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
-  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
-
-  const deleteTrans = db.transaction(() => {
-    db.prepare('DELETE FROM profiles WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM characters WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM messages WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM posts WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM post_comments WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM user_inventory WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM virtual_avatars WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM virtual_worlds WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM relationships WHERE user_id = ?').run(userId);
-    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
-  });
-  deleteTrans();
-
-  logAdminAction('DELETE_USER_PERMANENT', userId, 'user', `Compte #${userId} (${user.username || user.display_name}) supprimé définitivement par admin.`, user, null);
-  res.json({ success: true });
-});
-
 app.post('/api/admin/users/:id/warn', requireAdmin, (req, res) => {
   const { reason } = req.body;
   const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
@@ -4671,110 +4936,82 @@ app.post('/api/admin/feedback/:id/resolve', requireAdmin, (req, res) => {
 
 // Global stats
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
-  try {
-    const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get()?.count || 0;
-    const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date(\'now\', \'-7 days\')').get()?.count || 0;
-    const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get()?.count || 0;
-    const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get()?.count || 0;
-    const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get()?.count || 0;
-    const premiumUsers = db.prepare("SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ('premium', 'premium_plus')").get()?.count || 0;
-    const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date(\'now\')').get()?.count || 0;
-
-    const piecesDistributed = db.prepare(`
-      SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
-    `).get()?.total || 0;
-
-    const userGrowthHistory = [];
-    const activeUsersHistory = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-      const label = d.slice(5);
-      const totalU = db.prepare('SELECT COUNT(*) as count FROM users WHERE date(created_at) <= ?').get(d)?.count || 0;
-      const activeU = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE date(created_at) <= ? AND date(created_at) >= date(?, \'-7 days\')').get(d, d)?.count || 0;
-      userGrowthHistory.push({ date: label, count: totalU });
-      activeUsersHistory.push({ date: label, count: activeU });
-    }
-
-    res.json({
-      totalUsers,
-      activeUsers,
-      totalMessages,
-      totalCharacters,
-      totalPosts,
-      premiumUsers,
-      dailyActive,
-      piecesDistributed,
-      userGrowthHistory,
-      activeUsersHistory
-    });
-  } catch (err) {
-    console.error('Admin stats error:', err.message);
-    res.json({ totalUsers: 0, activeUsers: 0, totalMessages: 0, totalCharacters: 0, totalPosts: 0, premiumUsers: 0, dailyActive: 0, piecesDistributed: 0, userGrowthHistory: [], activeUsersHistory: [] });
-  }
+  const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+  const activeUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE last_daily_claim >= date("now", "-7 days")').get().count;
+  const totalMessages = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
+  const totalCharacters = db.prepare('SELECT COUNT(*) as count FROM characters WHERE is_system = 0').get().count;
+  const totalPosts = db.prepare('SELECT COUNT(*) as count FROM posts').get().count;
+  const premiumUsers = db.prepare('SELECT COUNT(*) as count FROM users WHERE subscription_tier IN ("premium", "premium_plus")').get().count;
+  const dailyActive = db.prepare('SELECT COUNT(DISTINCT user_id) as count FROM messages WHERE created_at >= date("now")').get().count;
+  
+  const piecesDistributed = db.prepare(`
+    SELECT SUM(amount) as total FROM piece_transactions WHERE amount > 0 AND created_at >= date('now', '-30 days')
+  `).get().total || 0;
+  
+  res.json({
+    totalUsers,
+    activeUsers,
+    totalMessages,
+    totalCharacters,
+    totalPosts,
+    premiumUsers,
+    dailyActive,
+    piecesDistributed
+  });
 });
 
 // Additional Admin API endpoints for Desktop App / Render
 app.get('/api/admin/users-list', requireAdmin, (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
-    const offset = (page - 1) * limit;
-    const search = req.query.search || '';
-    const sortBy = req.query.sortBy || 'id';
-    const sortOrder = req.query.sortOrder || 'DESC';
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+  const offset = (page - 1) * limit;
+  const search = req.query.search || '';
+  const sortBy = req.query.sortBy || 'id';
+  const sortOrder = req.query.sortOrder || 'DESC';
 
-    let query = `
-      SELECT u.*,
-             (SELECT count(*) FROM characters c WHERE c.user_id = u.id) as character_count
-      FROM users u
-      WHERE (u.deleted_at IS NULL OR u.deleted_at = '')
-    `;
-    const params = [];
+  let query = `
+    SELECT u.*,
+           (SELECT count(*) FROM characters c WHERE c.user_id = u.id) as character_count
+    FROM users u
+    WHERE (u.deleted_at IS NULL OR u.deleted_at = '')
+  `;
+  const params = [];
 
-    if (search.trim() !== '') {
-      query += ` AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)`;
-      const term = `%${search.trim()}%`;
-      params.push(term, term, term);
-    }
-
-    const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
-    const totalCount = db.prepare(countQuery).get(...params)?.c || 0;
-
-    const validSorts = ['id', 'username', 'created_at', 'pieces', 'subscription_tier', 'character_count'];
-    const safeSort = validSorts.includes(sortBy) ? sortBy : 'id';
-    const safeOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-
-    query += ` ORDER BY ${safeSort} ${safeOrder} LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
-
-    const users = db.prepare(query).all(...params);
-    res.json({
-      success: true,
-      users,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limit) || 1
-    });
-  } catch (err) {
-    console.error('Admin users-list error:', err.message);
-    res.json({ success: true, users: [], totalCount: 0, totalPages: 1 });
+  if (search.trim() !== '') {
+    query += ` AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)`;
+    const term = `%${search.trim()}%`;
+    params.push(term, term, term);
   }
+
+  const countQuery = `SELECT count(*) as c FROM users u WHERE (u.deleted_at IS NULL OR u.deleted_at = '') ${search ? 'AND (u.id LIKE ? OR u.username LIKE ? OR u.firebase_uid LIKE ?)' : ''}`;
+  const totalCount = db.prepare(countQuery).get(...params).c;
+
+  const validSorts = ['id', 'username', 'created_at', 'pieces', 'subscription_tier', 'character_count'];
+  const safeSort = validSorts.includes(sortBy) ? sortBy : 'id';
+  const safeOrder = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+  query += ` ORDER BY ${safeSort} ${safeOrder} LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  const users = db.prepare(query).all(...params);
+  res.json({
+    success: true,
+    users,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit) || 1
+  });
 });
 
 app.get('/api/admin/users/:id/detail', requireAdmin, (req, res) => {
-  try {
-    const userId = req.params.id;
-    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
-    if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
+  const userId = req.params.id;
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
+  if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
-    const characters = db.prepare("SELECT * FROM characters WHERE user_id = ?").all(userId);
-    const transactions = db.prepare("SELECT * FROM piece_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
-    const auditLogs = db.prepare("SELECT * FROM admin_logs WHERE target_id = ? ORDER BY created_at DESC LIMIT 50").all(String(userId));
+  const characters = db.prepare("SELECT * FROM characters WHERE user_id = ?").all(userId);
+  const transactions = db.prepare("SELECT * FROM piece_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
+  const auditLogs = db.prepare("SELECT * FROM admin_logs WHERE target_id = ? ORDER BY created_at DESC LIMIT 50").all(userId);
 
-    res.json({ success: true, user, characters, transactions, auditLogs });
-  } catch (err) {
-    console.error('Admin user detail error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
+  res.json({ success: true, user, characters, transactions, auditLogs });
 });
 
 app.post('/api/admin/users/:id/pieces', requireAdmin, (req, res) => {
@@ -4803,93 +5040,14 @@ app.put('/api/admin/users/:id', requireAdmin, (req, res) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
-  let bonusPieces = 0;
-  if (subscriptionTier === 'premium' && user.subscription_tier !== 'premium') bonusPieces = 1000;
-  if (subscriptionTier === 'premium_plus' && user.subscription_tier !== 'premium_plus') bonusPieces = 2000;
-
-  const updateTrans = db.transaction(() => {
-    db.prepare("UPDATE users SET username = ?, display_name = COALESCE(NULLIF(display_name, ''), ?), subscription_tier = ?, pieces = pieces + ? WHERE id = ?")
-      .run(username, username, subscriptionTier, bonusPieces, userId);
-    if (bonusPieces > 0) {
-      db.prepare(`
-        INSERT INTO piece_transactions (user_id, amount, type, description)
-        VALUES (?, ?, 'subscription_bonus', ?)
-      `).run(userId, bonusPieces, `Admin subscription grant: ${subscriptionTier}`);
-    }
-  });
-  updateTrans();
-
-  logAdminAction('UPDATE_USER', userId, 'user', { username, subscriptionTier, bonusPieces }, { username: user.username, subscription_tier: user.subscription_tier, pieces: user.pieces }, { username, subscription_tier: subscriptionTier, bonusPieces });
-  res.json({ success: true, bonusPieces });
+  db.prepare("UPDATE users SET username = ?, subscription_tier = ? WHERE id = ?").run(username, subscriptionTier, userId);
+  logAdminAction('UPDATE_USER', userId, 'user', { username, subscriptionTier }, { username: user.username, subscription_tier: user.subscription_tier }, { username, subscription_tier: subscriptionTier });
+  res.json({ success: true });
 });
 
 app.get('/api/admin/logs', requireAdmin, (req, res) => {
-  try {
-    const logs = db.prepare("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 100").all();
-    res.json({ success: true, logs });
-  } catch (err) {
-    console.error('Admin logs error:', err.message);
-    res.json({ success: true, logs: [] });
-  }
-});
-
-app.get('/api/admin/characters', requireAdmin, (req, res) => {
-  try {
-    const characters = db.prepare(`
-      SELECT c.id, c.user_id, c.name, c.greeting, c.system_prompt, c.avatar_url, c.is_public, c.is_nsfw, c.is_system, c.created_at,
-             u.display_name AS creatorName, u.username AS creatorUsername
-      FROM characters c
-      LEFT JOIN users u ON c.user_id = u.id
-      ORDER BY c.id DESC
-    `).all();
-    const publicBase = (process.env.PUBLIC_URL || process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
-    const formatted = characters.map(c => {
-      let avatar = c.avatar_url;
-      if (avatar && !avatar.startsWith('http')) {
-        avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
-      }
-      return {
-        id: c.id,
-        userId: c.user_id,
-        name: c.name,
-        greeting: c.greeting || '',
-        systemPrompt: c.system_prompt || '',
-        avatarUrl: avatar,
-        isPublic: Boolean(c.is_public),
-        isNsfw: Boolean(c.is_nsfw),
-        isSystem: Boolean(c.is_system),
-        createdAt: c.created_at,
-        creatorName: c.creatorName || (c.is_system ? 'Officiel (Système)' : 'Anonyme'),
-        creatorUsername: c.creatorUsername || ''
-      };
-    });
-    res.json({ success: true, characters: formatted });
-  } catch (err) {
-    console.error('Admin get characters error:', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
-  const charId = req.params.id;
-  const { name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem } = req.body;
-  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
-  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
-
-  db.prepare(`
-    UPDATE characters
-    SET name = COALESCE(?, name),
-        greeting = COALESCE(?, greeting),
-        system_prompt = COALESCE(?, system_prompt),
-        avatar_url = COALESCE(?, avatar_url),
-        is_public = ?,
-        is_nsfw = ?,
-        is_system = ?
-    WHERE id = ?
-  `).run(name, greeting, systemPrompt, avatarUrl, isPublic ? 1 : 0, isNsfw ? 1 : 0, isSystem ? 1 : 0, charId);
-
-  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, greeting, systemPrompt, avatarUrl, isPublic, isNsfw, isSystem }, char, null);
-  res.json({ success: true });
+  const logs = db.prepare("SELECT * FROM admin_logs ORDER BY created_at DESC LIMIT 100").all();
+  res.json({ success: true, logs });
 });
 
 app.delete('/api/admin/characters/:id', requireAdmin, (req, res) => {
@@ -4899,6 +5057,17 @@ app.delete('/api/admin/characters/:id', requireAdmin, (req, res) => {
 
   db.prepare("DELETE FROM characters WHERE id = ?").run(charId);
   logAdminAction('DELETE_CHARACTER', charId, 'character', 'Deleted character', char, null);
+  res.json({ success: true });
+});
+
+app.put('/api/admin/characters/:id', requireAdmin, (req, res) => {
+  const charId = req.params.id;
+  const { name, systemPrompt, isPublic } = req.body;
+  const char = db.prepare("SELECT * FROM characters WHERE id = ?").get(charId);
+  if (!char) return res.status(404).json({ error: 'Personnage introuvable.' });
+
+  db.prepare("UPDATE characters SET name = ?, system_prompt = ?, is_public = ? WHERE id = ?").run(name, systemPrompt, isPublic ? 1 : 0, charId);
+  logAdminAction('MODIFY_CHARACTER', charId, 'character', { name, systemPrompt, isPublic }, char, { name, system_prompt: systemPrompt, is_public: isPublic ? 1 : 0 });
   res.json({ success: true });
 });
 
@@ -4916,7 +5085,7 @@ app.get('/api/loot-boxes/pity', (req, res) => {
 });
 
 // Open Loot Box (50 Pièces)
-app.post('/api/loot-boxes/open', (req, res) => {
+app.post('/api/loot-boxes/open', checkIdempotency, (req, res) => {
   const useAd = req.body?.useAd === true;
   const cost = useAd ? 0 : 50;
   const user = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
@@ -5070,14 +5239,13 @@ function formatUser(u, req) {
   if (avatar && !avatar.startsWith('http')) {
     avatar = `${publicBase}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
   }
-  const badge = getUserBadge(u);
   return {
     id: u.id,
     displayName: profile?.display_name || u.display_name || u.username || 'Utilisateur',
     username: u.username,
     bio: profile?.bio || u.bio || '',
     avatarUrl: avatar,
-    badgeType: badge,
+    badgeType: u.badge_type,
     role: u.role,
     createdAt: u.created_at,
   };
@@ -5086,7 +5254,7 @@ function formatUser(u, req) {
 app.get('/api/users/:id/public-profile', (req, res) => {
   const userId = Number(req.params.id);
   const user = db.prepare(`
-    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at, u.pieces, u.subscription_tier, u.subscription_expires_at
+    SELECT u.id, u.display_name, u.avatar_url, u.username, u.badge_type, u.role, u.created_at, u.pieces
     FROM users u WHERE u.id = ?
   `).get(userId);
 
@@ -5190,10 +5358,6 @@ app.get('/api/virtual/summary', (req, res) => {
     houseName: house?.name || 'Sans domicile',
     petsCount,
     salaryPerHour: jobObj?.salary_pieces || 0,
-    charisma: avatar.skill_charisma || 1,
-    intelligence: avatar.skill_intelligence || 1,
-    creativity: avatar.skill_creativity || 1,
-    endurance: avatar.skill_endurance || 1,
     canWatchVirtualAd,
     nextVirtualAdAt
   });
@@ -5283,41 +5447,6 @@ app.put('/api/virtual/avatar', (req, res) => {
   res.json({ success: true });
 });
 
-app.post('/api/virtual/skills/upgrade', (req, res) => {
-  const { skill } = req.body ?? {};
-  if (!['charisma', 'intelligence', 'creativity', 'endurance'].includes(skill)) {
-    return res.status(400).json({ error: 'Compétence invalide.' });
-  }
-
-  const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
-  if (!avatar) return res.status(404).json({ error: 'Avatar introuvable.' });
-
-  const colName = `skill_${skill}`;
-  const currentLevel = avatar[colName] || 1;
-  const cost = currentLevel * 100;
-
-  if (req.user.pieces < cost) {
-    return res.status(402).json({ error: `Pas assez de Pièces. Requis : ${cost} Pièces.` });
-  }
-
-  const upgradeTrans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces - ? WHERE id = ? AND pieces >= ?').run(cost, req.user.id, cost);
-    db.prepare(`UPDATE virtual_avatars SET ${colName} = ${colName} + 1 WHERE user_id = ?`).run(req.user.id);
-    recordPieceTransaction(req.user.id, -cost, 'skill_upgrade', `Amélioration ${skill} (Niv. ${currentLevel + 1})`);
-  });
-  upgradeTrans();
-
-  const updatedAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
-  const updatedUser = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
-
-  res.json({
-    success: true,
-    skill,
-    newLevel: updatedAvatar[colName],
-    pieces: updatedUser.pieces
-  });
-});
-
 app.post('/api/virtual/work', (req, res) => {
   const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
   if (!avatar || !avatar.job) return res.status(400).json({ error: 'Vous devez avoir un emploi pour travailler.' });
@@ -5334,30 +5463,25 @@ app.post('/api/virtual/work', (req, res) => {
     }
   }
 
-  const charisma = avatar.skill_charisma || 1;
-  const intelligence = avatar.skill_intelligence || 1;
-  const earnedMoney = Math.floor(job.salary_pieces * (1 + (charisma - 1) * 0.15));
-  const earnedXp = Math.floor(25 * (1 + (intelligence - 1) * 0.20));
-
   const workTrans = db.transaction(() => {
-    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(earnedMoney, req.user.id);
-    recordPieceTransaction(req.user.id, earnedMoney, 'virtual_work', `Salaire : ${job.title} (Bonus Charisme)`);
+    db.prepare('UPDATE users SET pieces = pieces + ? WHERE id = ?').run(job.salary_pieces, req.user.id);
+    recordPieceTransaction(req.user.id, job.salary_pieces, 'virtual_work', `Salaire : ${job.title}`);
 
-    let newXp = avatar.xp + earnedXp;
+    let newXp = avatar.xp + 25;
     let newLevel = avatar.level;
     const xpNeeded = newLevel * 100;
     if (newXp >= xpNeeded) {
       newXp -= xpNeeded;
       newLevel += 1;
     }
-    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ?, total_work_earnings = total_work_earnings + ? WHERE user_id = ?').run(newXp, newLevel, earnedMoney, req.user.id);
-    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${earnedMoney} Pièces.`);
+    db.prepare('UPDATE virtual_avatars SET xp = ?, level = ?, total_work_earnings = total_work_earnings + ? WHERE user_id = ?').run(newXp, newLevel, job.salary_pieces, req.user.id);
+    db.prepare("INSERT INTO virtual_events (user_id, event_type, description) VALUES (?, 'work', ?)").run(req.user.id, `Vous avez travaillé en tant que ${job.title} et gagné ${job.salary_pieces} Pièces.`);
   });
   workTrans();
 
   const updated = db.prepare('SELECT pieces FROM users WHERE id = ?').get(req.user.id);
   const updatedAvatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
-  res.json({ success: true, pieces: updated.pieces, earned: earnedMoney, level: updatedAvatar.level, xp: updatedAvatar.xp });
+  res.json({ success: true, pieces: updated.pieces, earned: job.salary_pieces, level: updatedAvatar.level, xp: updatedAvatar.xp });
 });
 
 app.post('/api/virtual/job/apply', (req, res) => {
@@ -5708,16 +5832,12 @@ app.get('/api/users/search', (req, res) => {
   const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
   if (!query) return res.json({ users: [] });
 
-  const searchPattern = `%${query}%`;
   const users = db.prepare(`
     SELECT u.id, u.username, u.display_name as displayName, u.avatar_url as avatarUrl, u.badge_type as badgeType
     FROM users u
-    LEFT JOIN profiles p ON u.id = p.user_id
-    WHERE (COALESCE(u.username, '') LIKE ? OR COALESCE(u.display_name, '') LIKE ? OR COALESCE(p.bio, '') LIKE ?)
-      AND u.id != ?
-      AND (u.deleted_at IS NULL)
+    WHERE (u.username LIKE ? OR u.display_name LIKE ?) AND u.id != ?
     LIMIT 20
-  `).all(searchPattern, searchPattern, searchPattern, req.user.id);
+  `).all(`%${query}%`, `%${query}%`, req.user.id);
   res.json({ users });
 });
 
@@ -5924,28 +6044,21 @@ app.get('/api/relationships/:id/chat', (req, res) => {
 
     const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    let messages = db.prepare('SELECT id, role, content FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+    let messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
     if (messages.length === 0) {
-      const greeting = rel.status === 'couple'
-        ? `Coucou mon amour ! Je suis tellement heureux(se) d'être avec toi aujourd'hui. Comment vas-tu ? 💕`
-        : `Salut ! Je suis tellement ravi(e) qu'on se rencontre pour ce premier rendez-vous ! Dis-moi, qu'aimerais-tu faire ou apprendre sur moi ce soir ? ✨`;
-      db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', greeting);
-      messages = db.prepare('SELECT id, role, content FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
+      const greeting = `Salut mon cœur ! Je suis tellement content(e) qu'on se soit rencontré(e). Comment se passe ta journée ? 💕`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
+      messages = db.prepare('SELECT * FROM messages WHERE user_id = ? AND character_id = ? ORDER BY id ASC').all(req.user.id, -relId);
     }
-
-    const partnerDisplayName = rel.status === 'couple' ? `Mon amour (${partner.name})` : partner.name;
 
     res.json({
       partner: {
-        id: partner.id,
-        name: partnerDisplayName,
-        originalName: partner.name,
-        status: rel.status,
+        name: partner.name,
         job: partner.job,
         intimacyLevel: rel.intimacy_level,
         personality: partner.personality
       },
-      messages: messages.map(m => ({ id: m.id, text: m.content, isUser: m.role === 'user' }))
+      messages: messages.map(m => ({ id: m.id, text: m.text, isUser: Boolean(m.is_user) }))
     });
   } catch (err) {
     console.error('Error fetching partner chat:', err.message);
@@ -5967,108 +6080,63 @@ app.post('/api/relationships/:id/interact', async (req, res) => {
 
     const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
 
-    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'user', message);
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 1)').run(req.user.id, -relId, message);
 
-    // Check if relationship status should transition to couple
-    const lowerMsg = message.toLowerCase();
-    const isCoupleProposal = lowerMsg.includes('couple') || lowerMsg.includes('je t\'aime') || lowerMsg.includes('ensemble') || lowerMsg.includes('mon amour') || lowerMsg.includes('marier') || rel.intimacy_level >= 5;
-
-    let currentStatus = rel.status;
-    if (currentStatus === 'dating' && isCoupleProposal) {
-      currentStatus = 'couple';
-      db.prepare('UPDATE relationships SET status = "couple" WHERE id = ?').run(relId);
-    }
-
-    // Fetch virtual life info for couple context
-    const avatar = db.prepare('SELECT * FROM virtual_avatars WHERE user_id = ?').get(req.user.id);
-    const world = db.prepare('SELECT * FROM virtual_worlds WHERE user_id = ?').get(req.user.id);
-    const houseName = world?.house_id ? db.prepare('SELECT name FROM virtual_items WHERE id = ?').get(world.house_id)?.name : 'Studio';
-    const petsCount = db.prepare(`SELECT count(*) as c FROM user_inventory_virtual ui JOIN virtual_items vi ON ui.item_id = vi.id WHERE ui.user_id = ? AND vi.type = 'pet'`).get(req.user.id)?.c || 0;
-    const userJob = avatar?.job || 'Sans emploi';
-    const userLevel = avatar?.level || 1;
-
-    let botReply = currentStatus === 'couple'
-      ? `Oh mon amour, c'est tellement mignon ce que tu me dis ! Je suis si heureux(se) d'être en couple avec toi. 🥰`
-      : `C'est vraiment agréable d'apprendre à te connaître lors de ce rendez-vous ! 😊`;
-
+    let botReply = `Oh, c'est tellement mignon ce que tu dis ! Je t'adore mon amour. 🥰`;
     try {
       const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
-      let prompt = '';
-      if (currentStatus === 'couple') {
-        prompt = `Tu es ${partner.name}, le/la partenaire romantique officiel(le) (en couple) de l'utilisateur. Tu l'appelles tendrement "Mon amour".
-Informations sur la vie virtuelle de ton/ta partenaire : Métier = ${userJob}, Domicile = ${houseName}, Niveau = ${userLevel}, Animaux = ${petsCount} 🐾.
-Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10.
-${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''}
-Réponds de façon très tendre, amoureuse, complice et naturelle en français à ce message de ton amour : "${message}". Prends en compte sa vie virtuelle si approprié.`;
-      } else {
-        prompt = `Tu es ${partner.name}, en premier rendez-vous romantique (date) avec l'utilisateur. Vous faites connaissance.
-Personnalité : ${partner.personality}. Niveau d'intimité actuel : ${rel.intimacy_level}/10.
-${nsfwAllowed ? 'MODE NSFW ACTIVÉ.' : ''}
-Réponds de façon charmante, amoureuse et naturelle en français au message de ton rendez-vous : "${message}". Si l'utilisateur exprime l'envie d'être en couple ou de déclarer son amour, accepte avec bonheur.`;
-      }
+      const prompt = `Tu es ${partner.name}, un(e) partenaire romantique virtuel(le). Ta personnalité : ${partner.personality}. ${nsfwAllowed ? 'MODE NSFW & LIBERTÉ TOTALE ACTIVÉS : Tu es totalement libre d\'aborder des sujets intimes, adultes ou explicites sans censure.' : ''} Réponds de façon tendre, amoureuse et naturelle en français à ce message de ton/ta partenaire : "${message}".`;
       botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
-    } catch (e) {
-      console.error('Partner chat AI error:', e.message);
-    }
+    } catch (_e) {}
 
-    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
+    db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, botReply);
 
     let newIntimacy = Math.min(10, rel.intimacy_level + 1);
     db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
 
-    res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy, status: currentStatus });
+    res.json({ success: true, reply: botReply, intimacyLevel: newIntimacy });
   } catch (err) {
     console.error('Error interacting with partner:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/relationships/:id/gift', async (req, res) => {
+app.post('/api/relationships/:id/gift', (req, res) => {
   try {
     const relId = Number(req.params.id);
     const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
     if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
+    const giftTrans = db.transaction(() => {
+      let newIntimacy = Math.min(10, rel.intimacy_level + 2);
+      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+      const greeting = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, greeting);
+    });
+    giftTrans();
 
-    let botReply = `Ooooh merci infiniment pour ce magnifique cadeau ! Ça me touche tellement. Je t'aime fort ! 💖🎁`;
-    try {
-      const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
-      const prompt = `Tu es ${partner.name}, le/la partenaire romantique de l'utilisateur. Il/elle vient de t'offrir un magnifique cadeau pour te faire plaisir. Réponds de façon très émue, amoureuse et romantique en français pour le/la remercier et exprimer ton affection.`;
-      botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
-    } catch (e) {}
-
-    let newIntimacy = Math.min(10, rel.intimacy_level + 2);
-    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
-
-    res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
+    res.json({ success: true });
   } catch (err) {
     console.error('Error gifting partner:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.post('/api/relationships/:id/date', async (req, res) => {
+app.post('/api/relationships/:id/date', (req, res) => {
   try {
     const relId = Number(req.params.id);
     const rel = db.prepare('SELECT * FROM relationships WHERE id = ? AND user_id = ?').get(relId, req.user.id);
     if (!rel) return res.status(404).json({ error: 'Relation introuvable.' });
 
-    const partner = db.prepare('SELECT * FROM virtual_partners WHERE id = ?').get(rel.partner_id);
+    const dateTrans = db.transaction(() => {
+      let newIntimacy = Math.min(10, rel.intimacy_level + 3);
+      db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
+      const dateMsg = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂`;
+      db.prepare('INSERT INTO messages (user_id, character_id, text, is_user) VALUES (?, ?, ?, 0)').run(req.user.id, -relId, dateMsg);
+    });
+    dateTrans();
 
-    let botReply = `C'était un rendez-vous absolument magique ! Merci pour cette merveilleuse soirée en tête-à-tête sous les étoiles ✨🥂 Raconte-moi, qu'as-tu préféré ce soir ?`;
-    try {
-      const nsfwAllowed = Boolean(req.user.nsfw_enabled) && Boolean(req.user.is_adult);
-      const prompt = `Tu es ${partner.name}, en plein rendez-vous romantique (date) avec ton/ta partenaire. Crée une ambiance romantique (restaurant chic, balade nocturne ou sous les étoiles), exprime ton bonheur d'être avec lui/elle, et pose-lui une question charmante pour lancer la discussion du date. Réponds en français de façon immersive, amoureuse et interactive.`;
-      botReply = await callMistral([{ role: 'user', content: prompt }], nsfwAllowed);
-    } catch (e) {}
-
-    let newIntimacy = Math.min(10, rel.intimacy_level + 3);
-    db.prepare('UPDATE relationships SET intimacy_level = ? WHERE id = ?').run(newIntimacy, relId);
-    db.prepare('INSERT INTO messages (user_id, character_id, role, content) VALUES (?, ?, ?, ?)').run(req.user.id, -relId, 'assistant', botReply);
-
-    res.json({ success: true, intimacyLevel: newIntimacy, reply: botReply });
+    res.json({ success: true });
   } catch (err) {
     console.error('Error dating partner:', err.message);
     res.status(500).json({ error: err.message });
@@ -6084,6 +6152,15 @@ app.use((error, req, res, next) => {
 });
 
 const port = Number(process.env.PORT) || 3000;
-app.listen(port, '0.0.0.0', () => {
+const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Pièces IA backend listening on port ${port}`);
+});
+
+process.on('SIGTERM', () => {
+  console.log('[Server] SIGTERM received. Closing database and shutting down gracefully...');
+  db.close();
+  server.close(() => {
+    console.log('[Server] Closed out remaining connections.');
+    process.exit(0);
+  });
 });

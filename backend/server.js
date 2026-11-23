@@ -1049,13 +1049,27 @@ function getOrCreateFirebaseUser(decoded, deviceId = null, customUsername = null
 }
 
 async function identifyUser(req, res, next) {
-  if (req.path === '/auth/firebase' || req.path.startsWith('/api/admin')) {
+  const fullPath = req.originalUrl || req.path || '';
+  if (fullPath.includes('/auth/firebase') || fullPath.includes('/admin') || req.path.startsWith('/admin')) {
     req.user = { id: 0, role: 'admin', username: 'desktop_admin' };
     return next();
   }
 
   const authorization = req.get('authorization') ?? '';
   if (!authorization.startsWith('Bearer ')) {
+    const deviceId = req.get('x-device-id');
+    if (deviceId) {
+      let guestUser = db.prepare('SELECT * FROM users WHERE device_id = ?').get(deviceId);
+      if (!guestUser) {
+        const result = db.prepare(
+          `INSERT INTO users (device_id, username, display_name, pieces, welcome_bonus_claimed, role, created_at)
+           VALUES (?, ?, ?, 750, 1, 'user', CURRENT_TIMESTAMP)`
+        ).run(deviceId, `Guest_${deviceId.slice(0, 8)}`, 'Invité CHATILE');
+        guestUser = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
+      }
+      req.user = guestUser;
+      return next();
+    }
     return res.status(401).json({ error: 'Authentification requise', needLogin: true });
   }
 

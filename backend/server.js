@@ -771,14 +771,18 @@ for (const [name, prompt, greeting, goal, avatar] of systemCharacters) {
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS weekly_quests_title_unique ON weekly_quests(title)');
 const seedQuest = db.prepare('INSERT OR IGNORE INTO weekly_quests (title, description, target, reward, type) VALUES (?, ?, ?, ?, ?)');
 for (const quest of [
-  ['Marathonien', 'Envoyer 100 messages cette semaine.', 100, 300, 'messages'],
-  ['Créateur prolifique', 'Créer 3 personnages.', 3, 250, 'characters'],
-  ['Explorateur', 'Découvrir 5 personnages.', 5, 200, 'characters'],
-  ['Collectionneur', 'Garder une série de 7 jours.', 7, 150, 'streak'],
-  ['Publicitaire débutant', 'Regarder 10 publicités.', 10, 100, 'watch_ad'],
-  ['Publicitaire expert', 'Regarder 50 publicités.', 50, 600, 'watch_ad'],
-  ['Publicitaire prodige', 'Regarder 100 publicités.', 100, 1500, 'watch_ad'],
+  ['Marathonien', 'Envoyer 100 messages cette semaine.', 100, 20, 'messages'],
+  ['Créateur prolifique', 'Créer 3 personnages.', 3, 15, 'characters'],
+  ['Explorateur', 'Découvrir 5 personnages.', 5, 10, 'characters'],
+  ['Collectionneur', 'Garder une série de 7 jours.', 7, 10, 'streak'],
 ]) seedQuest.run(...quest);
+
+// Update existing quest rewards and remove ad quests
+db.prepare("UPDATE weekly_quests SET reward = 20 WHERE title = 'Marathonien'").run();
+db.prepare("UPDATE weekly_quests SET reward = 15 WHERE title = 'Créateur prolifique'").run();
+db.prepare("UPDATE weekly_quests SET reward = 10 WHERE title = 'Explorateur'").run();
+db.prepare("UPDATE weekly_quests SET reward = 10 WHERE title = 'Collectionneur'").run();
+db.prepare("DELETE FROM weekly_quests WHERE title LIKE 'Publicitaire%'").run();
 
 const seedLootItems = [
   ['Novice', 'Débute sa légende sur CHATILE', 'title', 'commun', 10],
@@ -1687,7 +1691,7 @@ function dailyClaimState(user) {
     canClaim: lastClaimDate !== today,
     nextClaimAt: lastClaimDate === today ? nextClaimAt.toISOString() : null,
     streak_days: lastClaimDate === yesterday ? user.streak_days + 1 : lastClaimDate === today ? user.streak_days : 1,
-    todayReward: Math.min(80, 20 + 10 * (lastClaimDate === yesterday ? user.streak_days : 0)),
+    todayReward: Math.min(20, 10 + 2 * (lastClaimDate === yesterday ? user.streak_days : 0)),
   };
 }
 
@@ -1712,7 +1716,7 @@ app.post('/api/daily-claim', (req, res) => {
     
     const yesterday = utcDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
     const streak = user.last_streak_date === yesterday ? user.streak_days + 1 : 1;
-    const reward = Math.min(80, 20 + 10 * (streak - 1));
+    const reward = Math.min(20, 10 + 2 * (streak - 1));
     
     db.prepare(`UPDATE users SET pieces = pieces + ?, last_daily_claim = ?, last_streak_date = ?, streak_days = ?
       WHERE id = ?`).run(reward, `${today} 00:00:00`, today, streak, req.user.id);
@@ -1882,8 +1886,8 @@ app.post('/api/mystery-box', (req, res) => {
       return { success: false, nextClaimAt: nextMonday.toISOString() };
     }
 
-    const amount = 10 + Math.floor(Math.random() * 41);
-    const rarity = amount <= 20 ? 'commun' : amount <= 35 ? 'rare' : 'épique';
+    const amount = 5 + Math.floor(Math.random() * 11);
+    const rarity = amount <= 8 ? 'commun' : amount <= 12 ? 'rare' : 'épique';
     db.prepare('UPDATE users SET pieces = pieces + ?, last_mystery_box = ? WHERE id = ?')
       .run(amount, `${currentWeekStart} 00:00:00`, req.user.id);
     recordPieceTransaction(req.user.id, amount, 'mystery_box', `Coffre mystère · ${rarity}`);

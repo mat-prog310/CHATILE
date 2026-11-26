@@ -3085,9 +3085,9 @@ app.post('/api/characters/upload-avatar', (req, res) => {
 app.post('/api/characters/:id/avatar', (req, res) => {
   const characterId = Number(req.params.id);
   const character = Number.isSafeInteger(characterId)
-    ? db.prepare('SELECT id FROM characters WHERE id = ?').get(characterId)
+    ? ownedCharacter(characterId, req.user.id)
     : null;
-  if (!character) return res.status(404).json({ error: 'Personnage introuvable.' });
+  if (!character) return res.status(403).json({ error: 'Seul le créateur du personnage peut modifier sa photo.' });
   avatarUpload.single('avatar')(req, res, (error) => {
     if (error || !req.file) return res.status(400).json({ error: 'Image invalide (JPEG, PNG ou WebP, 5 Mo max).' });
     const filename = req.file.filename;
